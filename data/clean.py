@@ -3,17 +3,29 @@ import pandas as pd
 import os
 
 raw_data_dir= r'C:\Users\ashaa\OneDrive\Desktop\SmartTransit\data\raw\delays'
+valid_stations_list= r'C:\Users\ashaa\OneDrive\Desktop\SmartTransit\data\raw\docs\ttc_subway_stations.txt'
 filename = 'TTC Subway Delay Data since 2025.csv'
 filepath = os.path.join(raw_data_dir, filename)
 
 df = pd.read_csv(filepath)
 print(len(df))
+print(df[df['Station'].str.contains("bloor", case=False, na=False)]['Station'].unique())
+print(df[df['Station'].str.contains("yonge", case=False, na=False)]['Station'].unique())
 df = df[df['Min Delay'] != 0]
 df = df.dropna()
-
+# drop data that doesn't have a clear line
+valid_line_codes = {
+  'YU': 'Line 1',
+  'BD': 'Line 2',
+  'SHP': 'Line 4',
+}
+df = df[df['Line'].str.upper().isin(valid_line_codes)]
 
 # reset index
 df.reset_index(drop=True, inplace=True)
+
+
+
 # print(df.columns)
 # print(df['Bound'].unique()) # need to do this check when all of the dfs are combined later, make sure the bound is consistent
 # print(df['Line'].unique())
@@ -80,6 +92,7 @@ def clean_station_name(name:str):
         'NORTH YORK CTR STATION': 'NORTH YORK CENTRE STATION',
         'BLOOR STATION': 'BLOOR-YONGE STATION',
         'YONGE STATION': 'BLOOR-YONGE STATION',
+        'YONGE-UNIVERSITY AND B': 'BLOOR-YONGE STATION',
         'SHEPPARDYONGE STATION': 'SHEPPARD-YONGE STATION',
         'SHEPPARD STATION': 'SHEPPARD-YONGE STATION',
         'YONGE SHEP STATION': 'SHEPPARD-YONGE STATION',
@@ -97,11 +110,43 @@ def clean_station_name(name:str):
     return name
 
 
-    # to do: clean to, clean Yard(this is ligit, keep yard as non-station, what is WYE, check any name not ending with station
+    # to do: clean to, clean Yard(this is ligit, keep yard as non-station, what is WYE, check any name not
+    # ending with station
     # remove stations that are McCowan or Lawrence East
+
+def categorzie_station(name:str):
+    """
+    This function checks if a station is a passenger station, non-passenger (e.g YARD, WYE etc),
+    or unknown (e.g approaching Rosedale, spelling error)
+    :param name: cleaned str of the station name
+    :return: str indicating passenger, non-passenger or unknown
+    """
+    # load the valid stations list
+    with open(valid_stations_list) as f:
+        valid_stations = {line.strip().upper() for line in f if line.strip()}
+    name = name.strip().upper()
+
+    non_passenger_endname_keywords = ['YARD', 'HOSTLER', 'WYE', 'POCKET', 'TAIL', 'TRACK']
+    if name in valid_stations:
+        category = "passenger station"
+    elif name.split(' ')[-1] in non_passenger_endname_keywords:
+        category = "non-passenger station"
+    else:
+        category = "unknown" #e.g approaching Rosedale
+    return category
+
+
+
 station_names = []
 for names in df['Station']:
     cleaned_name = clean_station_name(names)
     station_names.append(cleaned_name)
 
 print(set(station_names))
+name_cat ={}
+for name in station_names:
+    if name not in name_cat:
+        name_cat[name] = categorzie_station(name)
+
+
+print(name_cat)
