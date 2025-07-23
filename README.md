@@ -1,4 +1,5 @@
 This project explores Toronto's TTC subway delay data to understand operational inefficiencies, safety risks, and equity concerns across the system. Our key research questions are organized into four categories:
+
 I. System-Wide Trends
 
     Has the number of minutes in delay increased over the years?
