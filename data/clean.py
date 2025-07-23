@@ -30,29 +30,23 @@ print(df['last_word'].value_counts())
 
 def clean_station_name(name:str):
     """
-    clean the TTC station name, e.g UNION STATION TOWARD K, becomes UNION STATION
+    clean and standardize the TTC station name, e.g UNION STATION TOWARD K, becomes UNION STATION
     :param name: name of the TTC station
     :return: clean name of the TTC station
     """
 
     name = str(name).strip().upper() # strips leading and trailing white spaces, makes everything upper case
     name = re.sub(r'\s+', ' ', name) # replaces any spaces that are one or more tabs in the name to one
-    # only split if 'TO' is used directionally, e.g Union To Finch
-    if ' TO ':
-        name = name.split(' TO ')[0] # take the first part of the name
 
-    if ' TOWARD ':
-        name = name.split(' TO ')[0] # take the first part of the name
+    # Handle directional indicators
+    for directional in [' TO ', ' TOWARD ', ' TOWARDS ']:
+        if directional in name:
+            name = name.split(directional)[0]
 
-    if ' TOWARDS ':
-        name = name.split(' TO ')[0] # take the first part of the name
-
-    # Remove directional name
+    # Remove directional name, e.g DAVISVILLE - some other station
     if ' - ' in name and name not in ['SHEPPARD - YONGE', 'BLOOR - YONGE']:
         name = name.split( ' - ')[0]
 
-    if name in ['BLOOR', 'BLOOR STATION', 'YONGE', 'YONGE STATION']:
-        name = 'BLOOR-YONGE STATION'
 
     # Normalize 'St' to 'St.'
     name = re.sub(r'\bST\b(?=\s)', 'ST.', name)
@@ -62,9 +56,14 @@ def clean_station_name(name:str):
     name = re.sub(r'\(.*', '', name) # unclosed (TO KING
 
     # Remove embedded line codes (YUS, BD, L1, L2, etc.) from anywhere in the name
-    name = re.sub(r'\b(YU||YUS|BD|BDL|BDN|BD-S|L1|L2|LINE\s?\d+)\b', '', name)
+    name = re.sub(r'\b(YU|YUS|BD|BDL|BDN|BD-S|L1|L2|LINE\s?\d+)\b', '', name)
+
+    # clean up extra whitespace left behind
+    name = re.sub(r'\s+', ' ', name)
+
 
     # Fix endings like "STATIO", "STA", etc.
+    name = name.strip() # remove white spaces in the beginning and the end
     if name.endswith(" STATIO") or name.endswith(" STA"):
         name = re.sub(r'( STATIO| STA)$', ' STATION', name)
 
@@ -73,19 +72,26 @@ def clean_station_name(name:str):
     if name.split(' ')[-1] not in legit_station_endname_keywords:
         name += ' STATION'
 
-    # Fix abbreviated stations
-    abbreviation_map = {
+
+    # Fixes abbreviations and Dual Named Interchange Stations
+    station_map = {
         'VMC STATION': 'VAUGHAN METROPOLITAN CENTRE STATION',
         'VAUGHAN MC STATION': 'VAUGHAN METROPOLITAN CENTRE STATION',
         'NORTH YORK CTR STATION': 'NORTH YORK CENTRE STATION',
-    }
+        'BLOOR STATION': 'BLOOR-YONGE STATION',
+        'YONGE STATION': 'BLOOR-YONGE STATION',
+        'SHEPPARDYONGE STATION': 'SHEPPARD-YONGE STATION',
+        'SHEPPARD STATION': 'SHEPPARD-YONGE STATION',
+        'YONGE SHEP STATION': 'SHEPPARD-YONGE STATION',
+        'YONGE SHP STATION': 'SHEPPARD-YONGE STATION',
+        'SHEPPARD YONGE STATION': 'SHEPPARD-YONGE STATION'}
 
-    if name.strip().upper() in abbreviation_map:
-        name = abbreviation_map[name.strip().upper()]
+    key = name.strip().upper()
+    if key in station_map:
+        name = station_map[key]
 
-
-
-    name = re.sub(r'\s+', ' ', name)  # clean up extra whitespace left behind
+    # clean up extra whitespace left behind
+    name = re.sub(r'\s+', ' ', name)
     # Fix spelling error for Station
 
     return name
