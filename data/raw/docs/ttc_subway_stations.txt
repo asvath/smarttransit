@@ -1,0 +1,73 @@
+Bathurst Station
+Bay Station
+Bayview Station
+Bessarion Station
+Bloor-Yonge Station
+Broadview Station
+Castle Frank Station
+Chester Station
+Christie Station
+College Station
+Coxwell Station
+Davisville Station
+Don Mills Station
+Donlands Station
+Downsview Park Station
+Dufferin Station
+Dundas Station
+Dundas West Station
+Dupont Station
+Eglinton Station
+Eglinton West Station
+Ellesmere Station
+Finch West Station
+Glencairn Station
+Greenwood Station
+High Park Station
+Highway 407 Station
+Islington Station
+Jane Station
+Keele Station
+Kennedy Station
+King Station
+Kipling Station
+Lansdowne Station
+Lawrence East Station
+Lawrence Station
+Lawrence West Station
+Leslie Station
+Main Street Station
+McCowan Station
+Midland Station
+Museum Station
+Old Mill Station
+Osgoode Station
+Ossington Station
+Pape Station
+Pioneer Village Station
+Queen Station
+Queen's Park Station
+Rosedale Station
+Royal York Station
+Runnymede Station
+Scarborough Centre Station
+Sheppard West Station
+Sheppard-Yonge Station
+Sherbourne Station
+Spadina Station
+St. Andrew Station
+St. Clair Station
+St. Clair West Station
+St. George Station
+St. Patrick Station
+Summerhill Station
+Union Station
+Vaughan Metropolitan Centre Station
+Victoria Park Station
+Warden Station
+Wellesley Station
+Wilson Station
+Woodbine Station
+York Mills Station
+York University Station
+Yorkdale Station
