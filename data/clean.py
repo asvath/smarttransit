@@ -1,5 +1,7 @@
 import ast
 import re
+
+import numpy as np
 import pandas as pd
 import os
 
@@ -148,15 +150,36 @@ def valid_station_linecode_dict() -> dict:
                 valid_station_linecode[name + "STATION"] = ast.literal_eval(linecode.strip())
     return valid_station_linecode
 
-def clean_linecode(name, linecode):
-    error_in_linecode = {}
+def clean_linecode(df):
+    """
+    This function will fix incorrect linecodes using the valid_station_linecode_dict.
+    :param name: cleaned station name
+    :param linecode: the line data for that station
+    :return: name and correct linecode
+    """
     valid_station_linecode = valid_station_linecode_dict()
-    if linecode == valid_station_linecode[name]:
-        pass
-    else:
-        error_in_linecode[name] = (linecode, valid_station_linecode[name])
 
-    return error_in_linecode
+    for index, row in df.iterrows():
+        station = row["Station"]
+        line = row["Line"]
+
+        if station not in valid_station_linecode: # a non-passenger station
+            continue
+
+        valid_codes = valid_station_linecode[station]
+
+        if line in valid_codes:
+            continue # already the correct code
+
+        if len(valid_codes) > 1: # Too ambiguous to fix. e.g. Bloor-Yonge subway,
+            # if the linecode is not BD or YU, we wouldn't know which is the correct code
+            df.at[index, "Line"] = np.nan
+
+        else: # fix to the correct code
+            df.at[index, "Line"] = valid_codes[0]  # Fix to the correct code
+
+    return df
+
 
 # names in df['Station']:
 # cleaned_name = clean_station_name(names)
@@ -175,8 +198,10 @@ for name in station_names:
 error_in_linecode = {}
 df['Station'] = df['Station'].apply(clean_station_name)
 
-print("CZJ")
+
+
 valid_station_linecode = valid_station_linecode_dict()
+
 for index, row in df.iterrows():
     if row["Station"] in valid_station_linecode:
         if row['Line'] in valid_station_linecode[row["Station"]]:
@@ -187,6 +212,17 @@ for index, row in df.iterrows():
 
 print(error_in_linecode)
 
+error_in_linecode = {}
+df_clean = clean_linecode(df)
+for index, row in df_clean.iterrows():
+    if row["Station"] in valid_station_linecode:
+        if row['Line'] in valid_station_linecode[row["Station"]]:
+            pass
+        else:
+            error_in_linecode[row['Station']] = (row['Line'], valid_station_linecode[row["Station"]])
+
+
+print(error_in_linecode)
 #to do, clean up the line codes, for Kennedy special case, SRT, ignore, we will be deleting later
 # fix time date
 # merge all the csv, make sure they have the same columns
