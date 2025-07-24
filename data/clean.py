@@ -1,9 +1,12 @@
+import ast
 import re
 import pandas as pd
 import os
 
 raw_data_dir= r'C:\Users\ashaa\OneDrive\Desktop\SmartTransit\data\raw\delays'
 valid_stations_list= r'C:\Users\ashaa\OneDrive\Desktop\SmartTransit\data\raw\docs\ttc_subway_stations.txt'
+valid_stations_list_w_linecode =\
+    r'C:\Users\ashaa\OneDrive\Desktop\SmartTransit\data\raw\docs\ttc_subway_stations_with_linecodes.txt'
 filename = 'TTC Subway Delay Data since 2025.csv'
 filepath = os.path.join(raw_data_dir, filename)
 
@@ -40,7 +43,7 @@ df['last_word'] = df['Station'].astype(str).str.strip().str.split().str[-1]
 
 print(df['last_word'].value_counts())
 
-def clean_station_name(name:str):
+def clean_station_name(name:str) -> str:
     """
     clean and standardize the TTC station name, e.g UNION STATION TOWARD K, becomes UNION STATION
     :param name: name of the TTC station
@@ -114,7 +117,7 @@ def clean_station_name(name:str):
     # ending with station
     # remove stations that are McCowan or Lawrence East
 
-def categorzie_station(name:str):
+def categorzie_station(name:str) -> str:
     """
     This function checks if a station is a passenger station, non-passenger (e.g YARD, WYE etc),
     or unknown (e.g approaching Rosedale, spelling error)
@@ -136,17 +139,54 @@ def categorzie_station(name:str):
     return category
 
 
+def valid_station_linecode_dict() -> dict:
+    valid_station_linecode = {}
+    with open(valid_stations_list_w_linecode) as f:
+        for line in f:
+            if line.strip(): # non-empty
+                name, linecode = line.upper().split("STATION")
+                valid_station_linecode[name + "STATION"] = ast.literal_eval(linecode.strip())
+    return valid_station_linecode
 
+def clean_linecode(name, linecode):
+    error_in_linecode = {}
+    valid_station_linecode = valid_station_linecode_dict()
+    if linecode == valid_station_linecode[name]:
+        pass
+    else:
+        error_in_linecode[name] = (linecode, valid_station_linecode[name])
+
+    return error_in_linecode
+
+# names in df['Station']:
+# cleaned_name = clean_station_name(names)
+# station_names.append(cleaned_name)
 station_names = []
 for names in df['Station']:
     cleaned_name = clean_station_name(names)
     station_names.append(cleaned_name)
 
-print(set(station_names))
+# print(set(station_names))
 name_cat ={}
 for name in station_names:
     if name not in name_cat:
         name_cat[name] = categorzie_station(name)
 
+error_in_linecode = {}
+df['Station'] = df['Station'].apply(clean_station_name)
 
-print(name_cat)
+print("CZJ")
+valid_station_linecode = valid_station_linecode_dict()
+for index, row in df.iterrows():
+    if row["Station"] in valid_station_linecode:
+        if row['Line'] in valid_station_linecode[row["Station"]]:
+            pass
+        else:
+            error_in_linecode[row['Station']] = (row['Line'], valid_station_linecode[row["Station"]])
+
+
+print(error_in_linecode)
+
+#to do, clean up the line codes, for Kennedy special case, SRT, ignore, we will be deleting later
+# fix time date
+# merge all the csv, make sure they have the same columns
