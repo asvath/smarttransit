@@ -10,6 +10,8 @@ raw_data_dir= r'C:\Users\ashaa\OneDrive\Desktop\SmartTransit\data\raw\delays'
 valid_stations_list= r'C:\Users\ashaa\OneDrive\Desktop\SmartTransit\data\raw\docs\ttc_subway_stations.txt'
 valid_stations_list_w_linecode =\
     r'C:\Users\ashaa\OneDrive\Desktop\SmartTransit\data\raw\docs\ttc_subway_stations_with_linecodes.txt'
+code_descriptions_list = \
+    r'C:\Users\ashaa\OneDrive\Desktop\SmartTransit\data\raw\code_descriptions\Code Descriptions.csv'
 filename = 'TTC Subway Delay Data since 2025.csv'
 filepath = os.path.join(raw_data_dir, filename)
 
@@ -217,56 +219,89 @@ def add_IsWeekday(df):
     df['IsWeekday'] = df['Date'].dt.weekday < 5  # True for weekdays, False for weekends
     return df
 
+def clean_delay_code_descriptions():
+    """
+    Loads a CSV file containing TTC delay code descriptions, removes all non-ASCII characters
+    from the text fields, and saves a cleaned version to disk.
+
+    This helps ensure the output file is encoding-safe and free of mojibake characters like â or Ã.
+
+    The cleaned file is saved to:
+    'data/raw/code_descriptions/Clean Code Descriptions.csv'
+
+    :return: None
+    """
+    codes = pd.read_csv(code_descriptions_list, encoding='utf-8-sig')
+
+    def remove_non_ascii(text):
+        return re.sub(r'[^\x00-\x7F]+', '', text) if isinstance(text, str) else text
+
+    codes_cleaned = codes.applymap(remove_non_ascii)
+    (codes_cleaned.to_csv
+     (r'C:\Users\ashaa\OneDrive\Desktop\SmartTransit\data\raw\code_descriptions\Clean Code Descriptions.csv',
+      index=False, encoding='utf-8-sig'))
 
 
-df = add_datetime(df)
-df['Day'] = df.apply(lambda row: row['Date'].strftime('%A'), axis=1)
-# names in df['Station']:
-# cleaned_name = clean_station_name(names)
-# station_names.append(cleaned_name)
-station_names = []
-for names in df['Station']:
-    cleaned_name = clean_station_name(names)
-    station_names.append(cleaned_name)
+clean_delay_code_descriptions()
 
-# print(set(station_names))
-name_cat ={}
-for name in station_names:
-    if name not in name_cat:
-        name_cat[name] = categorzie_station(name)
-
-error_in_linecode = {}
-df['Station'] = df['Station'].apply(clean_station_name)
+# def code_descriptions_dict():
+#     with open(code_descriptions_list) as f:
 
 
-
-valid_station_linecode = valid_station_linecode_dict()
-
-for index, row in df.iterrows():
-    if row["Station"] in valid_station_linecode:
-        if row['Line'] in valid_station_linecode[row["Station"]]:
-            pass
-        else:
-            error_in_linecode[row['Station']] = (row['Line'], valid_station_linecode[row["Station"]])
+# df = pd.read_excel(code_descriptions_list, header=None)
 
 
-print(error_in_linecode)
+# View the first few rows
+print(df[6])
 
-error_in_linecode = {}
-df_clean = clean_linecode(df)
-for index, row in df_clean.iterrows():
-    if row["Station"] in valid_station_linecode:
-        if row['Line'] in valid_station_linecode[row["Station"]]:
-            pass
-        else:
-            error_in_linecode[row['Station']] = (row['Line'], valid_station_linecode[row["Station"]])
-
-
-print(error_in_linecode)
-#to do, clean up the line codes, for Kennedy special case, SRT, ignore, we will be deleting later
-# fix time date
-# merge all the csv, make sure they have the same columns
-
-print(df['Time'].head())
-print(df['Date'].head())
-print(df['DateTime'].head())
+# df = add_datetime(df)
+# df['Day'] = df.apply(lambda row: row['Date'].strftime('%A'), axis=1)
+# # names in df['Station']:
+# # cleaned_name = clean_station_name(names)
+# # station_names.append(cleaned_name)
+# station_names = []
+# for names in df['Station']:
+#     cleaned_name = clean_station_name(names)
+#     station_names.append(cleaned_name)
+#
+# # print(set(station_names))
+# name_cat ={}
+# for name in station_names:
+#     if name not in name_cat:
+#         name_cat[name] = categorzie_station(name)
+#
+# error_in_linecode = {}
+# df['Station'] = df['Station'].apply(clean_station_name)
+#
+#
+#
+# valid_station_linecode = valid_station_linecode_dict()
+#
+# for index, row in df.iterrows():
+#     if row["Station"] in valid_station_linecode:
+#         if row['Line'] in valid_station_linecode[row["Station"]]:
+#             pass
+#         else:
+#             error_in_linecode[row['Station']] = (row['Line'], valid_station_linecode[row["Station"]])
+#
+#
+# print(error_in_linecode)
+#
+# error_in_linecode = {}
+# df_clean = clean_linecode(df)
+# for index, row in df_clean.iterrows():
+#     if row["Station"] in valid_station_linecode:
+#         if row['Line'] in valid_station_linecode[row["Station"]]:
+#             pass
+#         else:
+#             error_in_linecode[row['Station']] = (row['Line'], valid_station_linecode[row["Station"]])
+#
+#
+# print(error_in_linecode)
+# #to do, clean up the line codes, for Kennedy special case, SRT, ignore, we will be deleting later
+# # fix time date
+# # merge all the csv, make sure they have the same columns
+#
+# print(df['Time'].head())
+# print(df['Date'].head())
+# print(df['DateTime'].head())
