@@ -1,5 +1,6 @@
 import ast
 import re
+from datetime import datetime
 
 import numpy as np
 import pandas as pd
@@ -180,7 +181,46 @@ def clean_linecode(df):
 
     return df
 
+def add_datetime(df):
+    """
+    Converts 'Date' and 'Time' columns into proper date and time objects,
+    then combines them into a single 'DateTime' column.
 
+    This enables easier extraction of time-based features such as hour, day of week, etc.
+    :param df: pandas DataFrame with 'Date' and 'Time' columns as strings
+    :return: pandas DataFrame with added 'DateTime' column
+    """
+    df['Time'] = pd.to_datetime(df['Time'], format='%H:%M').dt.time
+    df['Date'] = pd.to_datetime(df['Date']).dt.date
+    df['DateTime'] = df.apply(lambda row: datetime.combine(row['Date'], row['Time']), axis=1)
+    return df
+
+
+
+def clean_day(df):
+    """
+     Extracts the day of the week from the 'Date' column and stores it in a 'Day' column. This will fix any errors
+     in the 'Day' column.
+
+    :param df: pandas DataFrame with a 'Date' column (datetime64[ns])
+    :return: pandas DataFrame with added or updated 'Day' column
+    """
+    df['Day'] = df['Date'].dt.day_name()
+    return df
+
+def add_IsWeekday(df):
+    """
+    Adds a new column 'IsWeekday' to indicate whether each date falls on a weekday.
+    :param df:
+    :return:
+    """
+    df['IsWeekday'] = df['Date'].dt.weekday < 5  # True for weekdays, False for weekends
+    return df
+
+
+
+df = add_datetime(df)
+df['Day'] = df.apply(lambda row: row['Date'].strftime('%A'), axis=1)
 # names in df['Station']:
 # cleaned_name = clean_station_name(names)
 # station_names.append(cleaned_name)
@@ -226,3 +266,7 @@ print(error_in_linecode)
 #to do, clean up the line codes, for Kennedy special case, SRT, ignore, we will be deleting later
 # fix time date
 # merge all the csv, make sure they have the same columns
+
+print(df['Time'].head())
+print(df['Date'].head())
+print(df['DateTime'].head())
