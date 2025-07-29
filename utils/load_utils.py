@@ -5,7 +5,7 @@ import pandas as pd
 from config import RAW_DATA_DIR, LOG_DIR
 
 
-def oad_raw_data_files(raw_data_dir=RAW_DATA_DIR, log_dir=LOG_DIR, verbose=True):
+def load_raw_data_files(raw_data_dir=RAW_DATA_DIR, log_dir=LOG_DIR, verbose=True):
     """
     Loads all supported raw data files (CSV, Excel) into a list of DataFrames.
 
