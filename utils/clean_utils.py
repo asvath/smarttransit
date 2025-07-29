@@ -15,27 +15,7 @@ RAW_DATA_DIR = os.path.join(BASE_DIR, 'data', 'raw', 'delays')
 log_path = os.path.join(LOG_DIR, f'')
 years = range(2018, 2025)
 
-# list of excel file data from 2018-2024
-excel_files = [os.path.join(RAW_DATA_DIR, f'ttc-subway-delay-data-{year}.xlsx') for year in years]
-csv_file = os.path.join(RAW_DATA_DIR, 'delays', 'TTC Subway Delay Data since 2025.csv')
 
-dfs = []
-for file in excel_files:
-    if os.path.exists(file):
-        df = pd.read_excel(file)
-        dfs.append(df)
-    else:
-        print(f"Warning: File not found - {file}")
-
-if os.path.exists(csv_file):
-    df_2025 = pd.read_csv(csv_file)
-    dfs.append(df_2025)
-else:
-    print(f"Warning: 2025 file not found - {csv_file}")
-
-for i, df in enumerate(dfs):
-    print(f"File {i} columns: {list(df.columns)}")
-print(len(dfs))
 
 timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
 log_filename = f'delay_merge_log_{timestamp}.txt'
