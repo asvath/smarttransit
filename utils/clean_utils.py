@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 import os
 
-from config import (RAW_DATA_DIR, DELAY_DATA, VALID_STATIONS_LIST, VALID_STATIONS_WITH_LINECODES, CODE_DESCRIPTIONS, LOG_DIR,
+from config import (RAW_DATA_DIR, DELAY_DATA, VALID_STATIONS_LIST, CODE_DESC_DIR, VALID_STATIONS_WITH_LINECODES, CODE_DESCRIPTIONS, LOG_DIR,
                     REFERENCE_COLS_ORDERED)
 
 def merge_delay_data(dfs: list[pd.DataFrame], files_loaded, log_dir=LOG_DIR,
@@ -165,23 +165,14 @@ def clean_station_name(name:str) -> str:
     # Fix spelling error for Station
 
     return name
-#
-#
-#     # to do: clean to, clean Yard(this is ligit, keep yard as non-station, what is WYE, check any name not
-#     # ending with station
-#     # remove stations that are McCowan or Lawrence East
-#
+
 def categorzie_station(name:str) -> str:
     """
-    This function checks if a station is a passenger station, non-passenger (e.g YARD, WYE etc),
-    or unknown (e.g approaching Rosedale, spelling error)
+    This function checks if a station is a valid passenger station, non-passenger (e.g YARD, WYE etc),
+    or unknown (e.g SRT stations, approaching Rosedale, spelling error).
     :param name: cleaned str of the station name
     :return: str indicating passenger, non-passenger or unknown
     """
-    # load the valid stations list
-    # with open(VALID_STATIONS_LIST) as f:
-    #     valid_stations = {line.strip().upper() for line in f if line.strip()}
-    # name = name.strip().upper()
 
     valid_station_linecode = valid_station_linecode_dict()
 
@@ -196,6 +187,10 @@ def categorzie_station(name:str) -> str:
 
 
 def valid_station_linecode_dict() -> dict:
+    """
+    Creates dictionary with valid in operation stations and their respective linecodes
+    :return: dict
+    """
     valid_station_linecode = {}
     with open(VALID_STATIONS_WITH_LINECODES) as f:
         for line in f:
@@ -203,100 +198,99 @@ def valid_station_linecode_dict() -> dict:
                 name, linecode = line.upper().split("STATION")
                 valid_station_linecode[name + "STATION"] = ast.literal_eval(linecode.strip())
     return valid_station_linecode
-#
-# def clean_linecode(df):
-#     """
-#     This function will fix incorrect linecodes using the valid_station_linecode_dict.
-#     :param name: cleaned station name
-#     :param linecode: the line data for that station
-#     :return: name and correct linecode
-#     """
-#     valid_station_linecode = valid_station_linecode_dict()
-#
-#     for index, row in df.iterrows():
-#         station = row["Station"]
-#         line = row["Line"]
-#
-#         if station not in valid_station_linecode: # a non-passenger station
-#             continue
-#
-#         valid_codes = valid_station_linecode[station]
-#
-#         if line in valid_codes:
-#             continue # already the correct code
-#
-#         if len(valid_codes) > 1: # Too ambiguous to fix. e.g. Bloor-Yonge subway,
-#             # if the linecode is not BD or YU, we wouldn't know which is the correct code
-#             df.at[index, "Line"] = np.nan
-#
-#         else: # fix to the correct code
-#             df.at[index, "Line"] = valid_codes[0]  # Fix to the correct code
-#
-#     return df
-#
-# def add_datetime(df):
-#     """
-#     Converts 'Date' and 'Time' columns into proper date and time objects,
-#     then combines them into a single 'DateTime' column.
-#
-#     This enables easier extraction of time-based features such as hour, day of week, etc.
-#     :param df: pandas DataFrame with 'Date' and 'Time' columns as strings
-#     :return: pandas DataFrame with added 'DateTime' column
-#     """
-#     df['Time'] = pd.to_datetime(df['Time'], format='%H:%M').dt.time
-#     df['Date'] = pd.to_datetime(df['Date']).dt.date
-#     df['DateTime'] = df.apply(lambda row: datetime.combine(row['Date'], row['Time']), axis=1)
-#     return df
-#
-#
-#
-# def clean_day(df):
-#     """
-#      Extracts the day of the week from the 'Date' column and stores it in a 'Day' column. This will fix any errors
-#      in the 'Day' column.
-#
-#     :param df: pandas DataFrame with a 'Date' column (datetime64[ns])
-#     :return: pandas DataFrame with added or updated 'Day' column
-#     """
-#     df['Day'] = df['Date'].dt.day_name()
-#     return df
-#
-# def add_IsWeekday(df):
-#     """
-#     Adds a new column 'IsWeekday' to indicate whether each date falls on a weekday.
-#     :param df:
-#     :return:
-#     """
-#     df['IsWeekday'] = df['Date'].dt.weekday < 5  # True for weekdays, False for weekends
-#     return df
-#
-# def clean_delay_code_descriptions():
-#     """
-#     Loads a CSV file containing TTC delay code descriptions, removes all non-ASCII characters
-#     from the text fields, and saves a cleaned version to disk.
-#
-#     This helps ensure the output file is encoding-safe and free of mojibake characters like â or Ã.
-#
-#     The cleaned file is saved to:
-#     'data/raw/code_descriptions/Clean Code Descriptions.csv'
-#
-#     :return: None
-#     """
-#     codes = pd.read_csv(CODE_DESCRIPTIONS, encoding='utf-8-sig')
-#
-#     def remove_non_ascii(text):
-#         return re.sub(r'[^\x00-\x7F]+', '', text) if isinstance(text, str) else text
-#
-#     codes_cleaned = codes.applymap(remove_non_ascii)
-#     (codes_cleaned.to_csv
-#      (r'C:\Users\ashaa\OneDrive\Desktop\SmartTransit\data\raw\code_descriptions\Clean Code Descriptions.csv',
-#       index=False, encoding='utf-8-sig'))
-#
-#
-# # clean_delay_code_descriptions()
-#
-# # def code_descriptions_dict():
-# #     with open(code_descriptions_list) as f:
+
+def clean_linecode(df):
+    """
+    This function will fix incorrect linecodes using the valid_station_linecode_dict.
+    :param name: standized clean station name
+    :param linecode: the line data for that station
+    :return: name and correct linecode
+    """
+    valid_station_linecode = valid_station_linecode_dict()
+
+    for index, row in df.iterrows():
+        station = row["Station"]
+        line = row["Line"]
+
+        if station not in valid_station_linecode: # a non-passenger station or unknown
+            continue
+
+        valid_codes = valid_station_linecode[station]
+
+        if line in valid_codes:
+            continue # already the correct code
+
+        if len(valid_codes) > 1: # Too ambiguous to fix. e.g. Bloor-Yonge subway,
+            # if the linecode is not BD or YU, we wouldn't know which is the correct code
+            df.at[index, "Line"] = np.nan
+
+
+        else: # fix to the correct code
+            df.at[index, "Line"] = valid_codes[0]  # Fix to the correct code
+
+    return df
+
+def add_datetime(df):
+    """
+    Converts 'Date' and 'Time' columns into proper date and time objects,
+    then combines them into a single 'DateTime' column.
+
+    This enables easier extraction of time-based features such as hour, day of week, etc.
+    :param df: pandas DataFrame with 'Date' and 'Time' columns as strings
+    :return: pandas DataFrame with added 'DateTime' column
+    """
+    df['Time'] = pd.to_datetime(df['Time'], format='%H:%M').dt.time
+    df['Date'] = pd.to_datetime(df['Date']).dt.date
+    df['DateTime'] = df.apply(lambda row: datetime.combine(row['Date'], row['Time']), axis=1)
+
+    return df
+
+
+
+def clean_day(df):
+    """
+     Extracts the day of the week from the 'Date' column and stores it in a 'Day' column. This will fix any errors
+     in the 'Day' column.
+
+    :param df: pandas DataFrame with a 'Date' column (datetime64[ns])
+    :return: pandas DataFrame with added or updated 'Day' column
+    """
+    df['Day'] = df['Date'].dt.day_name()
+    return df
+
+def add_IsWeekday(df):
+    """
+    Adds a new column 'IsWeekday' to indicate whether each date falls on a weekday.
+    :param df:
+    :return:
+    """
+    df['IsWeekday'] = df['Date'].dt.weekday < 5  # True for weekdays, False for weekends
+    return df
+
+def clean_delay_code_descriptions():
+    """
+    Loads a CSV file containing TTC delay code descriptions, removes all non-ASCII characters
+    from the text fields, and saves a cleaned version to disk.
+
+    This helps ensure the output file is encoding-safe and free of mojibake characters like â or Ã.
+
+    The cleaned file is saved to:
+    'data/raw/code_descriptions/Clean Code Descriptions.csv'
+
+    :return: None
+    """
+    codes = pd.read_csv(CODE_DESCRIPTIONS, encoding='utf-8-sig')
+
+    def remove_non_ascii(text):
+        return re.sub(r'[^\x00-\x7F]+', '', text) if isinstance(text, str) else text
+
+    codes_cleaned = codes.applymap(remove_non_ascii)
+    filepath = os.path.join(CODE_DESC_DIR,"Clean Code Descriptions.csv")
+    codes_cleaned.to_csv (filepath,index=False, encoding='utf-8-sig')
+
+
+
+
 #
 #
 # # df = pd.read_excel(code_descriptions_list, header=None)
