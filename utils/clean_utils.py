@@ -110,110 +110,99 @@ def merge_delay_data(dfs: list[pd.DataFrame], files_loaded, log_dir=LOG_DIR,
 #
 # print(df['last_word'].value_counts())
 #
-# def clean_station_name(name:str) -> str:
-#     """
-#     clean and standardize the TTC station name, e.g UNION STATION TOWARD K, becomes UNION STATION
-#     :param name: name of the TTC station
-#     :return: clean name of the TTC station
-#     """
-#
-#     name = str(name).strip().upper() # strips leading and trailing white spaces, makes everything upper case
-#     name = re.sub(r'\s+', ' ', name) # replaces any spaces that are one or more tabs in the name to one
-#
-#     # Handle directional indicators
-#     for directional in [' TO ', ' TOWARD ', ' TOWARDS ']:
-#         if directional in name:
-#             name = name.split(directional)[0]
-#
-#     # Remove directional name, e.g DAVISVILLE - some other station
-#     if ' - ' in name and name not in ['SHEPPARD - YONGE', 'BLOOR - YONGE']:
-#         name = name.split( ' - ')[0]
-#
-#
-#     # Normalize 'St' to 'St.'
-#     name = re.sub(r'\bST\b(?=\s)', 'ST.', name)
-#
-#     # Remove trailing parentheticals like "(TO KING)"
-#     name = re.sub(r'\(.*?\)', '', name) # closed (TO KING)
-#     name = re.sub(r'\(.*', '', name) # unclosed (TO KING
-#
-#     # Remove embedded line codes (YUS, BD, L1, L2, etc.) from anywhere in the name
-#     name = re.sub(r'\b(YU|YUS|BD|BDL|BDN|BD-S|L1|L2|LINE\s?\d+)\b', '', name)
-#
-#     # clean up extra whitespace left behind
-#     name = re.sub(r'\s+', ' ', name)
-#
-#
-#     # Fix endings like "STATIO", "STA", etc.
-#     name = name.strip() # remove white spaces in the beginning and the end
-#     if name.endswith(" STATIO") or name.endswith(" STA"):
-#         name = re.sub(r'( STATIO| STA)$', ' STATION', name)
-#
-#
-#     legit_station_endname_keywords = ['STATION', 'YARD', 'HOSTLER', 'WYE', 'POCKET', 'TAIL', 'TRACK']
-#     if name.split(' ')[-1] not in legit_station_endname_keywords:
-#         name += ' STATION'
-#
-#
-#     # Fixes abbreviations and Dual Named Interchange Stations
-#     station_map = {
-#         'VMC STATION': 'VAUGHAN METROPOLITAN CENTRE STATION',
-#         'VAUGHAN MC STATION': 'VAUGHAN METROPOLITAN CENTRE STATION',
-#         'NORTH YORK CTR STATION': 'NORTH YORK CENTRE STATION',
-#         'BLOOR STATION': 'BLOOR-YONGE STATION',
-#         'YONGE STATION': 'BLOOR-YONGE STATION',
-#         'YONGE-UNIVERSITY AND B': 'BLOOR-YONGE STATION',
-#         'SHEPPARDYONGE STATION': 'SHEPPARD-YONGE STATION',
-#         'SHEPPARD STATION': 'SHEPPARD-YONGE STATION',
-#         'YONGE SHEP STATION': 'SHEPPARD-YONGE STATION',
-#         'YONGE SHP STATION': 'SHEPPARD-YONGE STATION',
-#         'SHEPPARD YONGE STATION': 'SHEPPARD-YONGE STATION'}
-#
-#     key = name.strip().upper()
-#     if key in station_map:
-#         name = station_map[key]
-#
-#     # clean up extra whitespace left behind
-#     name = re.sub(r'\s+', ' ', name)
-#     # Fix spelling error for Station
-#
-#     return name
+def clean_station_name(name:str) -> str:
+    """
+    clean and standardize the TTC station name, e.g UNION STATION TOWARD K, becomes UNION STATION
+    :param name: name of the TTC station
+    :return: clean name of the TTC station
+    """
+
+    name = str(name).strip().upper() # strips leading and trailing white spaces, makes everything upper case
+    name = re.sub(r'\s+', ' ', name) # replaces any spaces that are one or more tabs in the name to one
+
+    # Normalize 'St' to 'St.'
+    name = re.sub(r'\bST\b(?=\s)', 'ST.', name)
+
+    # Remove embedded line codes (YUS, BD, L1, L2, etc.) from anywhere in the name
+    name = re.sub(r'\b(YU|YUS|BD|BDL|BDN|BD-S|L1|L2|LINE\s?\d+)\b', '', name)
+
+    # clean up extra whitespace left behind
+    name = re.sub(r'\s+', ' ', name)
+
+
+    # Fix endings like "STATIO", "STA", etc.
+    name = name.strip() # remove white spaces in the beginning and the end
+    if name.endswith(" STATIO") or name.endswith(" STA"):
+        name = re.sub(r'( STATIO| STA)$', ' STATION', name)
+
+
+    legit_station_endname_keywords = ['STATION', 'YARD', 'HOSTLER', 'WYE', 'POCKET', 'TAIL', 'TRACK']
+    if name.split(' ')[-1] not in legit_station_endname_keywords:
+        name += ' STATION'
+
+
+    # Fixes abbreviations and Dual Named Interchange Stations
+    station_map = {
+        'VMC STATION': 'VAUGHAN METROPOLITAN CENTRE STATION',
+        'VAUGHAN MC STATION': 'VAUGHAN METROPOLITAN CENTRE STATION',
+        'NORTH YORK CTR STATION': 'NORTH YORK CENTRE STATION',
+        'BLOOR STATION': 'BLOOR-YONGE STATION',
+        'BLOOR/YONGE STATION': 'BLOOR-YONGE STATION',
+        'YONGE STATION': 'BLOOR-YONGE STATION',
+        'YONGE-UNIVERSITY AND B': 'BLOOR-YONGE STATION',
+        'SHEPPARDYONGE STATION': 'SHEPPARD-YONGE STATION',
+        'SHEPPARD STATION': 'SHEPPARD-YONGE STATION',
+        'YONGE SHEP STATION': 'SHEPPARD-YONGE STATION',
+        'YONGE SHP STATION': 'SHEPPARD-YONGE STATION',
+        'SHEPPARD YONGE STATION': 'SHEPPARD-YONGE STATION'}
+
+    key = name.strip().upper()
+    if key in station_map:
+        name = station_map[key]
+
+    # clean up extra whitespace left behind
+    name = re.sub(r'\s+', ' ', name)
+    # Fix spelling error for Station
+
+    return name
 #
 #
 #     # to do: clean to, clean Yard(this is ligit, keep yard as non-station, what is WYE, check any name not
 #     # ending with station
 #     # remove stations that are McCowan or Lawrence East
 #
-# def categorzie_station(name:str) -> str:
-#     """
-#     This function checks if a station is a passenger station, non-passenger (e.g YARD, WYE etc),
-#     or unknown (e.g approaching Rosedale, spelling error)
-#     :param name: cleaned str of the station name
-#     :return: str indicating passenger, non-passenger or unknown
-#     """
-#     # load the valid stations list
-#     with open(VALID_STATIONS_LIST) as f:
-#         valid_stations = {line.strip().upper() for line in f if line.strip()}
-#     name = name.strip().upper()
-#
-#     non_passenger_endname_keywords = ['YARD', 'HOSTLER', 'WYE', 'POCKET', 'TAIL', 'TRACK']
-#     if name in valid_stations:
-#         category = "passenger station"
-#     elif name.split(' ')[-1] in non_passenger_endname_keywords:
-#         category = "non-passenger station"
-#     else:
-#         category = "unknown" #e.g approaching Rosedale
-#     return category
-#
-#
-# def valid_station_linecode_dict() -> dict:
-#     valid_station_linecode = {}
-#     with open(VALID_STATIONS_WITH_LINECODES) as f:
-#         for line in f:
-#             if line.strip(): # non-empty
-#                 name, linecode = line.upper().split("STATION")
-#                 valid_station_linecode[name + "STATION"] = ast.literal_eval(linecode.strip())
-#     return valid_station_linecode
+def categorzie_station(name:str) -> str:
+    """
+    This function checks if a station is a passenger station, non-passenger (e.g YARD, WYE etc),
+    or unknown (e.g approaching Rosedale, spelling error)
+    :param name: cleaned str of the station name
+    :return: str indicating passenger, non-passenger or unknown
+    """
+    # load the valid stations list
+    # with open(VALID_STATIONS_LIST) as f:
+    #     valid_stations = {line.strip().upper() for line in f if line.strip()}
+    # name = name.strip().upper()
+
+    valid_station_linecode = valid_station_linecode_dict()
+
+    non_passenger_endname_keywords = ['YARD', 'HOSTLER', 'WYE', 'POCKET', 'TAIL', 'TRACK']
+    if name in valid_station_linecode.keys():
+        category = "passenger"
+    elif name.split(' ')[-1] in non_passenger_endname_keywords:
+        category = "non-passenger"
+    else:
+        category = "unknown" #e.g approaching Rosedale
+    return category
+
+
+def valid_station_linecode_dict() -> dict:
+    valid_station_linecode = {}
+    with open(VALID_STATIONS_WITH_LINECODES) as f:
+        for line in f:
+            if line.strip(): # non-empty
+                name, linecode = line.upper().split("STATION")
+                valid_station_linecode[name + "STATION"] = ast.literal_eval(linecode.strip())
+    return valid_station_linecode
 #
 # def clean_linecode(df):
 #     """
