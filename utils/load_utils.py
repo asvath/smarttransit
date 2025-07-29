@@ -2,10 +2,10 @@ import glob
 import os
 from datetime import datetime
 import pandas as pd
-from config import RAW_DATA_DIR, LOG_DIR
+from config import DELAY_DATA_DIR , LOG_DIR
 
 
-def load_raw_data_files(raw_data_dir=RAW_DATA_DIR, log_dir=LOG_DIR, verbose=True):
+def load_raw_data_files(delay_data_dir=DELAY_DATA_DIR , log_dir=LOG_DIR, verbose=True):
     """
     Loads all supported raw data files (CSV, Excel) into a list of DataFrames.
 
@@ -13,6 +13,7 @@ def load_raw_data_files(raw_data_dir=RAW_DATA_DIR, log_dir=LOG_DIR, verbose=True
     :param verbose: Whether to print status messages.
     :return: List of loaded DataFrames
     """
+
     dfs = []
     files_loaded = []
     log_lines = []
@@ -20,7 +21,8 @@ def load_raw_data_files(raw_data_dir=RAW_DATA_DIR, log_dir=LOG_DIR, verbose=True
     file_patterns = ["*.csv", "*.xlsx"]
     all_files = []
     for pattern in file_patterns:
-        all_files.extend(glob.glob(os.path.join(raw_data_dir, pattern)))
+        all_files.extend(glob.glob(os.path.join(delay_data_dir, pattern)))
+    print(all_files)
 
     timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
     log_filename = f'delay_load_log_{timestamp}.txt'
@@ -56,4 +58,4 @@ def load_raw_data_files(raw_data_dir=RAW_DATA_DIR, log_dir=LOG_DIR, verbose=True
         for line in log_lines:
             f.write(line + "\n")
 
-    return dfs
+    return dfs, files_loaded
