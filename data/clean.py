@@ -1,6 +1,7 @@
 import ast
 import re
 from datetime import datetime
+from typing import Optional
 
 import numpy as np
 import pandas as pd
@@ -11,6 +12,7 @@ from config import (DELAY_DATA, VALID_STATIONS_LIST, VALID_STATIONS_WITH_LINECOD
 BASE_DIR = r'C:\Users\ashaa\OneDrive\Desktop\SmartTransit'
 RAW_DATA_DIR = os.path.join(BASE_DIR, 'data', 'raw', 'delays')
 
+log_path = os.path.join(LOG_DIR, f'')
 years = range(2018, 2025)
 
 # list of excel file data from 2018-2024
@@ -35,19 +37,20 @@ for i, df in enumerate(dfs):
     print(f"File {i} columns: {list(df.columns)}")
 print(len(dfs))
 
+timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+log_filename = f'delay_merge_log_{timestamp}.txt'
 
-
-def clean_merge_delay_data(dfs, reference_cols_ordered = REFERENCE_COLS_ORDERED, log_path = None, verbose = True):
+def clean_merge_delay_data(dfs: list[pd.DataFrame], log_filename: str,
+                           reference_cols_ordered: list[str]= REFERENCE_COLS_ORDERED, verbose: bool = True):
     """
     Validates and merges delay dataframes.
-    :param dfs: (list of pd.DataFrame): List of raw dataframes to merge.
-    :param reference_cols_ordered: (list of str): Expected column names in desired order.
+    :param dfs: List of raw pandas DataFrames to merge.
+    :param reference_cols_ordered: Expected column names in the desired order.
     :param log_path: Path to a log file. If None, logs are not saved.
+    :param verbose: Whether to print status messages during processing.
     :return: pd.DataFrame: A single cleaned, merged dataframe.
     """
     reference_cols_set = set(reference_cols_ordered)
-    timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-    log_filename = f'delay_merge_log_{timestamp}.txt'
     log_path = os.path.join(LOG_DIR, log_filename)
 
     log_lines = []
@@ -63,6 +66,10 @@ def clean_merge_delay_data(dfs, reference_cols_ordered = REFERENCE_COLS_ORDERED,
             if extra:
                 log_lines.append(f"   Extra columns:   {extra}")
 
+        else:
+            # If no issues, reindex to match the reference column order
+            dfs[i] = dfs[i].reindex(columns=reference_cols_ordered)
+
     if log_lines:
         if verbose:
             print("\nInconsistent column sets found:")
@@ -74,14 +81,12 @@ def clean_merge_delay_data(dfs, reference_cols_ordered = REFERENCE_COLS_ORDERED,
             print("\n" + message)
         log_lines.append(message)
 
-    if log_path:
-        with open(log_path, 'w', encoding='utf-8') as f:
-            for line in log_lines:
-                f.write(line + '\n')
+
+    with open(log_path, 'w', encoding='utf-8') as f:
+        for line in log_lines:
+            f.write(line + '\n')
 
 
-    for i in range(len(dfs)):
-        dfs[i] = dfs[i].reindex(columns=reference_cols_ordered)
 
     combined_df = pd.concat(dfs, ignore_index=True)
 
