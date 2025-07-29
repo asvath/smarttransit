@@ -7,18 +7,8 @@ import numpy as np
 import pandas as pd
 import os
 
-from config import (DELAY_DATA, VALID_STATIONS_LIST, VALID_STATIONS_WITH_LINECODES, CODE_DESCRIPTIONS, LOG_DIR,
+from config import (RAW_DATA_DIR, DELAY_DATA, VALID_STATIONS_LIST, VALID_STATIONS_WITH_LINECODES, CODE_DESCRIPTIONS, LOG_DIR,
                     REFERENCE_COLS_ORDERED)
-BASE_DIR = r'C:\Users\ashaa\OneDrive\Desktop\SmartTransit'
-RAW_DATA_DIR = os.path.join(BASE_DIR, 'data', 'raw', 'delays')
-
-log_path = os.path.join(LOG_DIR, f'')
-years = range(2018, 2025)
-
-
-
-timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-log_filename = f'delay_merge_log_{timestamp}.txt'
 
 def clean_merge_delay_data(dfs: list[pd.DataFrame], log_filename: str,
                            reference_cols_ordered: list[str]= REFERENCE_COLS_ORDERED, verbose: bool = True):
