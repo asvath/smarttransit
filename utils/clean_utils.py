@@ -10,7 +10,7 @@ import os
 from config import (RAW_DATA_DIR, DELAY_DATA, VALID_STATIONS_LIST, VALID_STATIONS_WITH_LINECODES, CODE_DESCRIPTIONS, LOG_DIR,
                     REFERENCE_COLS_ORDERED)
 
-def clean_merge_delay_data(dfs: list[pd.DataFrame], log_filename: str,
+def merge_delay_data(dfs: list[pd.DataFrame], files_loaded, log_dir=LOG_DIR,
                            reference_cols_ordered: list[str]= REFERENCE_COLS_ORDERED, verbose: bool = True):
     """
     Validates and merges delay dataframes.
@@ -20,50 +20,60 @@ def clean_merge_delay_data(dfs: list[pd.DataFrame], log_filename: str,
     :param verbose: Whether to print status messages during processing.
     :return: pd.DataFrame: A single cleaned, merged dataframe.
     """
-    reference_cols_set = set(reference_cols_ordered)
-    log_path = os.path.join(LOG_DIR, log_filename)
 
+    timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+    log_filename = f'delay_merge_log_{timestamp}.txt'
+    log_path = os.path.join(log_dir, log_filename)
+
+    reference_cols_set = set(reference_cols_ordered)
     log_lines = []
+    valid_dfs = [] # store df that have no missing or extra columns (apart from ID) and are good to merge
+    valid_filenames = []  # filename of the valid dfs
 
     for i, df in enumerate(dfs):
         current_cols = set(df.columns)
-        if current_cols != reference_cols_set:
-            missing = reference_cols_set - current_cols
-            extra = current_cols - reference_cols_set
-            log_lines.append(f"File {i} has issues:")
+        missing = reference_cols_set - current_cols
+        extra = current_cols - reference_cols_set
+        if missing or (extra and extra != {'_id'}):
+            log_lines.append(f"File {files_loaded[i]} has issues:")
             if missing:
-                log_lines.append(f"   Missing columns: {missing}")
-            if extra:
-                log_lines.append(f"   Extra columns:   {extra}")
+                log_lines.append(f"   Missing columns: {sorted(missing)}")
+                log_lines.append("   -> Skipping due to missing columns.\n")
+            elif extra:
+                log_lines.append(f"   Extra columns: {sorted(extra)}")
+                log_lines.append("   -> Skipping due to unknown extra columns.\n")
+            continue
 
-        else:
-            # If no issues, reindex to match the reference column order
-            dfs[i] = dfs[i].reindex(columns=reference_cols_ordered)
+        if '_id' in extra:
+            log_lines.append(f"File {files_loaded[i]} has '_id' column.")
+            log_lines.append("   -> Dropping '_id' column.")
+            df = df.drop(columns=['_id'])
 
-    if log_lines:
+        # All good, or cleaned — reindex and add to valid list
+        df = df.reindex(columns=reference_cols_ordered)
+        valid_dfs.append(df)
+        valid_filenames.append(files_loaded[i])
+
+    if valid_dfs:
+        combined_df = pd.concat(valid_dfs, ignore_index=True)
+
         if verbose:
-            print("\nInconsistent column sets found:")
-            for line in log_lines:
-                print(line)
+            print("Merged DataFrame shape:", combined_df.shape)
+            print("Preview:")
+            print(combined_df.head())
+
+        log_lines.append(f"Merged {len(valid_dfs)} out of {len(dfs)} files.")
+        log_lines.append("Files merged:")
+        for filename in valid_filenames:
+            log_lines.append(f" - {filename}")
+
     else:
-        message = "All files contain the correct columns (regardless of order)."
-        if verbose:
-            print("\n" + message)
-        log_lines.append(message)
-
+        combined_df = pd.DataFrame()
+        log_lines.append("No valid files were merged.")
 
     with open(log_path, 'w', encoding='utf-8') as f:
         for line in log_lines:
             f.write(line + '\n')
-
-
-
-    combined_df = pd.concat(dfs, ignore_index=True)
-
-    if verbose:
-        print("Merged DataFrame shape:", combined_df.shape)
-        print("Preview:")
-        print(combined_df.head())
 
     return combined_df
 
