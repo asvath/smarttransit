@@ -2,10 +2,14 @@ import os
 
 # Base directory
 BASE_DIR = r'C:\Users\ashaa\OneDrive\Desktop\SmartTransit'
+DATA_DIR = os.path.join(BASE_DIR, 'data')
 RAW_DATA_DIR = os.path.join(BASE_DIR, 'data', 'raw')
 DOCS_DIR = os.path.join(RAW_DATA_DIR, 'docs')
 CODE_DESC_DIR = os.path.join(RAW_DATA_DIR, 'code_descriptions')
 LOG_DIR = os.path.join(BASE_DIR, 'logs')
+
+# Data Directory
+DELAY_DATA_DIR = os.path.join(RAW_DATA_DIR, 'delays')
 
 # File paths
 DELAY_DATA = os.path.join(RAW_DATA_DIR, 'delays', 'TTC Subway Delay Data since 2025.csv')
@@ -18,3 +22,6 @@ REFERENCE_COLS_ORDERED = [
     'Date', 'Time', 'Day', 'Station', 'Code',
     'Min Delay', 'Min Gap', 'Bound', 'Line', 'Vehicle'
 ]
+
+# Valid bound names:
+VALID_BOUND_NAMES = ['N', 'S', 'E', 'W']
