@@ -1,22 +1,23 @@
 import ast
+import os
 import re
 from datetime import datetime
-from typing import Optional
 
 import numpy as np
 import pandas as pd
-import os
 
-from config import (RAW_DATA_DIR, DELAY_DATA, VALID_STATIONS_LIST, CODE_DESC_DIR, VALID_STATIONS_WITH_LINECODES, CODE_DESCRIPTIONS, LOG_DIR,
-                    REFERENCE_COLS_ORDERED)
+from config import (CODE_DESC_DIR, VALID_STATIONS_WITH_LINECODES, CODE_DESCRIPTIONS, LOG_DIR,
+                    REFERENCE_COLS_ORDERED, VALID_BOUND_NAMES)
 
-def merge_delay_data(dfs: list[pd.DataFrame], files_loaded, log_dir=LOG_DIR,
+
+def merge_delay_data(dfs: list[pd.DataFrame],files_loaded: list, log_dir=LOG_DIR,
                            reference_cols_ordered: list[str]= REFERENCE_COLS_ORDERED, verbose: bool = True):
     """
     Validates and merges delay dataframes.
+    :param files_loaded: list of the name of the dataframe files
     :param dfs: List of raw pandas DataFrames to merge.
     :param reference_cols_ordered: Expected column names in the desired order.
-    :param log_path: Path to a log file. If None, logs are not saved.
+    :param log_dir: Path to a log directory.
     :param verbose: Whether to print status messages during processing.
     :return: pd.DataFrame: A single cleaned, merged dataframe.
     """
@@ -77,39 +78,6 @@ def merge_delay_data(dfs: list[pd.DataFrame], files_loaded, log_dir=LOG_DIR,
 
     return combined_df
 
-# df = pd.read_csv(DELAY_DATA)
-# # print(len(df))
-# # print(df[df['Station'].str.contains("bloor", case=False, na=False)]['Station'].unique())
-# # print(df[df['Station'].str.contains("yonge", case=False, na=False)]['Station'].unique())
-# df = df[df['Min Delay'] != 0]
-# df = df.dropna()
-# # drop data that doesn't have a clear line
-# valid_line_codes = {
-#   'YU': 'Line 1',
-#   'BD': 'Line 2',
-#   'SHP': 'Line 4',
-# }
-# df = df[df['Line'].str.upper().isin(valid_line_codes)]
-#
-# # reset index
-# df.reset_index(drop=True, inplace=True)
-#
-#
-#
-# # print(df.columns)
-# # print(df['Bound'].unique()) # need to do this check when all of the dfs are combined later, make sure the bound is consistent
-# # print(df['Line'].unique())
-# # print(df['Station'].unique())
-# # print(df[df['Station'].str.contains("union", case=False, na=False)]['Station'].unique())
-# # df['Station'] = df['Station'].str.replace(r'union.*', 'UNION STATION', flags=re.IGNORECASE, regex=True)
-# # print(df[df['Station'].str.contains("union", case=False, na=False)]['Station'].unique())
-# # print(df[df['Station'].str.contains("kennedy", case=False, na=False)]['Station'].unique())
-# # # check bound names
-#
-# df['last_word'] = df['Station'].astype(str).str.strip().str.split().str[-1]
-#
-# print(df['last_word'].value_counts())
-#
 def clean_station_name(name:str) -> str:
     """
     clean and standardize the TTC station name, e.g UNION STATION TOWARD K, becomes UNION STATION
@@ -202,9 +170,8 @@ def valid_station_linecode_dict() -> dict:
 def clean_linecode(df):
     """
     This function will fix incorrect linecodes using the valid_station_linecode_dict.
-    :param name: standized clean station name
-    :param linecode: the line data for that station
-    :return: name and correct linecode
+    :param df: pd.Dataframe
+    :return: pd.Dataframe
     """
     valid_station_linecode = valid_station_linecode_dict()
 
@@ -230,29 +197,28 @@ def clean_linecode(df):
 
     return df
 
-def add_datetime(df):
+def clean_and_add_datetime(df):
     """
-    Converts 'Date' and 'Time' columns into proper date and time objects,
-    then combines them into a single 'DateTime' column.
+    Cleans and standardizes the 'Date' and 'Time' columns as pandas datetime objects,
+    and creates a combined 'DateTime' column for full timestamp analysis.
+    This prepares the data for time-based operations such as extracting hour, weekday, or performing time filtering.
 
-    This enables easier extraction of time-based features such as hour, day of week, etc.
     :param df: pandas DataFrame with 'Date' and 'Time' columns as strings
     :return: pandas DataFrame with added 'DateTime' column
     """
-    df['Time'] = pd.to_datetime(df['Time'], format='%H:%M').dt.time
-    df['Date'] = pd.to_datetime(df['Date']).dt.date
-    df['DateTime'] = df.apply(lambda row: datetime.combine(row['Date'], row['Time']), axis=1)
+
+    df['DateTime'] = pd.to_datetime(df['Date'] + ' ' + df['Time'], errors='coerce')
+    df['Time'] = pd.to_datetime(df['Time'], format='%H:%M', errors='coerce')
+    df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
 
     return df
-
-
 
 def clean_day(df):
     """
      Extracts the day of the week from the 'Date' column and stores it in a 'Day' column. This will fix any errors
      in the 'Day' column.
 
-    :param df: pandas DataFrame with a 'Date' column (datetime64[ns])
+    :param df: pandas DataFrame with a 'Date' column as datetime.date
     :return: pandas DataFrame with added or updated 'Day' column
     """
     df['Day'] = df['Date'].dt.day_name()
@@ -265,6 +231,12 @@ def add_IsWeekday(df):
     :return:
     """
     df['IsWeekday'] = df['Date'].dt.weekday < 5  # True for weekdays, False for weekends
+    return df
+
+def clean_bound(df):
+
+    df.loc[~df['Bound'].isin(VALID_BOUND_NAMES), 'Bound'] = np.nan
+
     return df
 
 def clean_delay_code_descriptions():
@@ -287,68 +259,3 @@ def clean_delay_code_descriptions():
     codes_cleaned = codes.applymap(remove_non_ascii)
     filepath = os.path.join(CODE_DESC_DIR,"Clean Code Descriptions.csv")
     codes_cleaned.to_csv (filepath,index=False, encoding='utf-8-sig')
-
-
-
-
-#
-#
-# # df = pd.read_excel(code_descriptions_list, header=None)
-#
-#
-# # View the first few rows
-#
-#
-# # df = add_datetime(df)
-# # df['Day'] = df.apply(lambda row: row['Date'].strftime('%A'), axis=1)
-# # # names in df['Station']:
-# # # cleaned_name = clean_station_name(names)
-# # # station_names.append(cleaned_name)
-# # station_names = []
-# # for names in df['Station']:
-# #     cleaned_name = clean_station_name(names)
-# #     station_names.append(cleaned_name)
-# #
-# # # print(set(station_names))
-# # name_cat ={}
-# # for name in station_names:
-# #     if name not in name_cat:
-# #         name_cat[name] = categorzie_station(name)
-# #
-# # error_in_linecode = {}
-# # df['Station'] = df['Station'].apply(clean_station_name)
-# #
-# #
-# #
-# # valid_station_linecode = valid_station_linecode_dict()
-# #
-# # for index, row in df.iterrows():
-# #     if row["Station"] in valid_station_linecode:
-# #         if row['Line'] in valid_station_linecode[row["Station"]]:
-# #             pass
-# #         else:
-# #             error_in_linecode[row['Station']] = (row['Line'], valid_station_linecode[row["Station"]])
-# #
-# #
-# # print(error_in_linecode)
-# #
-# # error_in_linecode = {}
-# # df_clean = clean_linecode(df)
-# # for index, row in df_clean.iterrows():
-# #     if row["Station"] in valid_station_linecode:
-# #         if row['Line'] in valid_station_linecode[row["Station"]]:
-# #             pass
-# #         else:
-# #             error_in_linecode[row['Station']] = (row['Line'], valid_station_linecode[row["Station"]])
-# #
-# #
-# # print(error_in_linecode)
-# # #to do, clean up the line codes, for Kennedy special case, SRT, ignore, we will be deleting later
-# # # fix time date
-# # # merge all the csv, make sure they have the same columns
-# #
-# # print(df['Time'].head())
-# # print(df['Date'].head())
-# # print(df['DateTime'].head())
-#
-# print(df['Bound'].unique())
