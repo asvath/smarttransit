@@ -20,10 +20,10 @@ file_name = os.path.join(interim_dir, "merged_unfiltered.csv")
 # load merged unfiltered data
 df = pd.read_csv(file_name)
 
-# drop nan data and data with no delay
+# drop nan data and data with no delay or no vehicle number
 df = df.dropna()
 df = df[df['Min Delay'] != 0]
-
+df = df[df['Vehicle'] != 0]
 
 # standardize station names
 df['Station'] = df['Station'].apply(clean_utils.clean_station_name)
@@ -57,7 +57,10 @@ print(df['Station Category'].value_counts())
 df = clean_utils.clean_linecode(df)
 
 # add datetime column
-df = clean_utils.add_datetime(df)
+df = clean_utils.clean_and_add_datetime(df)
+
+# Remove any rows where Date, Time, or DateTime have missing values after parsing
+df = df.dropna()
 
 # clean day
 
@@ -66,11 +69,11 @@ df = clean_utils.clean_day(df)
 # add IsWeekday column
 df = clean_utils.add_IsWeekday(df)
 
-# print(df.head())
-# df = df.dropna()
-#
-# print(df['Bound'].unique())
-# print(df['Vehicle'].value_counts())
-# print(df[df['Vehicle'] == 6181]['Code'].value_counts())
-#
-# print(df[df['Vehicle'] == 5796]['Code'].value_counts())
+# Clean bound
+df = clean_utils.clean_bound(df)
+
+df = df.dropna()
+
+print(df['Vehicle'].value_counts())
+print(df['Code'].value_counts())
+
