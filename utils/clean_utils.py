@@ -78,6 +78,20 @@ def merge_delay_data(dfs: list[pd.DataFrame],files_loaded: list, log_dir=LOG_DIR
 
     return combined_df
 
+def drop_invalid_rows(df):
+    """
+    Drops rows with missing values, no recorded delay, or missing vehicle numbers.
+
+    This ensures only meaningful delay events are kept for analysis.
+
+    :param df: pandas DataFrame with 'Min Delay' and 'Vehicle' columns
+    :return: Cleaned pandas DataFrame
+    """
+    df = df.dropna()
+    df = df[df['Min Delay'] != 0]
+    df = df[df['Vehicle'] != 0]
+    return df
+
 def clean_station_name(name:str) -> str:
     """
     clean and standardize the TTC station name, e.g UNION STATION TOWARD K, becomes UNION STATION
@@ -134,6 +148,13 @@ def clean_station_name(name:str) -> str:
 
     return name
 
+def clean_station_column(df):
+    """
+    Applies `clean_station_name` function to the 'Station' column in the DataFrame.
+    """
+    df['Station'] = df['Station'].apply(clean_station_name)
+    return df
+
 def categorzie_station(name:str) -> str:
     """
     This function checks if a station is a valid passenger station, non-passenger (e.g YARD, WYE etc),
@@ -152,6 +173,10 @@ def categorzie_station(name:str) -> str:
     else:
         category = "unknown" #e.g approaching Rosedale
     return category
+
+def add_station_category(df):
+    df['Station Category'] = df['Station'].apply(categorzie_station)
+    return df
 
 
 def valid_station_linecode_dict() -> dict:
