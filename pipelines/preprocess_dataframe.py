@@ -44,17 +44,27 @@ def clean_dataframe():
     # standardize station names
     df = clean_utils.clean_station_column(df)
 
+
     # categorize stations into passenger, non-passenger and unknown
     df = clean_utils.add_station_category(df)
 
     # clean linecode
     df = clean_utils.clean_linecode(df)
 
+    # Clean bound
+    df = clean_utils.clean_bound(df)
+
+
     # add datetime column
     df = clean_utils.clean_and_add_datetime(df)
 
+
+    # Inspect a few failed rows if any:
+    df.loc[df['DateTime'].isna(), ['Date', 'Time']].head(5)
+
     # Remove any rows where Date, Time, or DateTime have missing values after parsing
     df = df.dropna()
+
 
     # clean day
     df = clean_utils.clean_day(df)
@@ -62,17 +72,15 @@ def clean_dataframe():
     # add IsWeekday column
     df = clean_utils.add_IsWeekday(df)
 
-    # Clean bound
-    df = clean_utils.clean_bound(df)
 
     # Remove any rows after cleaning data
     df = df.dropna()
 
     # Log unique stations by category
-    df = log_utils.log_unique_stations_by_category(df, LOG_DIR)
+    log_utils.log_unique_stations_by_category(df, LOG_DIR)
 
     # Log stations which directional names
-    df = log_utils.log_station_names_with_directionals(df, LOG_DIR)
+    log_utils.log_station_names_with_directionals(df, LOG_DIR)
 
     # Write out cleaned csv
     df.to_csv(clean_file_name, index=False)
@@ -80,5 +88,5 @@ def clean_dataframe():
     print(f"Cleaned and saved dataframe {clean_file_name}")
 
 
-if __name__=="__main()__":
+if __name__=="__main__":
     clean_dataframe()
