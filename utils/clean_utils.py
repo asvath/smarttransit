@@ -303,7 +303,7 @@ def clean_day(df):
     :param df: pandas DataFrame with a 'Date' column as datetime.date
     :return: pandas DataFrame with added or updated 'Day' column
     """
-    df['Day'] = df['Date'].dt.day_name()
+    df['Day'] = df['DateTime'].dt.day_name()
     return df
 
 def add_IsWeekday(df):
@@ -312,7 +312,7 @@ def add_IsWeekday(df):
     :param df:
     :return:
     """
-    df['IsWeekday'] = df['Date'].dt.weekday < 5  # True for weekdays, False for weekends
+    df['IsWeekday'] = df['DateTime'].dt.weekday < 5  # True for weekdays, False for weekends
     return df
 
 def clean_bound(df):
