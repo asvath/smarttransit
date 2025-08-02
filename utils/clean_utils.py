@@ -14,13 +14,21 @@ from config import (CODE_DESC_DIR, VALID_STATIONS_WITH_LINECODES, CODE_DESCRIPTI
 def merge_delay_data(dfs: list[pd.DataFrame],files_loaded: list, log_dir=LOG_DIR,
                            reference_cols_ordered: list[str]= REFERENCE_COLS_ORDERED, verbose: bool = True):
     """
-    Validates and merges delay dataframes.
-    :param files_loaded: list of the name of the dataframe files
-    :param dfs: List of raw pandas DataFrames to merge.
-    :param reference_cols_ordered: Expected column names in the desired order.
-    :param log_dir: Path to a log directory.
-    :param verbose: Whether to print status messages during processing.
-    :return: pd.DataFrame: A single cleaned, merged dataframe.
+    Standardizes and merges multiple raw delay DataFrames into a single DataFrame.
+
+    This function:
+    - Logs missing or extra columns
+    - Skips DataFrames with missing columns or unexpected extra columns (excluding, '_id')
+    - Drops unnecessary  '_id' column if present.
+    - Reorders columns to match a reference schema.
+    - Merges valid DataFrames into one.
+
+    :param dfs: List of raw pandas DataFrames to be merged.
+    :param files_loaded: List of filenames corresponding to the DataFrames (used for logging).
+    :param reference_cols_ordered: List of expected column names in the desired order.
+    :param log_dir: Directory where logs should be saved.
+    :param verbose: Whether to print merging status and preview of the merged DataFrame.
+    :return: A single merged pandas DataFrame with standardized columns. Empty if no valid files were found.
     """
 
     timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
@@ -89,14 +97,20 @@ def drop_invalid_rows(df):
     """
     df = df.dropna()
     df = df[df['Min Delay'] != 0]
+    df = df[df['Min Gap'] != 0]
     df = df[df['Vehicle'] != 0]
     return df
 
 def clean_station_name(name:str) -> str:
     """
-    clean and standardize the TTC station name, e.g UNION STATION TOWARD K, becomes UNION STATION
-    :param name: name of the TTC station
-    :return: clean name of the TTC station
+    Clean and standardize a TTC station name by:
+    - Normalizing 'St' to 'St.' (e.g., 'St George' to 'St. George')
+    - Removing embedded line codes from the name (e.g., 'YUS', 'BD', 'L1', etc.)
+    - Correcting misspellings of 'Station'
+    - Adding 'Station' to names that do not end with a legitimate station-type keyword
+    - Standardizing abbreviations and dual-named interchange stations
+    :param name: Raw name of the TTC station
+    :return: Cleaned and standardized TTC station name
     """
 
     name = str(name).strip().upper() # strips leading and trailing white spaces, makes everything upper case
@@ -150,7 +164,9 @@ def clean_station_name(name:str) -> str:
 
 def clean_station_column(df):
     """
-    Applies `clean_station_name` function to the 'Station' column in the DataFrame.
+    Cleans station names in 'Station' columns by applying `clean_station_name` function
+    :param df: pd.Dataframe
+    :return pd.Dataframe with cleaned station names
     """
     df['Station'] = df['Station'].apply(clean_station_name)
     return df
@@ -174,7 +190,13 @@ def categorzie_station(name:str) -> str:
         category = "unknown" #e.g approaching Rosedale
     return category
 
-def add_station_category(df):
+def add_station_category(df) -> pd.DataFrame:
+    """
+    Adds a 'Station Category' column to the DataFrame, labeling each station as
+    'passenger', 'non-passenger', or 'unknown'.
+    :param df: pd.Dataframe
+    :return: pd.Dataframe with added 'Station Category' column
+    """
     df['Station Category'] = df['Station'].apply(categorzie_station)
     return df
 
@@ -192,11 +214,11 @@ def valid_station_linecode_dict() -> dict:
                 valid_station_linecode[name + "STATION"] = ast.literal_eval(linecode.strip())
     return valid_station_linecode
 
-def clean_linecode(df):
+def clean_linecode(df) -> pd.DataFrame:
     """
-    This function will fix incorrect linecodes using the valid_station_linecode_dict.
+    Fixes incorrect linecodes using the valid_station_linecode_dict.
     :param df: pd.Dataframe
-    :return: pd.Dataframe
+    :return: pd.Dataframe with clean linecode
     """
     valid_station_linecode = valid_station_linecode_dict()
 
@@ -207,6 +229,7 @@ def clean_linecode(df):
         if station not in valid_station_linecode: # a non-passenger station or unknown
             continue
 
+        # valid codes for the station
         valid_codes = valid_station_linecode[station]
 
         if line in valid_codes:
@@ -224,45 +247,49 @@ def clean_linecode(df):
 
 def clean_and_add_datetime(df):
     """
-    Cleans and standardizes the 'Date' and 'Time' columns as pandas datetime objects,
-    and creates a combined 'DateTime' column for full timestamp analysis.
+    Cleans and standardizes the 'Date' and 'Time' columns as strings,
+    and creates a combined 'DateTime' column  as pandas datetime objects for full timestamp analysis.
     This prepares the data for time-based operations such as extracting hour, weekday, or performing time filtering.
 
-    :param df: pandas DataFrame with 'Date' and 'Time' columns as strings
-    :return: pandas DataFrame with added 'DateTime' column
+    :param df: pd.DataFrame with 'Date' and 'Time' columns as standardized strings
+    :return: pd.DataFrame with added 'DateTime' column as standardized pandas datetime objects
     """
     df.columns = df.columns.str.strip()
     df = clean_date(df)
     df = clean_time(df)
 
-    # Make a single string like "2025-01-01 08:15"
-    base = df['Date'] + ' ' + df['Time']  # t is the cleaned Time string
+    # Combine date and time into one string (e.g., "2025-01-01 08:15:00")
+    base = df['Date'] + ' ' + df['Time']
 
+    # Create 'DateTime' column with YYYY-MM-DD HH:MM:SS format as a pandas datetime object
     df['DateTime'] = pd.to_datetime(base, format='%Y-%m-%d %H:%M:%S', errors='coerce')
 
     return df
 
 def clean_date(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Standardize the 'Date' column to pandas datetime64[ns] format.
-    This function handles different date formats such as DD/MM/YYYY, YYYY-MM-DD, and M/D/YYYY,
-    in the raw excel delay data. It parses and standardizes them into proper datetime objects
-    :param df: pd.DataFrame containing a 'Date' column as strings
-    :return: pd.DataFrame with 'Date' column converted to standardized datetime64[ns] format: internally YYYY-MM-DD)
-    """
+    Clean and standardize the 'Date' column in raw TTC Excel delay data.
 
+    - Reads 'Date' column as strings and parses various common formats such as DD/MM/YYYY,
+    YYYY-MM-DD, and M/D/YYYY.
+    - Converts all entries to a consistent string format: 'YYYY-MM-DD'.
+
+    :param df: pd.DataFrame containing a 'Date' column as strings
+    :return: pd.DataFrame with 'Date' column as standardized 'YYYY-MM-DD' strings
+    """
 
     # Date is already a string, normalize whitespace
     d = df['Date'].astype('string').str.strip()
 
-    # Parse Date (handles 30/3/2023 and 2025-01-01)
+    # Parse Dates
     # Try dayfirst=True first (for DD/MM/YYYY), then year first or month first
     d1 = pd.to_datetime(d, errors='coerce', dayfirst=True)
     d2 = pd.to_datetime(d, errors='coerce')  # standard inference (YYYY-MM-DD, M/D/YYYY)
     # if d1 is NaT then fill up with d2
     d_parsed = d1.fillna(d2)
 
-    df['Date'] = d_parsed.dt.strftime('%Y-%m-%d')  # string format
+    # Standardize to YYYY-MM-DD string format
+    df['Date'] = d_parsed.dt.strftime('%Y-%m-%d')
 
     return df
 
@@ -272,25 +299,25 @@ def clean_time(df):
 
     - Handles times in both HH:MM and HH:MM:SS formats.
     - Strips extra whitespace.
-    - Converts valid times to consistent 'H:M:S' string format (e.g., '8:15:00').
+    - Converts valid times to consistent 'H:M:S' string format (e.g.'8:15:00')
 
-    :param df: pandas DataFrame
-    :return: DataFrame with cleaned 'Time' column as string in H:M:S format
+    :param df: pd.DataFrame
+    :return: pd.DataFrame with cleaned 'Time' column as string in H:M:S format
     """
 
     # Time is already a string, normalize whitespace
     t = df['Time'].astype('string').str.strip()
 
+    # Parsing rows with HH:MM format
+    t_hm = pd.to_datetime(t, format='%H:%M', errors='coerce')
 
-    # Try parsing assuming HH:MM
-    dt_hm = pd.to_datetime(t, format='%H:%M', errors='coerce')
+    # Parsing rows with HH:MM:SS format
+    t_hms = pd.to_datetime(t, format='%H:%M:%S', errors='coerce')
 
-    # For rows with seconds, HH:MM:SS
-    dt_hms = pd.to_datetime(t, format='%H:%M:%S', errors='coerce')
+    # If t_hm is NaT then fill up with t_hms
+    parsed_time = t_hm.fillna(t_hms)
 
-    parsed_time = dt_hm.fillna(dt_hms)
-
-    # Use the successful parse: if dt_hm is NaT, take dt_hms for that row.
+    # Standardize time to HH:MM:SS string format
     df['Time'] = parsed_time.dt.strftime('%H:%M:%S')
 
     return df
@@ -301,22 +328,26 @@ def clean_day(df):
      in the 'Day' column.
 
     :param df: pandas DataFrame with a 'Date' column as datetime.date
-    :return: pandas DataFrame with added or updated 'Day' column
+    :return: pandas DataFrame with updated 'Day' column
     """
     df['Day'] = df['DateTime'].dt.day_name()
     return df
 
-def add_IsWeekday(df):
+def add_IsWeekday(df) -> pd.DataFrame:
     """
     Adds a new column 'IsWeekday' to indicate whether each date falls on a weekday.
-    :param df:
-    :return:
+    :param df: pd.Dataframe with Datetime column
+    :return: pd.Dataframe with added 'IsWeekday' column
     """
     df['IsWeekday'] = df['DateTime'].dt.weekday < 5  # True for weekdays, False for weekends
     return df
 
-def clean_bound(df):
-
+def clean_bound(df) -> pd.DataFrame:
+    """
+    Clean bound names, if bound names are not 'N, S, E, W', set to Nan.
+    :param df: pd.Dataframe
+    :return: pd.Dataframe with clean bound names
+    """
     df.loc[~df['Bound'].isin(VALID_BOUND_NAMES), 'Bound'] = np.nan
 
     return df
