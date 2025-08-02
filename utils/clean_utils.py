@@ -5,6 +5,7 @@ from datetime import datetime
 
 import numpy as np
 import pandas as pd
+from utils import log_utils
 
 from config import (CODE_DESC_DIR, VALID_STATIONS_WITH_LINECODES, CODE_DESCRIPTIONS, LOG_DIR,
                     REFERENCE_COLS_ORDERED, VALID_BOUND_NAMES)
@@ -23,8 +24,8 @@ def merge_delay_data(dfs: list[pd.DataFrame],files_loaded: list, log_dir=LOG_DIR
     """
 
     timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-    log_filename = f'delay_merge_log_{timestamp}.txt'
-    log_path = os.path.join(log_dir, log_filename)
+    log_filename_prefix = f'delay_merge_log_{timestamp}'
+
 
     reference_cols_set = set(reference_cols_ordered)
     log_lines = []
@@ -72,9 +73,8 @@ def merge_delay_data(dfs: list[pd.DataFrame],files_loaded: list, log_dir=LOG_DIR
         combined_df = pd.DataFrame()
         log_lines.append("No valid files were merged.")
 
-    with open(log_path, 'w', encoding='utf-8') as f:
-        for line in log_lines:
-            f.write(line + '\n')
+    log_utils.write_log(log_lines, log_filename_prefix, log_dir)
+
 
     return combined_df
 
@@ -231,10 +231,67 @@ def clean_and_add_datetime(df):
     :param df: pandas DataFrame with 'Date' and 'Time' columns as strings
     :return: pandas DataFrame with added 'DateTime' column
     """
+    df.columns = df.columns.str.strip()
+    df = clean_date(df)
+    df = clean_time(df)
 
-    df['DateTime'] = pd.to_datetime(df['Date'] + ' ' + df['Time'], errors='coerce')
-    df['Time'] = pd.to_datetime(df['Time'], format='%H:%M', errors='coerce')
-    df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
+    # Make a single string like "2025-01-01 08:15"
+    base = df['Date'] + ' ' + df['Time']  # t is the cleaned Time string
+
+    df['DateTime'] = pd.to_datetime(base, format='%Y-%m-%d %H:%M:%S', errors='coerce')
+
+    return df
+
+def clean_date(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Standardize the 'Date' column to pandas datetime64[ns] format.
+    This function handles different date formats such as DD/MM/YYYY, YYYY-MM-DD, and M/D/YYYY,
+    in the raw excel delay data. It parses and standardizes them into proper datetime objects
+    :param df: pd.DataFrame containing a 'Date' column as strings
+    :return: pd.DataFrame with 'Date' column converted to standardized datetime64[ns] format: internally YYYY-MM-DD)
+    """
+
+
+    # Date is already a string, normalize whitespace
+    d = df['Date'].astype('string').str.strip()
+
+    # Parse Date (handles 30/3/2023 and 2025-01-01)
+    # Try dayfirst=True first (for DD/MM/YYYY), then year first or month first
+    d1 = pd.to_datetime(d, errors='coerce', dayfirst=True)
+    d2 = pd.to_datetime(d, errors='coerce')  # standard inference (YYYY-MM-DD, M/D/YYYY)
+    # if d1 is NaT then fill up with d2
+    d_parsed = d1.fillna(d2)
+
+    df['Date'] = d_parsed.dt.strftime('%Y-%m-%d')  # string format
+
+    return df
+
+def clean_time(df):
+    """
+    Cleans and standardizes the 'Time' column in a DataFrame.
+
+    - Handles times in both HH:MM and HH:MM:SS formats.
+    - Strips extra whitespace.
+    - Converts valid times to consistent 'H:M:S' string format (e.g., '8:15:00').
+
+    :param df: pandas DataFrame
+    :return: DataFrame with cleaned 'Time' column as string in H:M:S format
+    """
+
+    # Time is already a string, normalize whitespace
+    t = df['Time'].astype('string').str.strip()
+
+
+    # Try parsing assuming HH:MM
+    dt_hm = pd.to_datetime(t, format='%H:%M', errors='coerce')
+
+    # For rows with seconds, HH:MM:SS
+    dt_hms = pd.to_datetime(t, format='%H:%M:%S', errors='coerce')
+
+    parsed_time = dt_hm.fillna(dt_hms)
+
+    # Use the successful parse: if dt_hm is NaT, take dt_hms for that row.
+    df['Time'] = parsed_time.dt.strftime('%H:%M:%S')
 
     return df
 
