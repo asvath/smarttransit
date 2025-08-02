@@ -33,11 +33,8 @@ def load_raw_data_files(delay_data_dir:str=DELAY_DATA_DIR , log_dir:str=LOG_DIR,
     for file_path in all_files:
         if os.path.exists(file_path):
             try:
-                if file_path.endswith(".xlsx"):
-                    df = pd.read_excel(file_path)
-                else: # csv files
-                    df = pd.read_csv(file_path)
 
+                df = pd.read_excel(file_path, dtype={'Date': 'string', 'Time': 'string'})
                 dfs.append(df)
                 files_loaded.append(file_path)
                 log_lines.append(f"Loaded {file_path} successfully")
