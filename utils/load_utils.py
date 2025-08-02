@@ -3,30 +3,31 @@ import os
 from datetime import datetime
 import pandas as pd
 from config import DELAY_DATA_DIR , LOG_DIR
+from utils import log_utils
 
 
-def load_raw_data_files(delay_data_dir=DELAY_DATA_DIR , log_dir=LOG_DIR, verbose=True):
+def load_raw_data_files(delay_data_dir:str=DELAY_DATA_DIR , log_dir:str=LOG_DIR, verbose=True) \
+        -> tuple[list[pd.DataFrame], list[str]]:
     """
-    Loads all supported raw data files (CSV, Excel) into a list of DataFrames.
+    Load all supported raw data files (Excel) from a directory.
 
-    :param RAW_DATA_DIR: Path to the directory containing raw data files.
-    :param verbose: Whether to print status messages.
-    :return: List of loaded DataFrames
+    :param delay_data_dir: Directory containing the raw data files.
+    :param log_dir: Directory where logs should be written.
+    :param verbose: If True, print status messages while loading.
+    :return: list of pd.Dataframes containing loaded DataFrames and list of corresponding filenames filename
     """
 
     dfs = []
     files_loaded = []
     log_lines = []
 
-    file_patterns = ["*.csv", "*.xlsx"]
+    file_patterns = ["*.xlsx"]
     all_files = []
     for pattern in file_patterns:
         all_files.extend(glob.glob(os.path.join(delay_data_dir, pattern)))
-    print(all_files)
 
     timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-    log_filename = f'delay_load_log_{timestamp}.txt'
-    log_path = os.path.join(log_dir, log_filename)
+    log_filename_prefix = f'delay_load_log_{timestamp}.txt'
 
 
     for file_path in all_files:
@@ -54,8 +55,7 @@ def load_raw_data_files(delay_data_dir=DELAY_DATA_DIR , log_dir=LOG_DIR, verbose
             if verbose:
                 print(summary)
 
-    with open(log_path, "w", encoding="utf-8") as f:
-        for line in log_lines:
-            f.write(line + "\n")
+    log_utils.write_log(log_lines, log_filename_prefix, log_dir)
+
 
     return dfs, files_loaded
