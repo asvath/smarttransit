@@ -5,10 +5,10 @@ from datetime import datetime
 
 import numpy as np
 import pandas as pd
-from utils import log_utils
+from utils import log_utils, file_utils
 
 from config import (CODE_DESC_DIR, VALID_STATIONS_WITH_LINECODES, CODE_DESCRIPTIONS, LOG_DIR,
-                    REFERENCE_COLS_ORDERED, VALID_BOUND_NAMES)
+                    REFERENCE_COLS_ORDERED, VALID_BOUND_NAMES, DROPPED_RAW_DATA_DIR)
 
 
 def merge_delay_data(dfs: list[pd.DataFrame],files_loaded: list, log_dir=LOG_DIR,
@@ -86,19 +86,43 @@ def merge_delay_data(dfs: list[pd.DataFrame],files_loaded: list, log_dir=LOG_DIR
 
     return combined_df
 
-def drop_invalid_rows(df):
+def drop_invalid_rows(df, dropped_raw_data_dir = DROPPED_RAW_DATA_DIR):
     """
-    Drops rows with missing values, no recorded delay, or missing vehicle numbers.
+    Drops rows with missing values, no recorded delay, no gaps, or missing vehicle numbers.
 
     This ensures only meaningful delay events are kept for analysis.
 
-    :param df: pandas DataFrame with 'Min Delay' and 'Vehicle' columns
-    :return: Cleaned pandas DataFrame
+    :param df: Raw pd.DataFrame
+    :param dropped_raw_data_dir: Directory to store dropped data
+    :return: pd.DataFrame with invalid rows removed
     """
+
+    drop_conditions = {
+        "missing_values": df[df.isnull().any(axis=1)],
+        "zero_min_delay": df[df['Min Delay'] == 0],
+        "zero_gap": df[df['Min Gap'] == 0],
+        "zero_vehicle_number": df[df['Vehicle'] == 0],
+    }
+
+    # Write out dropped data
+    for condition, dropped_df in drop_conditions.items():
+        if not dropped_df.empty:
+            file_utils.write_to_csv(df=dropped_df, prefix=condition, output_dir=dropped_raw_data_dir)
+
+
+    # Drop rows with missing values
     df = df.dropna()
+
+    # Drop rows where delay is zero
     df = df[df['Min Delay'] != 0]
+
+    # Drop rows where gap is zero
     df = df[df['Min Gap'] != 0]
+
+    # Drop rows where vehicle is zero
     df = df[df['Vehicle'] != 0]
+
+
     return df
 
 def clean_station_name(name:str) -> str:
