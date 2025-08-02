@@ -97,30 +97,29 @@ def drop_invalid_rows(df, dropped_raw_data_dir = DROPPED_RAW_DATA_DIR):
     :return: pd.DataFrame with invalid rows removed
     """
 
-    drop_conditions = {
-        "missing_values": df[df.isnull().any(axis=1)],
-        "zero_min_delay": df[df['Min Delay'] == 0],
-        "zero_gap": df[df['Min Gap'] == 0],
-        "zero_vehicle_number": df[df['Vehicle'] == 0],
-    }
+    drop_conditions = {}
+
+    # Drop rows with missing values
+    drop_conditions["missing_values"] = df[df.isnull().any(axis=1)]
+    df = df.dropna()
+
+    # Drop rows where delay is zero
+    drop_conditions["zero_min_delay"] = df[df['Min Delay'] == 0]
+    df = df[df['Min Delay'] != 0]
+
+    # Drop rows where gap is zero
+    drop_conditions["zero_gap"] = df[df['Min Gap'] == 0]
+    df = df[df['Min Gap'] != 0]
+
+    # Drop rows where vehicle is zero
+    drop_conditions["zero_vehicle_number"] = df[df['Vehicle'] == 0]
+    df = df[df['Vehicle'] != 0]
 
     # Write out dropped data
     for condition, dropped_df in drop_conditions.items():
         if not dropped_df.empty:
             file_utils.write_to_csv(df=dropped_df, prefix=condition, output_dir=dropped_raw_data_dir)
 
-
-    # Drop rows with missing values
-    df = df.dropna()
-
-    # Drop rows where delay is zero
-    df = df[df['Min Delay'] != 0]
-
-    # Drop rows where gap is zero
-    df = df[df['Min Gap'] != 0]
-
-    # Drop rows where vehicle is zero
-    df = df[df['Vehicle'] != 0]
 
 
     return df
