@@ -8,7 +8,7 @@ import pandas as pd
 from utils import log_utils, file_utils
 
 from config import (CODE_DESC_DIR, VALID_STATIONS_WITH_LINECODES, CODE_DESCRIPTIONS, LOG_DIR,
-                    REFERENCE_COLS_ORDERED, VALID_BOUND_NAMES, DROPPED_RAW_DATA_DIR)
+                    REFERENCE_COLS_ORDERED, VALID_BOUND_NAMES, DROPPED_RAW_DATA_DIR, WEEKDAY_RUSH_HOUR)
 
 
 def merge_delay_data(dfs: list[pd.DataFrame],files_loaded: list, log_dir=LOG_DIR,
@@ -86,7 +86,7 @@ def merge_delay_data(dfs: list[pd.DataFrame],files_loaded: list, log_dir=LOG_DIR
 
     return combined_df
 
-def drop_invalid_rows(df, dropped_raw_data_dir = DROPPED_RAW_DATA_DIR):
+def drop_invalid_rows(df: pd.DataFrame, dropped_raw_data_dir: str = DROPPED_RAW_DATA_DIR):
     """
     Drops rows with missing values, no recorded delay, no gaps, or missing vehicle numbers.
 
@@ -111,6 +111,10 @@ def drop_invalid_rows(df, dropped_raw_data_dir = DROPPED_RAW_DATA_DIR):
     drop_conditions["zero_gap"] = df[df['Min Gap'] == 0]
     df = df[df['Min Gap'] != 0]
 
+    # Drop rows where delay is < than gap:
+    drop_conditions["delay_less_than_gap"] = df[df['Min Delay'] >= df['Min Gap']]
+    df = df[df['Min Delay'] < df['Min Gap']]
+
     # Drop rows where vehicle is zero
     drop_conditions["zero_vehicle_number"] = df[df['Vehicle'] == 0]
     df = df[df['Vehicle'] != 0]
@@ -119,8 +123,6 @@ def drop_invalid_rows(df, dropped_raw_data_dir = DROPPED_RAW_DATA_DIR):
     for condition, dropped_df in drop_conditions.items():
         if not dropped_df.empty:
             file_utils.write_to_csv(df=dropped_df, prefix=condition, output_dir=dropped_raw_data_dir)
-
-
 
     return df
 
@@ -185,7 +187,7 @@ def clean_station_name(name:str) -> str:
 
     return name
 
-def clean_station_column(df):
+def clean_station_column(df: pd.DataFrame) -> pd.DataFrame:
     """
     Cleans station names in 'Station' columns by applying `clean_station_name` function
     :param df: pd.Dataframe
@@ -213,7 +215,7 @@ def categorzie_station(name:str) -> str:
         category = "unknown" #e.g approaching Rosedale
     return category
 
-def add_station_category(df) -> pd.DataFrame:
+def add_station_category(df: pd.DataFrame) -> pd.DataFrame:
     """
     Adds a 'Station Category' column to the DataFrame, labeling each station as
     'passenger', 'non-passenger', or 'unknown'.
@@ -237,7 +239,7 @@ def valid_station_linecode_dict() -> dict:
                 valid_station_linecode[name + "STATION"] = ast.literal_eval(linecode.strip())
     return valid_station_linecode
 
-def clean_linecode(df) -> pd.DataFrame:
+def clean_linecode(df: pd.DataFrame) -> pd.DataFrame:
     """
     Fixes incorrect linecodes using the valid_station_linecode_dict.
     :param df: pd.Dataframe
@@ -268,7 +270,7 @@ def clean_linecode(df) -> pd.DataFrame:
 
     return df
 
-def clean_and_add_datetime(df):
+def clean_and_add_datetime(df: pd.DataFrame):
     """
     Cleans and standardizes the 'Date' and 'Time' columns as strings,
     and creates a combined 'DateTime' column  as pandas datetime objects for full timestamp analysis.
@@ -316,7 +318,7 @@ def clean_date(df: pd.DataFrame) -> pd.DataFrame:
 
     return df
 
-def clean_time(df):
+def clean_time(df: pd.DataFrame):
     """
     Cleans and standardizes the 'Time' column in a DataFrame.
 
@@ -345,7 +347,7 @@ def clean_time(df):
 
     return df
 
-def clean_day(df):
+def clean_day(df: pd.DataFrame):
     """
      Extracts the day of the week from the 'Date' column and stores it in a 'Day' column. This will fix any errors
      in the 'Day' column.
@@ -356,7 +358,7 @@ def clean_day(df):
     df['Day'] = df['DateTime'].dt.day_name()
     return df
 
-def add_IsWeekday(df) -> pd.DataFrame:
+def add_IsWeekday(df: pd.DataFrame) -> pd.DataFrame:
     """
     Adds a new column 'IsWeekday' to indicate whether each date falls on a weekday.
     :param df: pd.Dataframe with Datetime column
@@ -365,7 +367,7 @@ def add_IsWeekday(df) -> pd.DataFrame:
     df['IsWeekday'] = df['DateTime'].dt.weekday < 5  # True for weekdays, False for weekends
     return df
 
-def clean_bound(df) -> pd.DataFrame:
+def clean_bound(df: pd.DataFrame) -> pd.DataFrame:
     """
     Clean bound names, if bound names are not 'N, S, E, W', set to Nan.
     :param df: pd.Dataframe
@@ -373,6 +375,38 @@ def clean_bound(df) -> pd.DataFrame:
     """
     df.loc[~df['Bound'].isin(VALID_BOUND_NAMES), 'Bound'] = np.nan
 
+    return df
+
+def categorize_rush_hour(row:  pd.Series, weekday_rush_hour:dict= WEEKDAY_RUSH_HOUR) -> str:
+    """
+    Categorizes rush hour into morning, afternoon, offpeak or weekend
+
+    :param row: row from pd.DataFrame
+    :param weekday_rush_hour: Dictionary with keys for start/end times of rush hours.
+    :return: Rush hour category
+    """
+
+    if row['Weekday'] == True:
+        t = row['DateTime'].time()
+        if  weekday_rush_hour["morning start"]  <= t <= weekday_rush_hour["morning end"]:
+            return "morning"
+        elif weekday_rush_hour["evening start"]  <= t <= weekday_rush_hour["evening end"]:
+            return "evening"
+        else:
+            return "off peak"
+
+    else:
+        return "weekend"
+
+def add_rush_hour(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Adds a 'Rush Hour' column to the DataFrame, categorizing each row as
+    'morning', 'evening', 'off peak', or 'weekend' based on the time and day.
+
+    :param df: pd.DataFrame
+    :return: df: pd.DataFrame with an added 'Rush Hour' column
+    """
+    df['Rush Hour'] =  df.apply(categorize_rush_hour, axis =1)
     return df
 
 def clean_delay_code_descriptions():
