@@ -1,4 +1,5 @@
 import os
+from datetime import time
 
 # Base directory
 BASE_DIR = r'C:\Users\ashaa\OneDrive\Desktop\SmartTransit'
@@ -7,6 +8,7 @@ RAW_DATA_DIR = os.path.join(BASE_DIR, 'data', 'raw')
 DOCS_DIR = os.path.join(RAW_DATA_DIR, 'docs')
 CODE_DESC_DIR = os.path.join(RAW_DATA_DIR, 'code_descriptions')
 LOG_DIR = os.path.join(BASE_DIR, 'logs')
+DROPPED_RAW_DATA_DIR = os.path.join(BASE_DIR, 'data', 'dropped_raw')
 
 # Data Directory
 DELAY_DATA_DIR = os.path.join(RAW_DATA_DIR, 'delays')
@@ -28,3 +30,12 @@ REFERENCE_COLS_ORDERED = [
 
 # Valid bound names:
 VALID_BOUND_NAMES = ['N', 'S', 'E', 'W']
+
+# Rush hour
+
+WEEKDAY_RUSH_HOUR = {
+    "morning start": time(6, 0),
+    "morning end" : time(9, 0),
+    "evening start": time(15, 0),
+    "evening end": time(19, 0)
+}
