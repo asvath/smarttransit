@@ -2,13 +2,15 @@ import ast
 import os
 import re
 from datetime import datetime
+from typing import Dict, List
 
 import numpy as np
 import pandas as pd
 from utils import log_utils, file_utils
 
 from config import (CODE_DESC_DIR, VALID_STATIONS_WITH_LINECODES, CODE_DESCRIPTIONS, LOG_DIR,
-                    REFERENCE_COLS_ORDERED, VALID_BOUND_NAMES, DROPPED_RAW_DATA_DIR, WEEKDAY_RUSH_HOUR)
+                    REFERENCE_COLS_ORDERED, VALID_BOUND_NAMES, DROPPED_RAW_DATA_DIR, WEEKDAY_RUSH_HOUR, SEASONS,
+                    VALID_BOUND_NAMES_W_LINECODES)
 
 
 def merge_delay_data(dfs: list[pd.DataFrame],files_loaded: list, log_dir=LOG_DIR,
@@ -367,15 +369,22 @@ def add_IsWeekday(df: pd.DataFrame) -> pd.DataFrame:
     df['IsWeekday'] = df['DateTime'].dt.weekday < 5  # True for weekdays, False for weekends
     return df
 
-def clean_bound(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Clean bound names, if bound names are not 'N, S, E, W', set to Nan.
-    :param df: pd.Dataframe
-    :return: pd.Dataframe with clean bound names
-    """
-    df.loc[~df['Bound'].isin(VALID_BOUND_NAMES), 'Bound'] = np.nan
-
-    return df
+# def clean_bound(df: pd.DataFrame) -> pd.DataFrame:
+#     """
+#     Clean bound names, if bound names are not 'N, S, E, W', set to Nan. Check bound names against line codes.
+#     :param df: pd.Dataframe
+#     :return: pd.Dataframe with clean bound names
+#     """
+#     df.loc[~df['Bound'].isin(VALID_BOUND_NAMES_W_LINECODES), 'Bound'] = np.nan
+#     for index, row in df.iterrows():
+#         line = row["Line"]
+#         bound = row["Bound"]
+#         if line in VALID_BOUND_NAMES_W_LINECODES:
+#             if bound not in VALID_BOUND_NAMES_W_LINECODES[line]:
+#                 row["Bound"] = np.nan
+#
+#
+#     return df
 
 def categorize_rush_hour(row:  pd.Series, weekday_rush_hour:dict= WEEKDAY_RUSH_HOUR) -> str:
     """
@@ -386,7 +395,7 @@ def categorize_rush_hour(row:  pd.Series, weekday_rush_hour:dict= WEEKDAY_RUSH_H
     :return: Rush hour category
     """
 
-    if row['Weekday'] == True:
+    if row['IsWeekday'] == True:
         t = row['DateTime'].time()
         if  weekday_rush_hour["morning start"]  <= t <= weekday_rush_hour["morning end"]:
             return "morning"
@@ -408,6 +417,30 @@ def add_rush_hour(df: pd.DataFrame) -> pd.DataFrame:
     """
     df['Rush Hour'] =  df.apply(categorize_rush_hour, axis =1)
     return df
+
+def get_season(dt: pd.Timestamp, seasons: Dict[str, List[int]] = SEASONS) -> str:
+    """
+    Determines season for a given timestamp
+    :param dt: DateTime row
+    :param seasons: Dictionary mapping season names to lists of month numbers
+    :return: season
+    """
+    month = dt.month
+    for season, months in seasons.items():
+        if month in months:
+            return season
+
+    return "Unknown"
+
+def add_season(df:pd.DataFrame) -> pd.DataFrame:
+    """
+    Adds "Season" column
+    :param df: pd.DataFrame with "DateTime" column
+    :return: pd.DataFrame with added "Season" column
+    """
+    df["Season"] = df["DateTime"].apply(get_season)
+    return df
+
 
 def clean_delay_code_descriptions():
     """
