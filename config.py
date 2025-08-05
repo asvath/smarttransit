@@ -1,41 +1,51 @@
 import os
 from datetime import time
 
-# Base directory
-BASE_DIR = r'C:\Users\ashaa\OneDrive\Desktop\SmartTransit'
-DATA_DIR = os.path.join(BASE_DIR, 'data')
-RAW_DATA_DIR = os.path.join(BASE_DIR, 'data', 'raw')
-DOCS_DIR = os.path.join(RAW_DATA_DIR, 'docs')
-CODE_DESC_DIR = os.path.join(RAW_DATA_DIR, 'code_descriptions')
-LOG_DIR = os.path.join(BASE_DIR, 'logs')
-DROPPED_RAW_DATA_DIR = os.path.join(BASE_DIR, 'data', 'dropped_raw')
+BASE_DIR = r'C:\Users\ashaa\OneDrive\Desktop\SmartTransit'  # Root of project
 
-# Data Directory
-DELAY_DATA_DIR = os.path.join(RAW_DATA_DIR, 'delays')
+DATA_DIR = os.path.join(BASE_DIR, 'data')                   # Main data directory
+RAW_DATA_DIR = os.path.join(BASE_DIR, 'data', 'raw')        # All raw data, includes delays, docs, code_descriptions
+DOCS_DIR = os.path.join(RAW_DATA_DIR, 'docs')               # Documentation or reference files
+CODE_DESC_DIR = os.path.join(RAW_DATA_DIR, 'code_descriptions')  # Code descriptions (raw)
+LOG_DIR = os.path.join(BASE_DIR, 'logs')                    # Logs directory
+DROPPED_RAW_DATA_DIR = os.path.join(BASE_DIR, 'data', 'dropped_raw')  # Dropped/invalid data
+RAW_DELAY_DIR = os.path.join(RAW_DATA_DIR, 'delays')       # Raw delay data files
 
 # Processed data directories
-INTERIM_DATA_DIR = os.path.join(DATA_DIR, 'interim')
-PROCESSED_DATA_DIR = os.path.join(DATA_DIR, 'processed')
+INTERIM_DATA_DIR = os.path.join(DATA_DIR, 'interim') # Data mid-pipeline
+PROCESSED_DATA_DIR = os.path.join(DATA_DIR, 'processed') # Fully processed data
 
 # File paths
-VALID_STATIONS_LIST = os.path.join(DOCS_DIR, 'ttc_subway_stations.txt')
-VALID_STATIONS_WITH_LINECODES = os.path.join(DOCS_DIR, 'ttc_subway_stations_with_linecodes.txt')
-CODE_DESCRIPTIONS = os.path.join(CODE_DESC_DIR, 'Code Descriptions.csv')
+# Contains operational passenger stations
+VALID_STATIONS_FILE = os.path.join(DOCS_DIR, 'ttc_subway_stations.txt')
+# Contains operational passenger stations with line codes
+VALID_STATIONS_W_LINECODES_FILE = os.path.join(DOCS_DIR, 'ttc_subway_stations_with_linecodes.txt')
+# Contains delay codes and descriptions
+CODE_DESCRIPTIONS_FILE = os.path.join(CODE_DESC_DIR, 'Code Descriptions.csv')
 
+# Others
 # Column names (in order) used for merging raw TTC delay data files
 REFERENCE_COLS_ORDERED = [
     'Date', 'Time', 'Day', 'Station', 'Code',
     'Min Delay', 'Min Gap', 'Bound', 'Line', 'Vehicle'
 ]
 
-# Valid bound names:
-VALID_BOUND_NAMES = ['N', 'S', 'E', 'W']
+# Valid bounds:
+VALID_BOUND_LIST = ['N', 'S', 'E', 'W']
 
-# Rush hour
+# Mapping linecode to bound
+VALID_LINECODES_TO_BOUND_DICT = {"YU" : ["N", "S"], "BD" : ["E", "W"], "SHP" : ["E", "W"]}
 
-WEEKDAY_RUSH_HOUR = {
+# Mapping of rush hour to time objects
+WEEKDAY_RUSH_HOUR_DICT = {
     "morning start": time(6, 0),
     "morning end" : time(9, 0),
     "evening start": time(15, 0),
     "evening end": time(19, 0)
 }
+
+# Mapping season to month
+SEASONS_TO_MONTHS_DICT = {"Spring": [3,4,5], # "March", "April", "May"
+           "Summer": [6,7,8] ,#"June", "July", "August",
+           "Fall" : [9,10,11] ,#"September", "October", "November"
+           "Winter": [12,1,2]} #["December", "January", "February"
