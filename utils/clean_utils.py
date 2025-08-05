@@ -2,15 +2,16 @@ import ast
 import os
 import re
 from datetime import datetime
-from typing import Dict, List
+from typing import Dict, List, Any
 
 import numpy as np
 import pandas as pd
+
 from utils import log_utils, file_utils
 
-from config import (CODE_DESC_DIR, VALID_STATIONS_WITH_LINECODES, CODE_DESCRIPTIONS, LOG_DIR,
-                    REFERENCE_COLS_ORDERED, VALID_BOUND_NAMES, DROPPED_RAW_DATA_DIR, WEEKDAY_RUSH_HOUR, SEASONS,
-                    VALID_BOUND_NAMES_W_LINECODES)
+from config import (CODE_DESC_DIR, VALID_STATIONS_W_LINECODES_FILE, CODE_DESCRIPTIONS_FILE, LOG_DIR,
+                    REFERENCE_COLS_ORDERED, DROPPED_RAW_DATA_DIR, WEEKDAY_RUSH_HOUR_DICT, SEASONS_TO_MONTHS_DICT,
+                    VALID_LINECODES_TO_BOUND_DICT)
 
 
 def merge_delay_data(dfs: list[pd.DataFrame],files_loaded: list, log_dir=LOG_DIR,
@@ -90,7 +91,8 @@ def merge_delay_data(dfs: list[pd.DataFrame],files_loaded: list, log_dir=LOG_DIR
 
 def drop_invalid_rows(df: pd.DataFrame, dropped_raw_data_dir: str = DROPPED_RAW_DATA_DIR):
     """
-    Drops rows with missing values, no recorded delay, no gaps, or missing vehicle numbers.
+    Drops rows with missing values, no recorded delay, no time gaps between delayed train and prior train,
+    recorded delay less than time gap between delayed train and prior train, or missing vehicle numbers.
 
     This ensures only meaningful delay events are kept for analysis.
 
@@ -113,8 +115,8 @@ def drop_invalid_rows(df: pd.DataFrame, dropped_raw_data_dir: str = DROPPED_RAW_
     drop_conditions["zero_gap"] = df[df['Min Gap'] == 0]
     df = df[df['Min Gap'] != 0]
 
-    # Drop rows where delay is < than gap:
-    drop_conditions["delay_less_than_gap"] = df[df['Min Delay'] >= df['Min Gap']]
+    # Drop rows where the delay is more than the time gap between delayed train and the train ahead
+    drop_conditions["delay_more_than_gap"] = df[df['Min Delay'] >= df['Min Gap']]
     df = df[df['Min Delay'] < df['Min Gap']]
 
     # Drop rows where vehicle is zero
@@ -198,6 +200,19 @@ def clean_station_column(df: pd.DataFrame) -> pd.DataFrame:
     df['Station'] = df['Station'].apply(clean_station_name)
     return df
 
+def valid_station_linecode_dict() -> dict:
+    """
+    Creates dictionary with valid in operation stations and their respective linecodes
+    :return: dict
+    """
+    valid_station_linecode = {}
+    with open(VALID_STATIONS_W_LINECODES_FILE) as f:
+        for line in f:
+            if line.strip(): # non-empty
+                name, linecode = line.upper().split("STATION")
+                valid_station_linecode[name + "STATION"] = ast.literal_eval(linecode.strip())
+    return valid_station_linecode
+
 def categorzie_station(name:str) -> str:
     """
     This function checks if a station is a valid passenger station, non-passenger (e.g YARD, WYE etc),
@@ -209,7 +224,7 @@ def categorzie_station(name:str) -> str:
     valid_station_linecode = valid_station_linecode_dict()
 
     non_passenger_endname_keywords = ['YARD', 'HOSTLER', 'WYE', 'POCKET', 'TAIL', 'TRACK']
-    if name in valid_station_linecode.keys():
+    if name in valid_station_linecode:
         category = "passenger"
     elif name.split(' ')[-1] in non_passenger_endname_keywords:
         category = "non-passenger"
@@ -227,48 +242,65 @@ def add_station_category(df: pd.DataFrame) -> pd.DataFrame:
     df['Station Category'] = df['Station'].apply(categorzie_station)
     return df
 
-
-def valid_station_linecode_dict() -> dict:
-    """
-    Creates dictionary with valid in operation stations and their respective linecodes
-    :return: dict
-    """
-    valid_station_linecode = {}
-    with open(VALID_STATIONS_WITH_LINECODES) as f:
-        for line in f:
-            if line.strip(): # non-empty
-                name, linecode = line.upper().split("STATION")
-                valid_station_linecode[name + "STATION"] = ast.literal_eval(linecode.strip())
-    return valid_station_linecode
-
-def clean_linecode(df: pd.DataFrame) -> pd.DataFrame:
+def clean_linecode(row:pd.Series, valid_station_linecode:dict) -> str | float:
     """
     Fixes incorrect linecodes using the valid_station_linecode_dict.
-    :param df: pd.Dataframe
-    :return: pd.Dataframe with clean linecode
+    :param df: pd.Series
+    :return: linecode or np.nan for ambiguous data
     """
+
+    station = row["Station"]
+    line = row["Line"]
+
+    if station not in valid_station_linecode: # a non-passenger station or unknown
+        return line
+
+    # valid codes for the station
+    valid_codes = valid_station_linecode[station]
+
+    if line in valid_codes:
+        return line # already the correct code
+
+    if len(valid_codes) > 1: # Too ambiguous to fix. e.g. Bloor-Yonge subway,
+        # if the linecode is not BD or YU, we wouldn't know which is the correct code
+        return np.nan
+
+    else: # fix to the correct code
+        return valid_codes[0]  # Fix to the correct code
+
+def clean_line_code_column(df: pd.DataFrame) -> pd.DataFrame:
     valid_station_linecode = valid_station_linecode_dict()
+    df["Line"] = df.apply(lambda row: clean_linecode(row, valid_station_linecode), axis = 1)
+    return df
 
-    for index, row in df.iterrows():
-        station = row["Station"]
-        line = row["Line"]
+def clean_bound(row:pd.Series) -> str | Any:
+    """
+    Corrects bound for passenger stations. If bound names are not 'N, S, E, W', set to NaN.
+    :param row: row from pd.DataFrame
+    :return: bound or np.nan
+    """
+    line = row["Line"]
+    bound = row["Bound"]
 
-        if station not in valid_station_linecode: # a non-passenger station or unknown
-            continue
+    valid_station_linecode = valid_station_linecode_dict() # e.g {"Rosedale: "YU"}
+    if row["Station"] in valid_station_linecode  and line in VALID_LINECODES_TO_BOUND_DICT.keys() :
+        if bound in VALID_LINECODES_TO_BOUND_DICT[line]:
 
-        # valid codes for the station
-        valid_codes = valid_station_linecode[station]
+            return bound
+        else:
 
-        if line in valid_codes:
-            continue # already the correct code
+            return np.nan
+    return bound
 
-        if len(valid_codes) > 1: # Too ambiguous to fix. e.g. Bloor-Yonge subway,
-            # if the linecode is not BD or YU, we wouldn't know which is the correct code
-            df.at[index, "Line"] = np.nan
+def clean_bound_column(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Clean bound names, if bound names are not 'N, S, E, W', set to NaN.
+    For passenger stations with valid line codes e.g Rosedale: YU, check that Bound matches line's valid directions.
+    :param df: pd.DataFrame
+    :return: pd.DataFrame with clean bound names
+    """
 
-
-        else: # fix to the correct code
-            df.at[index, "Line"] = valid_codes[0]  # Fix to the correct code
+    df["Bound"] = df.apply(clean_bound, axis = 1)
 
     return df
 
@@ -369,24 +401,7 @@ def add_IsWeekday(df: pd.DataFrame) -> pd.DataFrame:
     df['IsWeekday'] = df['DateTime'].dt.weekday < 5  # True for weekdays, False for weekends
     return df
 
-# def clean_bound(df: pd.DataFrame) -> pd.DataFrame:
-#     """
-#     Clean bound names, if bound names are not 'N, S, E, W', set to Nan. Check bound names against line codes.
-#     :param df: pd.Dataframe
-#     :return: pd.Dataframe with clean bound names
-#     """
-#     df.loc[~df['Bound'].isin(VALID_BOUND_NAMES_W_LINECODES), 'Bound'] = np.nan
-#     for index, row in df.iterrows():
-#         line = row["Line"]
-#         bound = row["Bound"]
-#         if line in VALID_BOUND_NAMES_W_LINECODES:
-#             if bound not in VALID_BOUND_NAMES_W_LINECODES[line]:
-#                 row["Bound"] = np.nan
-#
-#
-#     return df
-
-def categorize_rush_hour(row:  pd.Series, weekday_rush_hour:dict= WEEKDAY_RUSH_HOUR) -> str:
+def categorize_rush_hour(row:  pd.Series, weekday_rush_hour:dict= WEEKDAY_RUSH_HOUR_DICT) -> str:
     """
     Categorizes rush hour into morning, afternoon, offpeak or weekend
 
@@ -418,7 +433,7 @@ def add_rush_hour(df: pd.DataFrame) -> pd.DataFrame:
     df['Rush Hour'] =  df.apply(categorize_rush_hour, axis =1)
     return df
 
-def get_season(dt: pd.Timestamp, seasons: Dict[str, List[int]] = SEASONS) -> str:
+def get_season(dt: pd.Timestamp, seasons: Dict[str, List[int]] = SEASONS_TO_MONTHS_DICT) -> str:
     """
     Determines season for a given timestamp
     :param dt: DateTime row
@@ -454,7 +469,7 @@ def clean_delay_code_descriptions():
 
     :return: None
     """
-    codes = pd.read_csv(CODE_DESCRIPTIONS, encoding='utf-8-sig')
+    codes = pd.read_csv(CODE_DESCRIPTIONS_FILE, encoding='utf-8-sig')
 
     def remove_non_ascii(text):
         return re.sub(r'[^\x00-\x7F]+', '', text) if isinstance(text, str) else text
