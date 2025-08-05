@@ -245,7 +245,8 @@ def add_station_category(df: pd.DataFrame) -> pd.DataFrame:
 def clean_linecode(row:pd.Series, valid_station_linecode:dict) -> str | float:
     """
     Fixes incorrect linecodes using the valid_station_linecode_dict.
-    :param df: pd.Series
+    :param row: pd.Series
+    :param valid_station_linecode: Dictionary containing operational station names with corresponding linecode
     :return: linecode or np.nan for ambiguous data
     """
 
@@ -255,7 +256,7 @@ def clean_linecode(row:pd.Series, valid_station_linecode:dict) -> str | float:
     if station not in valid_station_linecode: # a non-passenger station or unknown
         return line
 
-    # valid codes for the station
+    # valid linecodes for the station
     valid_codes = valid_station_linecode[station]
 
     if line in valid_codes:
@@ -273,23 +274,20 @@ def clean_line_code_column(df: pd.DataFrame) -> pd.DataFrame:
     df["Line"] = df.apply(lambda row: clean_linecode(row, valid_station_linecode), axis = 1)
     return df
 
-def clean_bound(row:pd.Series) -> str | Any:
+def clean_bound(row:pd.Series, valid_station_linecode:dict) -> str | float:
     """
-    Corrects bound for passenger stations. If bound names are not 'N, S, E, W', set to NaN.
-    :param row: row from pd.DataFrame
+    For passenger stations, if bound names are not 'N, S, E, W', set to NaN.
+    :param valid_station_linecode: Dictionary containing operational station names with corresponding linecode
+    :param row: row from pd.DataFrame with corrected linecode
     :return: bound or np.nan
     """
     line = row["Line"]
     bound = row["Bound"]
 
-    valid_station_linecode = valid_station_linecode_dict() # e.g {"Rosedale: "YU"}
-    if row["Station"] in valid_station_linecode  and line in VALID_LINECODES_TO_BOUND_DICT.keys() :
-        if bound in VALID_LINECODES_TO_BOUND_DICT[line]:
+    if row["Station"] in valid_station_linecode  and line in VALID_LINECODES_TO_BOUND_DICT : # passenger station
+        if bound not in VALID_LINECODES_TO_BOUND_DICT[line]:
+            return np.nan # too ambiguous to fix direction
 
-            return bound
-        else:
-
-            return np.nan
     return bound
 
 def clean_bound_column(df: pd.DataFrame) -> pd.DataFrame:
@@ -299,8 +297,8 @@ def clean_bound_column(df: pd.DataFrame) -> pd.DataFrame:
     :param df: pd.DataFrame
     :return: pd.DataFrame with clean bound names
     """
-
-    df["Bound"] = df.apply(clean_bound, axis = 1)
+    valid_station_linecode = valid_station_linecode_dict() # e.g {"Rosedale: "YU"}
+    df["Bound"] = df.apply(lambda row: clean_bound(row, valid_station_linecode), axis = 1)
 
     return df
 
