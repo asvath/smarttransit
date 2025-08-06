@@ -34,8 +34,7 @@ def merge_delay_data(dfs: list[pd.DataFrame],files_loaded: list, log_dir=LOG_DIR
     :return: A single merged pandas DataFrame with standardized columns. Empty if no valid files were found.
     """
 
-    timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-    log_filename_prefix = f'delay_merge_log_{timestamp}'
+    log_filename_prefix = f'raw_delay_merge_log'
 
 
     reference_cols_set = set(reference_cols_ordered)
@@ -156,10 +155,8 @@ def clean_station_name(name:str) -> str:
 
 
     # Fix endings like "STATIO", "STA", etc.
-    name = name.strip() # remove white spaces in the beginning and the end
-    if name.endswith(" STATIO") or name.endswith(" STA"):
-        name = re.sub(r'( STATIO| STA)$', ' STATION', name)
-
+    name = name.strip()
+    name = re.sub(r'( STATIO| STA| STN| STAION)$', ' STATION', name)
 
     legit_station_endname_keywords = ['STATION', 'YARD', 'HOSTLER', 'WYE', 'POCKET', 'TAIL', 'TRACK']
     if name.split(' ')[-1] not in legit_station_endname_keywords:
@@ -177,6 +174,7 @@ def clean_station_name(name:str) -> str:
         'YONGE-UNIVERSITY AND B': 'BLOOR-YONGE STATION',
         'SHEPPARDYONGE STATION': 'SHEPPARD-YONGE STATION',
         'SHEPPARD STATION': 'SHEPPARD-YONGE STATION',
+        "YONGE SHEPPARD" : 'SHEPPARD-YONGE STATION',
         'YONGE SHEP STATION': 'SHEPPARD-YONGE STATION',
         'YONGE SHP STATION': 'SHEPPARD-YONGE STATION',
         'SHEPPARD YONGE STATION': 'SHEPPARD-YONGE STATION'}
@@ -187,7 +185,6 @@ def clean_station_name(name:str) -> str:
 
     # clean up extra whitespace left behind
     name = re.sub(r'\s+', ' ', name)
-    # Fix spelling error for Station
 
     return name
 
@@ -202,7 +199,7 @@ def clean_station_column(df: pd.DataFrame) -> pd.DataFrame:
 
 def valid_station_linecode_dict() -> dict:
     """
-    Creates dictionary with valid in operation stations and their respective linecodes
+    Creates dictionary with valid in operation stations and their respective linecodes, e.g {"ROSEDALE STATION": "YU"}
     :return: dict
     """
     valid_station_linecode = {}
@@ -213,7 +210,7 @@ def valid_station_linecode_dict() -> dict:
                 valid_station_linecode[name + "STATION"] = ast.literal_eval(linecode.strip())
     return valid_station_linecode
 
-def categorzie_station(name:str) -> str:
+def categorize_station(name:str, valid_station_linecode:dict) -> str:
     """
     This function checks if a station is a valid passenger station, non-passenger (e.g YARD, WYE etc),
     or unknown (e.g SRT stations, approaching Rosedale, spelling error).
@@ -221,15 +218,13 @@ def categorzie_station(name:str) -> str:
     :return: str indicating passenger, non-passenger or unknown
     """
 
-    valid_station_linecode = valid_station_linecode_dict()
-
     non_passenger_endname_keywords = ['YARD', 'HOSTLER', 'WYE', 'POCKET', 'TAIL', 'TRACK']
     if name in valid_station_linecode:
-        category = "passenger"
+        category = "Passenger"
     elif name.split(' ')[-1] in non_passenger_endname_keywords:
-        category = "non-passenger"
+        category = "Non-passenger"
     else:
-        category = "unknown" #e.g approaching Rosedale
+        category = "Unknown" #e.g approaching Rosedale
     return category
 
 def add_station_category(df: pd.DataFrame) -> pd.DataFrame:
@@ -239,7 +234,8 @@ def add_station_category(df: pd.DataFrame) -> pd.DataFrame:
     :param df: pd.Dataframe
     :return: pd.Dataframe with added 'Station Category' column
     """
-    df['Station Category'] = df['Station'].apply(categorzie_station)
+    valid_station_linecode = valid_station_linecode_dict()
+    df['Station Category'] = df['Station'].apply(lambda station: categorize_station(station, valid_station_linecode))
     return df
 
 def clean_linecode(row:pd.Series, valid_station_linecode:dict) -> str | float:
@@ -269,19 +265,20 @@ def clean_linecode(row:pd.Series, valid_station_linecode:dict) -> str | float:
     else: # fix to the correct code
         return valid_codes[0]  # Fix to the correct code
 
-def clean_line_code_column(df: pd.DataFrame) -> pd.DataFrame:
+def clean_linecode_column(df: pd.DataFrame) -> pd.DataFrame:
     valid_station_linecode = valid_station_linecode_dict()
     df["Line"] = df.apply(lambda row: clean_linecode(row, valid_station_linecode), axis = 1)
     return df
 
 def clean_bound(row:pd.Series, valid_station_linecode:dict) -> str | float:
     """
-    For passenger stations, if bound names are not 'N, S, E, W', set to NaN.
-    :param valid_station_linecode: Dictionary containing operational station names with corresponding linecode
+    For passenger stations with valid line codes e.g Rosedale: YU, check that Bound matches line's valid directions.
+    Else set to NaN.
     :param row: row from pd.DataFrame with corrected linecode
+    :param valid_station_linecode: Dictionary containing operational station names with corresponding linecode
     :return: bound or np.nan
     """
-    line = row["Line"]
+    line = row["Line"] # correct line
     bound = row["Bound"]
 
     if row["Station"] in valid_station_linecode  and line in VALID_LINECODES_TO_BOUND_DICT : # passenger station
@@ -292,7 +289,6 @@ def clean_bound(row:pd.Series, valid_station_linecode:dict) -> str | float:
 
 def clean_bound_column(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Clean bound names, if bound names are not 'N, S, E, W', set to NaN.
     For passenger stations with valid line codes e.g Rosedale: YU, check that Bound matches line's valid directions.
     :param df: pd.DataFrame
     :return: pd.DataFrame with clean bound names
@@ -393,6 +389,7 @@ def clean_day(df: pd.DataFrame):
 def add_IsWeekday(df: pd.DataFrame) -> pd.DataFrame:
     """
     Adds a new column 'IsWeekday' to indicate whether each date falls on a weekday.
+
     :param df: pd.Dataframe with Datetime column
     :return: pd.Dataframe with added 'IsWeekday' column
     """
@@ -408,17 +405,17 @@ def categorize_rush_hour(row:  pd.Series, weekday_rush_hour:dict= WEEKDAY_RUSH_H
     :return: Rush hour category
     """
 
-    if row['IsWeekday'] == True:
+    if row['IsWeekday']:
         t = row['DateTime'].time()
         if  weekday_rush_hour["morning start"]  <= t <= weekday_rush_hour["morning end"]:
-            return "morning"
+            return "Morning"
         elif weekday_rush_hour["evening start"]  <= t <= weekday_rush_hour["evening end"]:
-            return "evening"
+            return "Evening"
         else:
-            return "off peak"
+            return "Off peak"
 
     else:
-        return "weekend"
+        return "Weekend"
 
 def add_rush_hour(df: pd.DataFrame) -> pd.DataFrame:
     """
