@@ -20,8 +20,12 @@ def write_log(log_lines:list, prefix: str, log_dir = LOG_DIR) -> str:
     :param log_dir: log directory
     :return: log_path: absolute path of log
     """
+    date_str = datetime.now().strftime('%Y-%m-%d')
+    date_folder = os.path.join(log_dir, date_str)
+    os.makedirs(date_folder, exist_ok=True)  # Create folder if it doesn't exist
+
     timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-    log_path = os.path.join(log_dir, f'{prefix}_{timestamp}.txt')
+    log_path = os.path.join(date_folder, f'{prefix}_{timestamp}.txt')
     with open(log_path, 'w', encoding='utf-8') as f:
         for line in log_lines:
             f.write(line + '\n')
