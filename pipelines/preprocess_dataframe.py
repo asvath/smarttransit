@@ -25,6 +25,10 @@ merged_file_name = "merged_unfiltered"
 clean_file_name = "cleaned_delay_data"
 
 def clean_dataframe():
+    """
+    Cleans and saves DataFrame to disk.
+    :return:pd.DataFrame: cleaned DataFrame
+    """
 
     # load the raw delay data
     dfs, files_loaded = load_utils.load_raw_data_files()
@@ -85,6 +89,7 @@ def clean_dataframe():
 
     print(f"Cleaned and saved dataframe {clean_file_name} in {PROCESSED_DATA_DIR}")
 
+    return df
 
 if __name__=="__main__":
     clean_dataframe()
