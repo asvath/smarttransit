@@ -2,19 +2,19 @@ import glob
 import os
 from datetime import datetime
 import pandas as pd
-from config import DELAY_DATA_DIR , LOG_DIR
+from config import RAW_DELAY_DIR , LOG_DIR
 from utils import log_utils
 
 
-def load_raw_data_files(delay_data_dir:str=DELAY_DATA_DIR , log_dir:str=LOG_DIR, verbose=True) \
+def load_raw_data_files(raw_delay_dir:str=RAW_DELAY_DIR , log_dir:str=LOG_DIR, verbose=True) \
         -> tuple[list[pd.DataFrame], list[str]]:
     """
-    Load all supported raw data files (Excel) from a directory.
+    Load all supported raw data files (Excel).
 
-    :param delay_data_dir: Directory containing the raw data files.
+    :param raw_delay_dir: Directory containing the raw data files.
     :param log_dir: Directory where logs should be written.
     :param verbose: If True, print status messages while loading.
-    :return: list of pd.Dataframes containing loaded DataFrames and list of corresponding filenames filename
+    :return: list of pd.Dataframes containing loaded DataFrames and list of corresponding filenames
     """
 
     dfs = []
@@ -24,10 +24,10 @@ def load_raw_data_files(delay_data_dir:str=DELAY_DATA_DIR , log_dir:str=LOG_DIR,
     file_patterns = ["*.xlsx"]
     all_files = []
     for pattern in file_patterns:
-        all_files.extend(glob.glob(os.path.join(delay_data_dir, pattern)))
+        all_files.extend(glob.glob(os.path.join(raw_delay_dir, pattern)))
 
     timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-    log_filename_prefix = f'delay_load_log_{timestamp}.txt'
+    log_filename_prefix = f'raw_delay_load_log_{timestamp}.txt'
 
 
     for file_path in all_files:
