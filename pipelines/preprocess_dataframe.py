@@ -2,7 +2,7 @@ import os
 import pandas as pd
 
 
-from utils import load_utils, clean_utils, log_utils
+from utils import load_utils, clean_utils, log_utils, file_utils
 from config import LOG_DIR, INTERIM_DATA_DIR, PROCESSED_DATA_DIR
 
 """
@@ -21,8 +21,8 @@ For manual verification purposes, the script also logs:
 - Station names containing directionals (e.g., "to", "towards", "toward")
 """
 
-merged_file_name = os.path.join(INTERIM_DATA_DIR, "merged_unfiltered.csv")
-clean_file_name = os.path.join(PROCESSED_DATA_DIR, "cleaned_delay_data.csv")
+merged_file_name = "merged_unfiltered"
+clean_file_name = "cleaned_delay_data"
 
 def clean_dataframe():
 
@@ -33,38 +33,31 @@ def clean_dataframe():
     df_merged = clean_utils.merge_delay_data(dfs, files_loaded)
 
     # save to interim folder
-    df_merged.to_csv(merged_file_name, index=False)
+    merged_file_path = file_utils.write_to_csv(df_merged, merged_file_name, INTERIM_DATA_DIR, True)
 
     # load merged unfiltered data
-    df = pd.read_csv(merged_file_name)
+    df = file_utils.read_csv(merged_file_path)
 
-    # drop nan data and data with no delay or no vehicle number
+    # drop nan data and data with no delay, no gap, delay < time gap between trains or no vehicle number
     df = clean_utils.drop_invalid_rows(df)
 
     # standardize station names
     df = clean_utils.clean_station_column(df)
 
-
     # categorize stations into passenger, non-passenger and unknown
     df = clean_utils.add_station_category(df)
 
     # clean linecode
-    df = clean_utils.clean_linecode(df)
+    df = clean_utils.clean_linecode_column(df)
 
     # Clean bound
-    df = clean_utils.clean_bound(df)
-
+    df = clean_utils.clean_bound_column(df)
 
     # add datetime column
     df = clean_utils.clean_and_add_datetime(df)
 
-
-    # Inspect a few failed rows if any:
-    df.loc[df['DateTime'].isna(), ['Date', 'Time']].head(5)
-
     # Remove any rows where Date, Time, or DateTime have missing values after parsing
     df = df.dropna()
-
 
     # clean day
     df = clean_utils.clean_day(df)
@@ -72,8 +65,13 @@ def clean_dataframe():
     # add IsWeekday column
     df = clean_utils.add_IsWeekday(df)
 
+    # add rush hour column
+    df = clean_utils.add_rush_hour(df)
 
-    # Remove any rows after cleaning data
+    # add season column
+    df = clean_utils.add_season(df)
+
+    # Remove any invalid rows after cleaning data
     df = df.dropna()
 
     # Log unique stations by category
@@ -83,9 +81,9 @@ def clean_dataframe():
     log_utils.log_station_names_with_directionals(df, LOG_DIR)
 
     # Write out cleaned csv
-    df.to_csv(clean_file_name, index=False)
+    file_utils.write_to_csv(df, clean_file_name, PROCESSED_DATA_DIR, True)
 
-    print(f"Cleaned and saved dataframe {clean_file_name}")
+    print(f"Cleaned and saved dataframe {clean_file_name} in {PROCESSED_DATA_DIR}")
 
 
 if __name__=="__main__":
