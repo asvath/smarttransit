@@ -26,14 +26,11 @@ def load_raw_data_files(raw_delay_dir:str=RAW_DELAY_DIR , log_dir:str=LOG_DIR, v
     for pattern in file_patterns:
         all_files.extend(glob.glob(os.path.join(raw_delay_dir, pattern)))
 
-    timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-    log_filename_prefix = f'raw_delay_load_log_{timestamp}.txt'
-
+    log_filename_prefix = f'raw_delay_load_log'
 
     for file_path in all_files:
         if os.path.exists(file_path):
             try:
-
                 df = pd.read_excel(file_path, dtype={'Date': 'string', 'Time': 'string'})
                 dfs.append(df)
                 files_loaded.append(file_path)
