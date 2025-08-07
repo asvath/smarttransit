@@ -1,9 +1,3 @@
-import os
-
-import numpy as np
-import pandas as pd
-
-
 from utils import load_utils, clean_utils, log_utils, file_utils
 from config import LOG_DIR, INTERIM_DATA_DIR, PROCESSED_DATA_DIR
 
@@ -56,50 +50,43 @@ def clean_dataframe():
     # drop stations that are SRT stations or have severe spelling errors, or have directionals in the name
     df = clean_utils.drop_unknown_stations(df)
 
-
+    # cleans delay code
     df = clean_utils.clean_delay_code_column(df)
-    # print(df.head())
-    # print(df.columns)
-    # Print all rows where "Code" is NaN
 
-    #
-    # # clean linecode
-    # df = clean_utils.clean_linecode_column(df)
-    #
-    # # Clean bound
-    # df = clean_utils.clean_bound_column(df)
-    #
-    # # add datetime column
-    # df = clean_utils.clean_and_add_datetime(df)
-    #
-    # # Remove any rows where Date, Time, or DateTime have missing values after parsing
-    # df = df.dropna()
-    #
-    # # clean day
-    # df = clean_utils.clean_day(df)
-    #
-    # # add IsWeekday column
-    # df = clean_utils.add_IsWeekday(df)
-    #
-    # # add rush hour column
-    # df = clean_utils.add_rush_hour(df)
-    #
-    # # add season column
-    # df = clean_utils.add_season(df)
-    #
-    # # Remove any invalid rows after cleaning data
-    # df = df.dropna()
-    #
-    # # Log unique stations by category
-    # log_utils.log_unique_stations_by_category(df, LOG_DIR)
-    #
-    # # Log stations which directional names
-    # log_utils.log_station_names_with_directionals(df, LOG_DIR)
-    #
-    # # Write out cleaned csv
-    # file_utils.write_to_csv(df, clean_file_name, PROCESSED_DATA_DIR, True)
-    #
-    # print(f"Cleaned and saved dataframe {clean_file_name} in {PROCESSED_DATA_DIR}")
+    # clean linecode
+    df = clean_utils.clean_linecode_column(df)
+
+    # clean bound
+    df = clean_utils.clean_bound_column(df)
+
+    # add datetime column
+    df = clean_utils.clean_and_add_datetime(df)
+
+    # remove any rows where Date, Time, or DateTime have missing values after parsing
+    df = df.dropna()
+
+    # clean day
+    df = clean_utils.clean_day(df)
+
+    # add IsWeekday column
+    df = clean_utils.add_IsWeekday(df)
+
+    # add rush hour column
+    df = clean_utils.add_rush_hour(df)
+
+    # add season column
+    df = clean_utils.add_season(df)
+
+    # remove any invalid rows after cleaning data
+    df = df.dropna()
+
+    # log unique stations by category
+    log_utils.log_unique_stations_by_category(df, LOG_DIR)
+
+    # write out cleaned csv
+    file_utils.write_to_csv(df, clean_file_name, PROCESSED_DATA_DIR, True)
+
+    print(f"Cleaned and saved dataframe {clean_file_name} in {PROCESSED_DATA_DIR}")
 
     return df
 
