@@ -32,6 +32,7 @@ IV. Equity & Impact
 
     Do delays disproportionately affect neighborhoods with fewer transit alternatives?
 
+
 ## Delay Code Classification Logic
 
 We manually categorized TTC subway delay codes using the following logic:
@@ -41,3 +42,4 @@ We manually categorized TTC subway delay codes using the following logic:
 - **Weather:** Delays due to natural events (snow, ice, flood, heat, etc.)
 - **Patron:** Incidents caused by customers or the public (medical, disorderly, trespassing, vandalism, etc.)
 - **Other/External:** Labor disputes, security, systemwide outages, power failures (external), or any ambiguous causes
+
