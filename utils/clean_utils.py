@@ -231,12 +231,29 @@ def add_station_category(df: pd.DataFrame) -> pd.DataFrame:
     """
     Adds a 'Station Category' column to the DataFrame, labeling each station as
     'passenger', 'non-passenger', or 'unknown'.
+    Drops rows with 'Station Category' labeled as 'unknown', which include:
+      - SRT stations,
+      - stations with severe spelling errors,
+      - and stations with directionals (e.g., "to", "towards") making them ambiguous.
     :param df: pd.Dataframe
     :return: pd.Dataframe with added 'Station Category' column
     """
     valid_station_linecode = valid_station_linecode_dict()
     df['Station Category'] = df['Station'].apply(lambda station: categorize_station(station, valid_station_linecode))
     return df
+
+def drop_unknown_stations(df:pd.DataFrame) -> pd.DataFrame:
+    """
+    Drops rows with 'Station Category' labeled as 'unknown', which include:
+      - SRT stations,
+      - stations with severe spelling errors,
+      - and stations with directionals (e.g., "to", "towards") making them ambiguous.
+    :param df: pd.Dataframe
+    :return: pd.Dataframe with added 'Station Category' column
+    """
+
+    return df[df["Station Category"] != "Unknown"]
+
 
 def clean_linecode(row:pd.Series, valid_station_linecode:dict) -> str | float:
     """
@@ -472,3 +489,35 @@ def clean_delay_code_descriptions():
     codes_cleaned = codes.applymap(remove_non_ascii)
     filepath = os.path.join(CODE_DESC_DIR,"Clean Code Descriptions.csv")
     codes_cleaned.to_csv (filepath,index=False, encoding='utf-8-sig')
+
+def delay_code_descriptions_dict() -> dict:
+    """
+    Creates a dictionary mapping delay codes to their descriptions.
+    """
+    filepath = os.path.join(CODE_DESC_DIR,"Clean Code Descriptions.csv")
+    df = file_utils.read_csv(filepath)
+    return df.set_index("CODE")["DESCRIPTION"].to_dict()
+
+def clean_delay_code(delay_code:str, delay_code_descriptions: dict, error_delay_code:set):
+    """
+    Cleans a delay code by checking if it exists in the provided descriptions dictionary.
+    If the delay code is not present in the dictionary, returns NaN.
+    :param delay_code: The delay code for the train delay event
+    :param delay_code_descriptions: Dictionary mapping delay codes to their descriptions
+    :return: correct delay code, or np.nan if not valid.
+    """
+
+    if delay_code not in delay_code_descriptions:
+        error_delay_code.add(delay_code)
+        return np.nan
+    return delay_code
+
+def clean_delay_code_column(df:pd.DataFrame):
+    """
+    Cleans the 'Code' column in a DataFrame by setting invalid delay codes to nan.
+    :param df: pd.DataFrame
+    :return: pd.DataFrame with cleaned 'Code' column
+    """
+    error_codes = set()
+    df["Code"] = df["Code"].apply(lambda code: clean_delay_code(code, delay_code_descriptions_dict(), error_codes))
+    return df, error_codes
