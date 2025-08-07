@@ -252,7 +252,7 @@ def drop_unknown_stations(df:pd.DataFrame) -> pd.DataFrame:
     :return: pd.Dataframe with added 'Station Category' column
     """
 
-    return df[df["Station Category"] != "Unknown"]
+    return df[df["Station Category"] != "Unknown"].copy()
 
 
 def clean_linecode(row:pd.Series, valid_station_linecode:dict) -> str | float:
@@ -498,26 +498,36 @@ def delay_code_descriptions_dict() -> dict:
     df = file_utils.read_csv(filepath)
     return df.set_index("CODE")["DESCRIPTION"].to_dict()
 
-def clean_delay_code(delay_code:str, delay_code_descriptions: dict, error_delay_code:set):
+
+def clean_delay_code(row, delay_code_descriptions: dict, error_rows:list) -> str|float:
     """
     Cleans a delay code by checking if it exists in the provided descriptions dictionary.
     If the delay code is not present in the dictionary, returns NaN.
+    Logs rows with errors in delay code
     :param delay_code: The delay code for the train delay event
     :param delay_code_descriptions: Dictionary mapping delay codes to their descriptions
+    :param error_rows: list of rows containing delay code errors
     :return: correct delay code, or np.nan if not valid.
     """
-
+    delay_code = row['Code']
     if delay_code not in delay_code_descriptions:
-        error_delay_code.add(delay_code)
+        error_rows.append(row.to_dict())
         return np.nan
     return delay_code
 
-def clean_delay_code_column(df:pd.DataFrame):
+def clean_delay_code_column(df:pd.DataFrame) -> pd.DataFrame:
     """
-    Cleans the 'Code' column in a DataFrame by setting invalid delay codes to nan.
+    Cleans the 'Code' column in a DataFrame by setting invalid delay codes to nan and
+    logs rows with errors in delay code and saves error data to disk.
     :param df: pd.DataFrame
     :return: pd.DataFrame with cleaned 'Code' column
     """
-    error_codes = set()
-    df["Code"] = df["Code"].apply(lambda code: clean_delay_code(code, delay_code_descriptions_dict(), error_codes))
-    return df, error_codes
+    delay_code_descriptions = delay_code_descriptions_dict()
+    error_rows = []
+    # Sets errors to nan
+    df['Code'] =\
+        df.apply(lambda row: clean_delay_code(row, delay_code_descriptions, error_rows), axis = 1)
+    # Save rows with errors to disk
+    df_code_error = pd.DataFrame(error_rows)
+    file_utils.write_to_csv(df_code_error, "Delay Data W Delay Code Error", DROPPED_RAW_DATA_DIR)
+    return df
