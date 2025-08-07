@@ -104,7 +104,7 @@ and to categorize stations as passenger, non-passenger, or unknown.
 ## Preprocessing of Raw TTC dataset
 Data Cleaning & Preprocessing
 
-📂 Raw Data Overview
+### 📂 Raw Data Overview
 
 The raw TTC dataset consists of:
 
@@ -114,7 +114,7 @@ The raw TTC dataset consists of:
 
     Delay data README file with column names and descriptions
 
-Cleaning Pipeline Steps
+### Cleaning Pipeline Steps
 
 A reference text file listing all valid operational station names with subway line codes (e.g. ROSEDALE STATION [YU]) was created for cleaning and validation:
 data/raw/docs/ttc_subway_stations_with_linecodes.txt
@@ -199,7 +199,7 @@ data/raw/docs/ttc_subway_stations_with_linecodes.txt
 
     Write out the final cleaned dataset to: data/processed/
 
-How to Run
+#### How to Run
 
 Make sure your working directory is set to the project root (SmartTransit/).
 
