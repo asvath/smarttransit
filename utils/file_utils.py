@@ -15,11 +15,15 @@ def write_to_csv(df:pd.DataFrame, prefix: str, output_dir:str, timestamped = Tru
     :param output_dir: The directory where the file will be saved.
     :return: The full path to the saved CSV file.
     """
+    date_str = datetime.now().strftime('%Y-%m-%d')
+    date_folder = os.path.join(output_dir, date_str)
+    os.makedirs(date_folder, exist_ok=True)  # Create folder if it doesn't exist
+
     if timestamped:
         timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-        path = os.path.join(output_dir, f'{prefix}_{timestamp}.csv')
+        path = os.path.join(date_folder, f'{prefix}_{timestamp}.csv')
     else:
-        path = os.path.join(output_dir, f'{prefix}.csv')
+        path = os.path.join(date_folder, f'{prefix}.csv')
     df.to_csv(path, index=False)
     return path
 
