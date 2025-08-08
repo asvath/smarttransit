@@ -39,11 +39,11 @@ def log_unique_stations_by_category(df:pd.DataFrame, log_dir:str = LOG_DIR) -> N
     :return:None
     """
 
-    for category in ['passenger', 'non-passenger', 'unknown']:
+    for category in ['Passenger', 'Non-passenger', 'Unknown']:
         stations_in_category = df[df['Station Category'] == category]['Station'].unique()
         stations_in_category.sort()
         log_lines = list(stations_in_category)
-        prefix = f'stations_{category}'
+        prefix = f'stations_{category.lower()}'
         log_path = write_log(log_lines, prefix, log_dir)
         print(f"Logged stations in {category} category to {log_path}")
 
