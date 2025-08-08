@@ -41,6 +41,9 @@ def clean_dataframe():
     # drop nan data and data with no delay, no gap, delay < time gap between trains or no vehicle number
     df = clean_utils.drop_invalid_rows(df)
 
+    # drop duplicate rows
+    df = clean_utils.drop_duplicates(df)
+
     # standardize station names
     df = clean_utils.clean_station_column(df)
 
@@ -79,6 +82,9 @@ def clean_dataframe():
 
     # remove any invalid rows after cleaning data
     df = df.dropna()
+
+    # sort dataframe by datetime
+    df = clean_utils.sort_by_datetime(df)
 
     # log unique stations by category
     log_utils.log_unique_stations_by_category(df, LOG_DIR)
