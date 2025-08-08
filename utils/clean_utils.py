@@ -1,6 +1,7 @@
 import ast
 import os
 import re
+from sys import prefix
 from typing import Dict, List
 
 import numpy as np
@@ -85,6 +86,19 @@ def merge_delay_data(dfs: list[pd.DataFrame],files_loaded: list, log_dir=LOG_DIR
 
 
     return combined_df
+
+def drop_duplicates(df:pd.DataFrame, dropped_raw_data_dir = DROPPED_RAW_DATA_DIR) -> pd.DataFrame:
+    """
+    Drops duplicate rows
+    :param df: Raw pd.DataFrame
+    :param dropped_raw_data_dir: Directory to store dropped data
+    :return pd.DataFrame with duplicates dropped
+    """
+    duplicates = df[df.duplicated(keep=False)]
+    prefix = "duplicates"
+    file_utils.write_to_csv(df=duplicates, prefix=prefix, output_dir=dropped_raw_data_dir)
+
+    return df.drop_duplicates(keep="first")
 
 def drop_invalid_rows(df: pd.DataFrame, dropped_raw_data_dir: str = DROPPED_RAW_DATA_DIR):
     """
@@ -240,15 +254,20 @@ def add_station_category(df: pd.DataFrame) -> pd.DataFrame:
     df['Station Category'] = df['Station'].apply(lambda station: categorize_station(station, valid_station_linecode))
     return df
 
-def drop_unknown_stations(df:pd.DataFrame) -> pd.DataFrame:
+def drop_unknown_stations(df:pd.DataFrame, dropped_raw_data_dir: str = DROPPED_RAW_DATA_DIR) -> pd.DataFrame:
     """
     Drops rows with 'Station Category' labeled as 'unknown', which include:
       - SRT stations,
       - stations with severe spelling errors,
       - and stations with directionals (e.g., "to", "towards") making them ambiguous.
+    Logs the dropped rows.
     :param df: pd.Dataframe
+    :param dropped_raw_data_dir: Directory to store dropped data
     :return: pd.Dataframe with added 'Station Category' column
     """
+    prefix = "unknown_stations"
+    dropped_df = df[df["Station Category"] == "Unknown"]
+    file_utils.write_to_csv(df=dropped_df, prefix=prefix, output_dir=dropped_raw_data_dir)
 
     return df[df["Station Category"] != "Unknown"].copy()
 
@@ -527,5 +546,13 @@ def clean_delay_code_column(df:pd.DataFrame) -> pd.DataFrame:
         df.apply(lambda row: clean_delay_code(row, delay_code_descriptions, error_rows), axis = 1)
     # Save rows with errors to disk
     df_code_error = pd.DataFrame(error_rows)
-    file_utils.write_to_csv(df_code_error, "Delay Data W Delay Code Error", DROPPED_RAW_DATA_DIR)
+    file_utils.write_to_csv(df_code_error, "delay_data_w_delay_code_error", DROPPED_RAW_DATA_DIR)
     return df
+
+def sort_by_datetime(df:pd.DataFrame) -> pd.DataFrame:
+    """
+    Sort pd.DataFrame by DateTime
+    :param df: pd.DataFrame containing DateTime column
+    :return: pd.DataFrame sorted by DateTime
+    """
+    return df.sort_values(by='DateTime')
