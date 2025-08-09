@@ -351,6 +351,7 @@ def clean_and_add_datetime(df: pd.DataFrame):
     # Create 'DateTime' column with YYYY-MM-DD HH:MM:SS format as a pandas datetime object
     df['DateTime'] = pd.to_datetime(base, format='%Y-%m-%d %H:%M:%S', errors='coerce')
 
+
     return df
 
 def clean_date(df: pd.DataFrame) -> pd.DataFrame:
@@ -368,15 +369,11 @@ def clean_date(df: pd.DataFrame) -> pd.DataFrame:
     # Date is already a string, normalize whitespace
     d = df['Date'].astype('string').str.strip()
 
-    # Parse Dates
-    # Try dayfirst=True first (for DD/MM/YYYY), then year first or month first
-    d1 = pd.to_datetime(d, errors='coerce', dayfirst=True)
-    d2 = pd.to_datetime(d, errors='coerce')  # standard inference (YYYY-MM-DD, M/D/YYYY)
-    # if d1 is NaT then fill up with d2
-    d_parsed = d1.fillna(d2)
+    d_parsed = pd.to_datetime(d, errors='coerce')  # standard inference (YYYY-MM-DD)
 
     # Standardize to YYYY-MM-DD string format
     df['Date'] = d_parsed.dt.strftime('%Y-%m-%d')
+
 
     return df
 
