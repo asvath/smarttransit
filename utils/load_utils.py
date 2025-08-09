@@ -20,6 +20,7 @@ def load_raw_data_files(raw_delay_dir:str=RAW_DELAY_DIR , log_dir:str=LOG_DIR, v
 
     dfs = []
     files_loaded = []
+    file_sheets_loaded = []
     log_lines = []
 
     file_patterns = ["*.xlsx"]
@@ -32,10 +33,17 @@ def load_raw_data_files(raw_delay_dir:str=RAW_DELAY_DIR , log_dir:str=LOG_DIR, v
     for file_path in all_files:
         if os.path.exists(file_path):
             try:
-                df = pd.read_excel(file_path, dtype={'Date': 'string', 'Time': 'string'})
-                dfs.append(df)
+                # Read *all* sheets into a dict
+                i = 0
+                sheets_dict = pd.read_excel(file_path, sheet_name=None)
+                for sheet_name, sheet_df in sheets_dict.items():
+                    dfs.append(sheet_df)
+                    file_sheets_loaded.append(file_path + f" Sheet{i}")
+                    i +=1
+                assert len(sheets_dict) == 1 or len(sheets_dict) == 12
                 files_loaded.append(file_path)
-                log_lines.append(f"Loaded {file_path} successfully")
+                log_lines.append(f"Loaded {file_path} successfully with {len(sheets_dict.keys())} sheets")
+
 
                 if verbose:
                     print(f"Loaded: {file_path}")
@@ -53,4 +61,4 @@ def load_raw_data_files(raw_delay_dir:str=RAW_DELAY_DIR , log_dir:str=LOG_DIR, v
     log_utils.write_log(log_lines, log_filename_prefix, log_dir)
 
 
-    return dfs, files_loaded
+    return dfs, file_sheets_loaded
