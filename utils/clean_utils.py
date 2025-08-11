@@ -13,7 +13,7 @@ from config import (CODE_DESC_DIR, VALID_STATIONS_W_LINECODES_FILE, CODE_DESCRIP
 from utils import log_utils, file_utils
 
 
-def merge_delay_data(dfs: list[pd.DataFrame],files_loaded: list, log_dir=LOG_DIR,
+def merge_delay_data(file_to_sheets:dict[str, list], log_dir=LOG_DIR,
                            reference_cols_ordered: list[str]= REFERENCE_COLS_ORDERED, verbose: bool = True):
     """
     Standardizes and merges multiple raw delay DataFrames into a single DataFrame.
@@ -25,8 +25,7 @@ def merge_delay_data(dfs: list[pd.DataFrame],files_loaded: list, log_dir=LOG_DIR
     - Reorders columns to match a reference schema.
     - Merges valid DataFrames into one.
 
-    :param dfs: List of raw pandas DataFrames to be merged.
-    :param files_loaded: List of filenames corresponding to the DataFrames (used for logging).
+    :param file_to_sheets: Dict of filenames and corresponding list of raw pandas DataFrames to be merged.
     :param reference_cols_ordered: List of expected column names in the desired order.
     :param log_dir: Directory where logs should be saved.
     :param verbose: Whether to print merging status and preview of the merged DataFrame.
@@ -39,31 +38,41 @@ def merge_delay_data(dfs: list[pd.DataFrame],files_loaded: list, log_dir=LOG_DIR
     reference_cols_set = set(reference_cols_ordered)
     log_lines = []
     valid_dfs = [] # store df that have no missing or extra columns (apart from ID) and are good to merge
-    valid_filenames = []  # filename of the valid dfs
+    merged_files = []  # names of files that have been merged
 
-    for i, df in enumerate(dfs):
-        current_cols = set(df.columns)
-        missing = reference_cols_set - current_cols
-        extra = current_cols - reference_cols_set
-        if missing or (extra and extra != {'_id'}):
-            log_lines.append(f"File {files_loaded[i]} has issues:")
-            if missing:
-                log_lines.append(f"   Missing columns: {sorted(missing)}")
-                log_lines.append("   -> Skipping due to missing columns.\n")
-            elif extra:
-                log_lines.append(f"   Extra columns: {sorted(extra)}")
-                log_lines.append("   -> Skipping due to unknown extra columns.\n")
-            continue
+    for file, dfs in file_to_sheets.items():
+        # iterate through each sheet
+        merged_sheet_count = 0
 
-        if '_id' in extra:
-            log_lines.append(f"File {files_loaded[i]} has '_id' column.")
-            log_lines.append("   -> Dropping '_id' column.")
-            df = df.drop(columns=['_id'])
+        for i, df in enumerate(dfs):
+            current_cols = set(df.columns)
+            missing = reference_cols_set - current_cols
+            extra = current_cols - reference_cols_set
+            if missing or (extra and extra != {'_id'}):
+                log_lines.append(f"File {file}, sheet {i} has issues:")
+                if missing:
+                    log_lines.append(f"   Missing columns: {sorted(missing)}")
+                    log_lines.append("   -> Skipping due to missing columns.\n")
+                elif extra:
+                    log_lines.append(f"   Extra columns: {sorted(extra)}")
+                    log_lines.append("   -> Skipping due to unknown extra columns.\n")
+                continue
 
-        # All good, or cleaned — reindex and add to valid list
-        df = df.reindex(columns=reference_cols_ordered)
-        valid_dfs.append(df)
-        valid_filenames.append(files_loaded[i])
+            if '_id' in extra:
+                log_lines.append(f"File {file}, sheet {i} has '_id' column.")
+                log_lines.append("   -> Dropping '_id' column.")
+                df = df.drop(columns=['_id'])
+
+            # All good, or cleaned — reindex and add to valid list
+            df = df.reindex(columns=reference_cols_ordered)
+            valid_dfs.append(df)
+            merged_sheet_count += 1
+
+        if merged_sheet_count:
+            merged_files.append(file)
+            log_lines.append(f"Merged {merged_sheet_count} of {len(dfs)} sheet(s) from {file}.")
+        else:
+            log_lines.append(f"No valid sheets merged from {file}.")
 
     if valid_dfs:
         combined_df = pd.concat(valid_dfs, ignore_index=True)
@@ -73,10 +82,7 @@ def merge_delay_data(dfs: list[pd.DataFrame],files_loaded: list, log_dir=LOG_DIR
             print("Preview:")
             print(combined_df.head())
 
-        log_lines.append(f"Merged {len(valid_dfs)} out of {len(dfs)} files.")
-        log_lines.append("Files merged:")
-        for filename in valid_filenames:
-            log_lines.append(f" - {filename}")
+        log_lines.append(f"Merged {len(merged_files)} of {len(file_to_sheets)} files.")
 
     else:
         combined_df = pd.DataFrame()
