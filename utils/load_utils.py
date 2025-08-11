@@ -1,5 +1,6 @@
 import glob
 import os
+from typing import Dict, List
 
 import pandas as pd
 
@@ -8,57 +9,68 @@ from utils import log_utils
 
 
 def load_raw_data_files(raw_delay_dir:str=RAW_DELAY_DIR , log_dir:str=LOG_DIR, verbose=True) \
-        -> tuple[list[pd.DataFrame], list[str]]:
+        ->  Dict[str, List[pd.DataFrame]]:
     """
-    Load all supported raw data files (Excel).
+    Load all supported raw data files (Excel) and read *all* sheets.
 
     :param raw_delay_dir: Directory containing the raw data files.
     :param log_dir: Directory where logs should be written.
     :param verbose: If True, print status messages while loading.
-    :return: list of pd.Dataframes containing loaded DataFrames and list of corresponding filenames
+    :return: dict mapping file path to list of DataFrames (one per sheet).
     """
 
-    dfs = []
-    files_loaded = []
-    file_sheets_loaded = []
     log_lines = []
+    file_to_sheets= {} # dict mapping file path to list of dataframes (one per sheet).
 
     file_patterns = ["*.xlsx"]
     all_files = []
     for pattern in file_patterns:
         all_files.extend(glob.glob(os.path.join(raw_delay_dir, pattern)))
+    all_files = sorted(all_files)
 
-    log_filename_prefix = f'raw_delay_load_log'
+    # if no datafiles
+    if not all_files:
+        msg = f"No files found in {raw_delay_dir} matching {file_patterns}."
+        log_lines.append(msg)
+        if verbose:
+            print(msg)
+        log_utils.write_log(log_lines, "raw_delay_load_log", log_dir)
+        return file_to_sheets
 
     for file_path in all_files:
-        if os.path.exists(file_path):
             try:
                 # Read *all* sheets into a dict
                 i = 0
                 sheets_dict = pd.read_excel(file_path, sheet_name=None)
-                for sheet_name, sheet_df in sheets_dict.items():
-                    dfs.append(sheet_df)
-                    file_sheets_loaded.append(file_path + f" Sheet{i}")
-                    i +=1
-                assert len(sheets_dict) == 1 or len(sheets_dict) == 12
-                files_loaded.append(file_path)
-                log_lines.append(f"Loaded {file_path} successfully with {len(sheets_dict.keys())} sheets")
+                # the sheets either have 1 sheet or 12 sheets, one for each month
+                n = len(sheets_dict)
+                if n not in (1,12):
+                    msg = f"Skipping {file_path}: expected 1 or 12 sheets, found {n}."
+                    log_lines.append(msg)
+                    if verbose:
+                        print(msg)
+                    continue
 
+                file_to_sheets[file_path] = []
+                for _, sheet_df in sheets_dict.items():
+                    file_to_sheets[file_path].append(sheet_df)
+
+                log_lines.append(f"Loaded {file_path} successfully with {len(file_to_sheets[file_path])} sheet(s)")
 
                 if verbose:
                     print(f"Loaded: {file_path}")
 
             except Exception as e:
-                log_lines.append(f"Error loading {file_path}: {e}")
+                msg = f"Error loading {file_path}: {e}"
+                log_lines.append(msg)
                 if verbose:
-                    print(f"Error loading {file_path}: {e}")
+                    print(msg)
 
-            summary = f"Loaded {len(files_loaded)} out of {len(all_files)} files."
+            summary = f"Loaded {len(file_to_sheets)} out of {len(all_files)} files."
             log_lines.append(summary)
             if verbose:
                 print(summary)
 
-    log_utils.write_log(log_lines, log_filename_prefix, log_dir)
+    log_utils.write_log(log_lines, "raw_delay_load_log", log_dir)
 
-
-    return dfs, file_sheets_loaded
+    return file_to_sheets
