@@ -26,11 +26,11 @@ def clean_dataframe():
     :return:pd.DataFrame: cleaned DataFrame
     """
 
-    # load the raw delay data
-    dfs, files_loaded = load_utils.load_raw_data_files()
+    # Load raw delay data (dict: filename: list of DataFrames)
+    dfs_by_file = load_utils.load_raw_data_files()
 
     # merge the dataframes
-    df_merged = clean_utils.merge_delay_data(dfs, files_loaded)
+    df_merged = clean_utils.merge_delay_data(dfs_by_file)
 
     # save to interim folder
     merged_file_path = file_utils.write_to_csv(df_merged, merged_file_name, INTERIM_DATA_DIR, True)
@@ -71,20 +71,25 @@ def clean_dataframe():
     # clean day
     df = clean_utils.clean_day(df)
 
+
     # add IsWeekday column
     df = clean_utils.add_IsWeekday(df)
 
     # add rush hour column
     df = clean_utils.add_rush_hour(df)
 
+
     # add season column
     df = clean_utils.add_season(df)
+
 
     # remove any invalid rows after cleaning data
     df = df.dropna()
 
+
     # sort dataframe by datetime
     df = clean_utils.sort_by_datetime(df)
+
 
     # log unique stations by category
     log_utils.log_unique_stations_by_category(df, LOG_DIR)
