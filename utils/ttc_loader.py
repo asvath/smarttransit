@@ -44,6 +44,11 @@ class TTCLoader:
         df['DateTime'] = pd.to_datetime(df['DateTime'],format='%Y-%m-%d %H:%M:%S',  # matches YYYY-MM-DD HH:MM:SS
             errors='coerce'
         )
+        df['Min Delay'] = pd.to_numeric(df['Min Delay'], errors='coerce')
+        df['Min Gap'] = pd.to_numeric(df['Min Delay'], errors='coerce')
+        df['Min Delay'] = pd.to_numeric(df['Vehicle'], errors='coerce')
+
+        assert not df.isna().any().any()
         return df
 
     # ---------- Static filters ----------
