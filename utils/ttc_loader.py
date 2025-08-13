@@ -3,8 +3,10 @@ from typing import Self
 
 import pandas as pd
 
-from config import PROCESSED_DATA_DIR
+from config import PROCESSED_DATA_DIR, CODE_DESC_DIR
 from utils import file_utils
+from utils.clean_utils import clean_delay_code_descriptions
+
 
 class TTCLoader:
     """
@@ -15,11 +17,19 @@ class TTCLoader:
         self.processed_data_dir = processed_data_dir
         self.df_orig = None
         self.df = None
+        self.delay_code_descriptions = None
         if autoload:
+            self.delay_code_descriptions = self._load_code_descriptions()
             df = self._load_data()
             self.df_orig = df # cached df
             self.df = df.copy()
 
+    @staticmethod
+    def _load_code_descriptions():
+        """Load Delay code and corresponding description"""
+        code_descriptions_path = os.path.join(CODE_DESC_DIR, "Clean Code Descriptions.csv")
+        df = file_utils.read_csv(code_descriptions_path)
+        return dict(zip(df["CODE"], df["DESCRIPTION"]))
 
     def _get_latest_file(self) -> str | None:
         """Get filename of the most recently processed data"""
@@ -65,6 +75,7 @@ class TTCLoader:
 
         return df
 
+
     def reload(self) -> Self:
         """Reset working df from in-memory."""
         if self.df_orig is None:
@@ -91,66 +102,69 @@ class TTCLoader:
 
     def get_month(self, month)-> Self:
         """Filter data by month"""
-        self.df = self.df[self.df["Month"] == month]
+        self.df = self.df[self.df["Month"] == month].copy()
         return self
 
     def get_selected_delay(self, min_start:int, min_end:int)-> Self:
         """Filter data by delay time range"""
-        self.df = self.df[self.df['Min Delay'].between(min_start, min_end)]
+        self.df = self.df[self.df['Min Delay'].between(min_start, min_end)].copy()
         return self
 
     def get_morning_rush_hour(self)-> Self:
         """Filter data by morning rush hour"""
-        self.df = self.df[self.df['Rush Hour'] == "Morning"]
+        self.df = self.df[self.df['Rush Hour'] == "Morning"].copy()
         return self
 
     def get_evening_rush_hour(self)-> Self:
         """Filter data by evening rush hour"""
-        self.df = self.df[self.df['Rush Hour'] == "Evening"]
+        self.df = self.df[self.df['Rush Hour'] == "Evening"].copy()
         return self
 
     def get_off_peak(self)-> Self:
         """Filter data by off-peak time"""
-        self.df = self.df[self.df['Rush Hour'] == "Off-peak"]
+        self.df = self.df[self.df['Rush Hour'] == "Off-peak"].copy()
         return self
 
     def get_weekdays(self)-> Self:
         """Filter data by weekdays"""
-        self.df = self.df[self.df['DateTime'].dt.weekday < 5]
+        self.df = self.df[self.df['DateTime'].dt.weekday < 5].copy()
         return self
 
     def get_weekend(self)-> Self:
         """Filter data by weekend"""
-        self.df = self.df[self.df['DateTime'].dt.weekday >= 5]
+        self.df = self.df[self.df['DateTime'].dt.weekday >= 5].copy()
         return self
 
     def get_selected_stations(self, stations: list)-> Self:
         """Filter data by station name"""
-        self.df = self.df[self.df['Station'].isin(stations)]
+        self.df = self.df[self.df['Station'].isin(stations)].copy()
         return self
 
     def get_delay_code(self, code)-> Self:
         """Filter data by delay code"""
-        self.df = self.df[self.df["Code"] == code]
+        self.df = self.df[self.df["Code"] == code].copy()
         return self
 
     def get_line(self, line)-> Self:
         """Filter data by line"""
-        self.df = self.df[self.df["Line"] == line]
+        self.df = self.df[self.df["Line"] == line].copy()
         return self
 
     def get_bound(self, bound)-> Self:
         """Filter data by bound"""
-        self.df = self.df[self.df["Bound"] == bound]
+        self.df = self.df[self.df["Bound"] == bound].copy()
         return self
 
     def get_season(self, season)-> Self:
         """Filter data by season"""
-        self.df = self.df[self.df["Season"] == season]
+        self.df = self.df[self.df["Season"] == season].copy()
         return self
 
     def get_vehicle(self, vehicle)-> Self:
         """Filter data by vehicle number"""
-        self.df = self.df[self.df["Vehicle"] == vehicle]
+        self.df = self.df[self.df["Vehicle"] == vehicle].copy()
         return self
 
+    def get_delay_code_description(self, code:str) -> Self:
+        """Get delay code description"""
+        return self.delay_code_descriptions[code]
