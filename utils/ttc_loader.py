@@ -1,4 +1,5 @@
 import os
+from typing import Self
 
 import pandas as pd
 
@@ -10,11 +11,18 @@ class TTCLoader:
     Lightweight loader for TTC delay data
     """
 
-    def __init__(self, processed_data_dir = PROCESSED_DATA_DIR):
+    def __init__(self, processed_data_dir = PROCESSED_DATA_DIR, autoload = True):
         self.processed_data_dir = processed_data_dir
+        self.df_orig = None
+        self.df = None
+        if autoload:
+            df = self._load_data()
+            self.df_orig = df # cached df
+            self.df = df.copy()
 
 
-    def _get_latest_file(self):
+    def _get_latest_file(self) -> str | None:
+        """Get filename of the most recently processed data"""
         # Step 1: Get all subfolders
         folders = [os.path.join(self.processed_data_dir, d) for d in os.listdir(self.processed_data_dir)
                    if os.path.isdir(os.path.join(self.processed_data_dir, d))]
@@ -36,79 +44,113 @@ class TTCLoader:
 
         return latest_file
 
-    def load_data(self):
+    def _load_data(self) -> pd.DataFrame:
+        """Load most recently processed data"""
         latest_file = self._get_latest_file()
         if latest_file is None:
-            raise FileNotFoundError("No processed files found.")
+            raise FileNotFoundError("No processed data found.")
         df = file_utils.read_csv(latest_file)
         df['DateTime'] = pd.to_datetime(df['DateTime'],format='%Y-%m-%d %H:%M:%S',  # matches YYYY-MM-DD HH:MM:SS
             errors='coerce'
         )
         df['Min Delay'] = pd.to_numeric(df['Min Delay'], errors='coerce')
-        df['Min Gap'] = pd.to_numeric(df['Min Delay'], errors='coerce')
-        df['Min Delay'] = pd.to_numeric(df['Vehicle'], errors='coerce')
+        df['Min Gap'] = pd.to_numeric(df['Min Gap'], errors='coerce')
+        df['Vehicle'] = pd.to_numeric(df['Vehicle'], errors='coerce')
 
-        assert not df.isna().any().any()
+        # check if columns have nans
+        bad_columns = df.isna().any()
+
+        # check if entire dataframe has any nans:
+        assert not bad_columns.any(), f"NaNs found in columns: {bad_columns[bad_columns].index.tolist()}"
+
         return df
 
-    # ---------- Static filters ----------
+    def reload(self) -> Self:
+        """Reset working df from in-memory."""
+        if self.df_orig is None:
+            # If nothing cached yet, load from disk once.
+            df = self._load_data()
+            self.df_orig = df
+            self.df = df.copy()
+        else:
+            self.df = self.df_orig.copy()
+        return self
 
-    @staticmethod
-    def get_selected_year(df, year:int):
-        return df[df['DateTime'].dt.year == year]
+    # ---------- Filters ----------
 
-    @staticmethod
-    def get_selected_years(df, year_start:int, year_end:int):
-        return df[df['DateTime'].dt.year.between(year_start, year_end)]
+    def get_selected_year(self, year:int) -> Self:
+        """Filter data by year"""
+        self.df = self.df[self.df['DateTime'].dt.year == year].copy()
+        return self
 
-    @staticmethod
-    def get_selected_stations(df, stations):
-       return df[df['Station'].isin(stations)]
 
-    @staticmethod
-    def get_morning_rush_hour(df):
-        return df[df['Rush Hour'] == "Morning"]
+    def get_selected_years(self, year_start:int, year_end:int) -> Self:
+        """Filter data by year range"""
+        self.df = self.df[self.df['DateTime'].dt.year.between(year_start, year_end)].copy()
+        return self
 
-    @staticmethod
-    def get_evening_rush_hour(df):
-        return df[df['Rush Hour'] == "Evening"]
+    def get_month(self, month)-> Self:
+        """Filter data by month"""
+        self.df = self.df[self.df["Month"] == month]
+        return self
 
-    @staticmethod
-    def get_off_peak(df):
-        return df[df['Rush Hour'] == "Off-peak"]
+    def get_selected_delay(self, min_start:int, min_end:int)-> Self:
+        """Filter data by delay time range"""
+        self.df = self.df[self.df['Min Delay'].between(min_start, min_end)]
+        return self
 
-    @staticmethod
-    def get_weekdays(df):
-        return df[df['DateTime'].dt.weekday < 5]
+    def get_morning_rush_hour(self)-> Self:
+        """Filter data by morning rush hour"""
+        self.df = self.df[self.df['Rush Hour'] == "Morning"]
+        return self
 
-    @staticmethod
-    def get_weekend(df):
-        return df[df['DateTime'].dt.weekday >= 5]
+    def get_evening_rush_hour(self)-> Self:
+        """Filter data by evening rush hour"""
+        self.df = self.df[self.df['Rush Hour'] == "Evening"]
+        return self
 
-    @staticmethod
-    def get_delay_code(df, code):
-        return df[df["Code"] == code]
+    def get_off_peak(self)-> Self:
+        """Filter data by off-peak time"""
+        self.df = self.df[self.df['Rush Hour'] == "Off-peak"]
+        return self
 
-    @staticmethod
-    def get_line(df, line):
-        return df[df["Line"] == line]
+    def get_weekdays(self)-> Self:
+        """Filter data by weekdays"""
+        self.df = self.df[self.df['DateTime'].dt.weekday < 5]
+        return self
 
-    @staticmethod
-    def get_bound(df, bound):
-        return df[df["Bound"] == bound]
+    def get_weekend(self)-> Self:
+        """Filter data by weekend"""
+        self.df = self.df[self.df['DateTime'].dt.weekday >= 5]
+        return self
 
-    @staticmethod
-    def get_season(df, season):
-        return df[df["Season"] == season]
+    def get_selected_stations(self, stations: list)-> Self:
+        """Filter data by station name"""
+        self.df = self.df[self.df['Station'].isin(stations)]
+        return self
 
-    @staticmethod
-    def get_month(df, month):
-        return df[df["Month"] == month]
+    def get_delay_code(self, code)-> Self:
+        """Filter data by delay code"""
+        self.df = self.df[self.df["Code"] == code]
+        return self
 
-    @staticmethod
-    def get_vehicle(df, vehicle):
-        return df[df["Vehicle"] == vehicle]
+    def get_line(self, line)-> Self:
+        """Filter data by line"""
+        self.df = self.df[self.df["Line"] == line]
+        return self
 
-    @staticmethod
-    def get_selected_delay(df, min_start:int, min_end:int):
-        return df[df['Min Delay'].between(min_start, min_end)]
+    def get_bound(self, bound)-> Self:
+        """Filter data by bound"""
+        self.df = self.df[self.df["Bound"] == bound]
+        return self
+
+    def get_season(self, season)-> Self:
+        """Filter data by season"""
+        self.df = self.df[self.df["Season"] == season]
+        return self
+
+    def get_vehicle(self, vehicle)-> Self:
+        """Filter data by vehicle number"""
+        self.df = self.df[self.df["Vehicle"] == vehicle]
+        return self
+
