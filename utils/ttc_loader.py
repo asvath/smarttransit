@@ -89,82 +89,86 @@ class TTCLoader:
 
     # ---------- Filters ----------
 
-    def get_selected_year(self, year:int) -> Self:
+    def filter_selected_year(self, year:int) -> Self:
         """Filter data by year"""
         self.df = self.df[self.df['DateTime'].dt.year == year].copy()
         return self
 
 
-    def get_selected_years(self, year_start:int, year_end:int) -> Self:
+    def filter_selected_years(self, year_start:int, year_end:int) -> Self:
         """Filter data by year range"""
         self.df = self.df[self.df['DateTime'].dt.year.between(year_start, year_end)].copy()
         return self
 
-    def get_month(self, month)-> Self:
+    def filter_month(self, month)-> Self:
         """Filter data by month"""
         self.df = self.df[self.df["Month"] == month].copy()
         return self
 
-    def get_selected_delay(self, min_start:int, min_end:int)-> Self:
+    def filter_selected_delay(self, min_start:int, min_end:int)-> Self:
         """Filter data by delay time range"""
         self.df = self.df[self.df['Min Delay'].between(min_start, min_end)].copy()
         return self
 
-    def get_morning_rush_hour(self)-> Self:
+    def filter_morning_rush_hour(self)-> Self:
         """Filter data by morning rush hour"""
         self.df = self.df[self.df['Rush Hour'] == "Morning"].copy()
         return self
 
-    def get_evening_rush_hour(self)-> Self:
+    def filter_evening_rush_hour(self)-> Self:
         """Filter data by evening rush hour"""
         self.df = self.df[self.df['Rush Hour'] == "Evening"].copy()
         return self
 
-    def get_off_peak(self)-> Self:
+    def filter_off_peak(self)-> Self:
         """Filter data by off-peak time"""
         self.df = self.df[self.df['Rush Hour'] == "Off-peak"].copy()
         return self
 
-    def get_weekdays(self)-> Self:
+    def filter_weekdays(self)-> Self:
         """Filter data by weekdays"""
         self.df = self.df[self.df['DateTime'].dt.weekday < 5].copy()
         return self
 
-    def get_weekend(self)-> Self:
+    def filter_weekend(self)-> Self:
         """Filter data by weekend"""
         self.df = self.df[self.df['DateTime'].dt.weekday >= 5].copy()
         return self
 
-    def get_selected_stations(self, stations: list)-> Self:
+    def filter_selected_stations(self, stations: list)-> Self:
         """Filter data by station name"""
         self.df = self.df[self.df['Station'].isin(stations)].copy()
         return self
 
-    def get_delay_code(self, code)-> Self:
+    def filter_delay_code(self, code)-> Self:
         """Filter data by delay code"""
         self.df = self.df[self.df["Code"] == code].copy()
         return self
 
-    def get_line(self, line)-> Self:
+    def filter_line(self, line)-> Self:
         """Filter data by line"""
         self.df = self.df[self.df["Line"] == line].copy()
         return self
 
-    def get_bound(self, bound)-> Self:
+    def filter_bound(self, bound)-> Self:
         """Filter data by bound"""
         self.df = self.df[self.df["Bound"] == bound].copy()
         return self
 
-    def get_season(self, season)-> Self:
+    def filter_season(self, season)-> Self:
         """Filter data by season"""
         self.df = self.df[self.df["Season"] == season].copy()
         return self
 
-    def get_vehicle(self, vehicle)-> Self:
+    def filter_vehicle(self, vehicle)-> Self:
         """Filter data by vehicle number"""
         self.df = self.df[self.df["Vehicle"] == vehicle].copy()
         return self
 
+    def clear_filters(self):
+        self.reload()
+
     def get_delay_code_description(self, code:str) -> Self:
         """Get delay code description"""
         return self.delay_code_descriptions[code]
+
