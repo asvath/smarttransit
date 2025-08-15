@@ -209,7 +209,22 @@ To run the data cleaning & preprocessing pipeline, use the following command in 
 
 If you are running from a different location, provide the full path
 
-## Delay Code Classification Logic
+## Purpose of Classification
+
+The Toronto Transit Commission (TTC) maintains detailed subway delay codes that describe specific causes of service disruptions. While these codes are highly precise, they can be overwhelming to interpret in raw form.
+
+By grouping individual codes into broader, standardized categories, we can:
+
+- **Identify trends** – Track which types of issues (e.g., Mechanical/Infrastructure, Patron, Weather) cause the most delays over time.
+- **Simplify communication** – Replace technical jargon with clear, high-level categories that are easier for the public and media to understand (e.g., grouping Automatic Train Control, Rail Control, and Signalling System under Mechanical/Infrastructure).
+- **Improve accountability and reporting** – Give executives, boards, and oversight agencies concise summaries rather than long lists of cryptic codes.
+- **Support resource allocation and budgeting** – Provide evidence to justify investment priorities (e.g., replacing aging signals vs. upgrading vehicles).
+- **Increase public trust and transparency** – Show that delays are monitored, categorized, and addressed systematically, reassuring the public that service disruptions are not random.
+
+This classification system transforms operational delay data into an actionable tool for both internal decision-making and public communication.
+
+
+### Delay Code Classification Logic
 - `data/raw/code_descriptions/TTC_Delay_Codes_Categories_and_Reasoning.csv` — Final reference list with:
   - **Code** — The TTC delay code identifier.
   - **Code Description** — The official description from TTC logs.
