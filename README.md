@@ -210,12 +210,35 @@ To run the data cleaning & preprocessing pipeline, use the following command in 
 If you are running from a different location, provide the full path
 
 ## Delay Code Classification Logic
+- `data/raw/code_descriptions/TTC_Delay_Codes_Categories_and_Reasoning.csv` — Final reference list with:
+  - **Code** — The TTC delay code identifier.
+  - **Code Description** — The official description from TTC logs.
+  - **Category** — Assigned classification.
+  - **Reasoning** — Plain-language explanation of why the code fits that category.
 
 We manually categorized TTC subway delay codes using the following logic:
 
-- **Mechanical:** Failures of transit infrastructure or equipment (track, signals, motors, brakes, etc.)
-- **Human/Process:** Staff/operator mistakes or maintenance errors
-- **Weather:** Delays due to natural events (snow, ice, flood, heat, etc.)
-- **Patron:** Incidents caused by customers or the public (medical, disorderly, trespassing, vandalism, etc.)
-- **Other/External:** Labor disputes, security, systemwide outages, power failures (external), or any ambiguous causes
+- **Mechanical/Vehicle:** Covers faults or issues with the **train itself** (propulsion, brakes, HVAC, door systems, onboard electronics, etc.)
+- **Mechanical:** Failures of transit infrastructure (track, signals, motors, brakes, etc.)
+- **Human/Process:** Staff/operator mistakes, procedural errors, operational decisions, maintenance errors
+- **Weather:** Delays due to natural events (snow, ice etc)
+- **Patron:** Incidents caused by customers or the public (medical, disorderly, trespassing, vandalism, alarm etc.)
+- **Other/Internal:** Labour disputes, assault involving staff, fire inside TTC property, etc.
+- **Other/External:** Delays caused by outside parties or events beyond TTC’s direct control: external power failure, contractor issues
+- **Planned Work:** Planned closures, construction.
+- **Unplanned Work:** Closure due to unplanned work.
+- **Unknown:** Cause cannot be determined due to insufficient detail to assign a confident category.
 
+The **Reasoning** column in the dataset is written in plain language so that non-technical readers can understand why each code was placed in its category.  
+
+### Example Delay Code Classifications
+
+| CODE  | DESCRIPTION           | Category                 | Reasoning |
+|-------|-----------------------|--------------------------|-----------|
+| EUAC  | AIR CONDITIONING      | Mechanical/Vehicle       | Air conditioning system that cools the train. |
+| EUAL  | ALTERNATING CURRENT   | Mechanical/Vehicle       | Electrical system/converter that powers the train's motors, lights, and onboard equipment. |
+| EUATC | ATC RC&S EQUIPMENT    | Mechanical/Infrastructure| Automatic Train Control - Rail Control & Signalling system that manages train spacing, speed, and safety using trackside lights/signals etc. |
+| EUBK  | BRAKES                 | Mechanical/Vehicle       | Brake system. |
+| EUBO  | BODY                   | Mechanical/Vehicle       | The physical frame of subway car. |
+| EUCA  | COMPRESSED AIR         | Mechanical/Vehicle       | Air-powered system that operates brakes, doors, and other equipment on the train. |
+| EUCC  | CAM CONTROL            | Mechanical/Vehicle       | Older type of train motor control that uses mechanical cams to adjust power. |
