@@ -1,11 +1,11 @@
 import os
-from typing import Self
+from types import MappingProxyType
+from typing import Self, Mapping
 
 import pandas as pd
 
-from config import PROCESSED_DATA_DIR, CODE_DESC_DIR
+from config import PROCESSED_DELAY_DIR, PROCESSED_CODE_DESCRIPTIONS_FILE
 from utils import file_utils
-from utils.clean_utils import clean_delay_code_descriptions
 
 
 class TTCLoader:
@@ -13,29 +13,58 @@ class TTCLoader:
     Lightweight loader for TTC delay data
     """
 
-    def __init__(self, processed_data_dir = PROCESSED_DATA_DIR, autoload = True):
-        self.processed_data_dir = processed_data_dir
+    # class variables
+    _code_info: pd.DataFrame|None = None
+    _code_description_dict: dict |None = None
+    _code_category_dict: dict |None = None
+    _category_reasoning_dict: dict |None = None
+
+    @classmethod
+    def _load_code_descriptions_file(cls):
+        """Load Delay code and create dictionaries"""
+        if cls._code_info is not None:
+            return
+        cls._code_info = file_utils.read_csv(PROCESSED_CODE_DESCRIPTIONS_FILE)
+        cls._code_description_dict = dict(zip(cls._code_info["CODE"], cls._code_info["DESCRIPTION"]))
+        cls._code_category_dict = dict(zip(cls._code_info["CODE"], cls._code_info["CATEGORY"]))
+        cls._category_reasoning_dict = dict(zip(cls._code_info["CATEGORY"], cls._code_info["REASONING"]))
+
+    @classmethod
+    def code_description_dict(cls) -> Mapping[str, str]:
+        """Map code to description"""
+        cls._load_code_descriptions_file()
+        return MappingProxyType(cls._code_description_dict)
+
+    @classmethod
+    def code_category_dict(cls) -> Mapping[str, str]:
+        """Map code to category"""
+        cls._load_code_descriptions_file()
+        return MappingProxyType(cls._code_category_dict)
+
+    @classmethod
+    def category_reasoning_dict(cls) -> Mapping[str, str]:
+        """Map category to reasoning"""
+        cls._load_code_descriptions_file()
+        return MappingProxyType(cls._category_reasoning_dict)
+
+
+
+    def __init__(self, processed_delay_dir = PROCESSED_DELAY_DIR, autoload = True):
+        self.processed_delay_dir = processed_delay_dir
         self.df_orig = None
         self.df = None
-        self.delay_code_descriptions = None
+        self.code_category_dict = None
         if autoload:
-            self.delay_code_descriptions = self._load_code_descriptions()
             df = self._load_data()
             self.df_orig = df # cached df
             self.df = df.copy()
 
-    @staticmethod
-    def _load_code_descriptions():
-        """Load Delay code and corresponding description"""
-        code_descriptions_path = os.path.join(CODE_DESC_DIR, "Clean Code Descriptions.csv")
-        df = file_utils.read_csv(code_descriptions_path)
-        return dict(zip(df["CODE"], df["DESCRIPTION"]))
 
     def _get_latest_file(self) -> str | None:
         """Get filename of the most recently processed data"""
         # Step 1: Get all subfolders
-        folders = [os.path.join(self.processed_data_dir, d) for d in os.listdir(self.processed_data_dir)
-                   if os.path.isdir(os.path.join(self.processed_data_dir, d))]
+        folders = [os.path.join(self.processed_delay_dir, d) for d in os.listdir(self.processed_delay_dir)
+                   if os.path.isdir(os.path.join(self.processed_delay_dir, d))]
 
         if not folders:
             return None
@@ -93,7 +122,6 @@ class TTCLoader:
         """Filter data by year"""
         self.df = self.df[self.df['DateTime'].dt.year == year].copy()
         return self
-
 
     def filter_selected_years(self, year_start:int, year_end:int) -> Self:
         """Filter data by year range"""
@@ -165,10 +193,13 @@ class TTCLoader:
         self.df = self.df[self.df["Vehicle"] == vehicle].copy()
         return self
 
+    def filter_category(self, category):
+        """ Filter data by delay category, e.g. Patron"""
+        self.df = self.df[self.df["Delay Category"] == category].copy()
+        return self
+
     def clear_filters(self):
+        """Clears filters"""
         self.reload()
 
-    def get_delay_code_description(self, code:str) -> Self:
-        """Get delay code description"""
-        return self.delay_code_descriptions[code]
 
