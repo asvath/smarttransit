@@ -6,22 +6,25 @@ BASE_DIR = r'C:\Users\ashaa\OneDrive\Desktop\SmartTransit'  # Root of project
 DATA_DIR = os.path.join(BASE_DIR, 'data')                   # Main data directory
 RAW_DATA_DIR = os.path.join(BASE_DIR, 'data', 'raw')        # All raw data, includes delays, docs, code_descriptions
 DOCS_DIR = os.path.join(RAW_DATA_DIR, 'docs')               # Documentation or reference files
-CODE_DESC_DIR = os.path.join(RAW_DATA_DIR, 'code_descriptions')  # Code descriptions (raw)
+RAW_CODE_DESC_DIR = os.path.join(RAW_DATA_DIR, 'code_descriptions')  # Code descriptions (raw)
 LOG_DIR = os.path.join(BASE_DIR, 'logs')                    # Logs directory
 DROPPED_RAW_DATA_DIR = os.path.join(BASE_DIR, 'data', 'dropped_raw')  # Dropped/invalid data
 RAW_DELAY_DIR = os.path.join(RAW_DATA_DIR, 'delays')       # Raw delay data files
 
 # Processed data directories
 INTERIM_DATA_DIR = os.path.join(DATA_DIR, 'interim') # Data mid-pipeline
-PROCESSED_DATA_DIR = os.path.join(DATA_DIR, 'processed') # Fully processed data
+PROCESSED_DIR = os.path.join(DATA_DIR, 'processed') # Fully processed data dir
+PROCESSED_DELAY_DIR = os.path.join(PROCESSED_DIR, 'delays') # processed delay data files
+PROCESSED_CODE_DESC_DIR = os.path.join(PROCESSED_DIR, 'code_descriptions') # processed delay data files
 
 # File paths
 # Contains operational passenger stations
 VALID_STATIONS_FILE = os.path.join(DOCS_DIR, 'ttc_subway_stations.txt')
 # Contains operational passenger stations with line codes
 VALID_STATIONS_W_LINECODES_FILE = os.path.join(DOCS_DIR, 'ttc_subway_stations_with_linecodes.txt')
-# Contains delay codes and descriptions
-CODE_DESCRIPTIONS_FILE = os.path.join(CODE_DESC_DIR, 'Code Descriptions.csv')
+# Contains raw delay codes and descriptions
+CODE_DESCRIPTIONS_FILE = os.path.join(RAW_CODE_DESC_DIR, 'Code Descriptions.csv')
+PROCESSED_CODE_DESCRIPTIONS_FILE = os.path.join(PROCESSED_CODE_DESC_DIR, 'TTC_Delay_Codes_Categories_and_Reasoning.csv')
 
 # Others
 # Column names (in order) used for merging raw TTC delay data files
