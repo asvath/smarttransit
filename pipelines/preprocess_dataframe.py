@@ -1,5 +1,5 @@
 from utils import load_utils, clean_utils, log_utils, file_utils
-from config import LOG_DIR, INTERIM_DATA_DIR, PROCESSED_DATA_DIR
+from config import LOG_DIR, INTERIM_DATA_DIR, PROCESSED_DELAY_DIR
 
 """
 Preprocesses TTC subway delay data.
@@ -50,8 +50,14 @@ def clean_dataframe():
     # categorize stations into passenger, non-passenger and unknown
     df = clean_utils.add_station_category(df)
 
+    # log unique stations by category
+    log_utils.log_unique_stations_by_category(df, LOG_DIR)
+
     # drop stations that are SRT stations or have severe spelling errors, or have directionals in the name
     df = clean_utils.drop_unknown_stations(df)
+
+    # drop stations that are non-passenger stations, e.g Yards, Hostler, Track etc
+    df = clean_utils.drop_non_passenger_stations(df)
 
     # cleans delay code
     df = clean_utils.clean_delay_code_column(df)
@@ -71,33 +77,31 @@ def clean_dataframe():
     # clean day
     df = clean_utils.clean_day(df)
 
-
     # add IsWeekday column
-    df = clean_utils.add_IsWeekday(df)
+    df = clean_utils.add_isweekday(df)
 
     # add rush hour column
     df = clean_utils.add_rush_hour(df)
 
-
     # add season column
     df = clean_utils.add_season(df)
 
+    # add delay category, e.g Mechanical/Infrastructure
+    df = clean_utils.add_delay_category(df)
+
+    # add delay descriptions
+    df = clean_utils.add_delay_description(df)
 
     # remove any invalid rows after cleaning data
     df = df.dropna()
 
-
     # sort dataframe by datetime
     df = clean_utils.sort_by_datetime(df)
 
-
-    # log unique stations by category
-    log_utils.log_unique_stations_by_category(df, LOG_DIR)
-
     # write out cleaned csv
-    file_utils.write_to_csv(df, clean_file_name, PROCESSED_DATA_DIR, True)
+    file_utils.write_to_csv(df, clean_file_name, PROCESSED_DELAY_DIR, True)
 
-    print(f"Cleaned and saved dataframe {clean_file_name} in {PROCESSED_DATA_DIR}")
+    print(f"Cleaned and saved dataframe {clean_file_name} in {PROCESSED_DELAY_DIR}")
 
     return df
 
