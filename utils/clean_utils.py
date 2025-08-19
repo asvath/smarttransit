@@ -7,9 +7,9 @@ from typing import Dict, List
 import numpy as np
 import pandas as pd
 
-from config import (CODE_DESC_DIR, VALID_STATIONS_W_LINECODES_FILE, CODE_DESCRIPTIONS_FILE, LOG_DIR,
+from config import (RAW_CODE_DESC_DIR, VALID_STATIONS_W_LINECODES_FILE, CODE_DESCRIPTIONS_FILE, LOG_DIR,
                     REFERENCE_COLS_ORDERED, DROPPED_RAW_DATA_DIR, WEEKDAY_RUSH_HOUR_DICT, SEASONS_TO_MONTHS_DICT,
-                    VALID_LINECODES_TO_BOUND_DICT)
+                    VALID_LINECODES_TO_BOUND_DICT, PROCESSED_CODE_DESCRIPTIONS_FILE)
 from utils import log_utils, file_utils
 
 
@@ -102,6 +102,7 @@ def drop_duplicates(df:pd.DataFrame, dropped_raw_data_dir = DROPPED_RAW_DATA_DIR
     """
     duplicates = df[df.duplicated(keep=False)]
     prefix = "duplicates"
+    print(f"Rows dropped: duplicates saved in {dropped_raw_data_dir}")
     file_utils.write_to_csv(df=duplicates, prefix=prefix, output_dir=dropped_raw_data_dir)
 
     return df.drop_duplicates(keep="first")
@@ -144,7 +145,7 @@ def drop_invalid_rows(df: pd.DataFrame, dropped_raw_data_dir: str = DROPPED_RAW_
     for condition, dropped_df in drop_conditions.items():
         if not dropped_df.empty:
             file_utils.write_to_csv(df=dropped_df, prefix=condition, output_dir=dropped_raw_data_dir)
-
+            print(f"Rows dropped: {condition} saved in {dropped_raw_data_dir}")
     return df
 
 def clean_station_name(name:str) -> str:
@@ -274,9 +275,25 @@ def drop_unknown_stations(df:pd.DataFrame, dropped_raw_data_dir: str = DROPPED_R
     prefix = "unknown_stations"
     dropped_df = df[df["Station Category"] == "Unknown"]
     file_utils.write_to_csv(df=dropped_df, prefix=prefix, output_dir=dropped_raw_data_dir)
+    print(f"Rows dropped: unknown stations saved in {dropped_raw_data_dir}")
 
     return df[df["Station Category"] != "Unknown"].copy()
 
+def drop_non_passenger_stations(df:pd.DataFrame, dropped_raw_data_dir: str = DROPPED_RAW_DATA_DIR) -> pd.DataFrame:
+    """
+    Drops rows with 'Station Category' labeled as 'non-passenger', which include:
+      - Yards, Hostler, Track etc
+    Logs the dropped rows.
+    :param df: pd.Dataframe
+    :param dropped_raw_data_dir: Directory to store dropped data
+    :return: pd.Dataframe with added 'Station Category' column
+    """
+    prefix = "non_passenger"
+    dropped_df = df[df["Station Category"] == "Non-passenger"]
+    file_utils.write_to_csv(df=dropped_df, prefix=prefix, output_dir=dropped_raw_data_dir)
+    print(f"Rows dropped: non-passenger stations saved in {dropped_raw_data_dir}")
+
+    return df[df["Station Category"] != "Non-passenger"].copy()
 
 def clean_linecode(row:pd.Series, valid_station_linecode:dict) -> str | float:
     """
@@ -491,7 +508,7 @@ def add_season(df:pd.DataFrame) -> pd.DataFrame:
 
 def clean_delay_code_descriptions():
     """
-    Loads a CSV file containing TTC delay code descriptions, removes all non-ASCII characters
+    Loads a CSV file containing raw TTC delay code descriptions, removes all non-ASCII characters
     from the text fields, and saves a cleaned version to disk.
 
     This helps ensure the output file is encoding-safe and free of mojibake characters like â or Ã.
@@ -507,24 +524,24 @@ def clean_delay_code_descriptions():
         return re.sub(r'[^\x00-\x7F]+', '', text) if isinstance(text, str) else text
 
     codes_cleaned = codes.applymap(remove_non_ascii)
-    filepath = os.path.join(CODE_DESC_DIR,"Clean Code Descriptions.csv")
+    filepath = os.path.join(RAW_CODE_DESC_DIR,"Clean Code Descriptions.csv")
     codes_cleaned.to_csv (filepath,index=False, encoding='utf-8-sig')
 
 def delay_code_descriptions_dict() -> dict:
     """
     Creates a dictionary mapping delay codes to their descriptions.
     """
-    filepath = os.path.join(CODE_DESC_DIR,"Clean Code Descriptions.csv")
+    filepath = os.path.join(RAW_CODE_DESC_DIR,"Clean Code Descriptions.csv")
     df = file_utils.read_csv(filepath)
     return df.set_index("CODE")["DESCRIPTION"].to_dict()
 
 
-def clean_delay_code(row, delay_code_descriptions: dict, error_rows:list) -> str|float:
+def clean_delay_code(row:pd.Series, delay_code_descriptions: dict, error_rows:list) -> str|float:
     """
-    Cleans a delay code by checking if it exists in the provided descriptions dictionary.
+    Cleans delay code by checking if it exists in the provided descriptions dictionary.
     If the delay code is not present in the dictionary, returns NaN.
     Logs rows with errors in delay code
-    :param delay_code: The delay code for the train delay event
+    :param row: row of pd.Dataframe
     :param delay_code_descriptions: Dictionary mapping delay codes to their descriptions
     :param error_rows: list of rows containing delay code errors
     :return: correct delay code, or np.nan if not valid.
@@ -552,6 +569,25 @@ def clean_delay_code_column(df:pd.DataFrame) -> pd.DataFrame:
     file_utils.write_to_csv(df_code_error, "delay_data_w_delay_code_error", DROPPED_RAW_DATA_DIR)
     return df
 
+def delay_description(delay_code:str, delay_code_descriptions: dict) -> str:
+    """
+    Provide the description of the delay, e.g disorderly patron
+    :param delay_code: code of the delay
+    :param delay_code_descriptions: Dictionary mapping delay codes to their descriptions
+    :return: code description
+    """
+    return delay_code_descriptions[delay_code]
+
+def add_delay_description(df:pd.DataFrame) -> pd.DataFrame:
+    """
+    Add 'Delay Description' column to pd.DataFrame
+    :param df: pd.DataFrame
+    :return: pd.DataFrame with 'Delay Description' column
+    """
+    delay_code_description = delay_code_descriptions_dict()
+    df['Delay Description'] = df['Code'].apply(lambda code: delay_description(code, delay_code_description))
+    return df
+
 def sort_by_datetime(df:pd.DataFrame) -> pd.DataFrame:
     """
     Sort pd.DataFrame by DateTime
@@ -559,3 +595,41 @@ def sort_by_datetime(df:pd.DataFrame) -> pd.DataFrame:
     :return: pd.DataFrame sorted by DateTime
     """
     return df.sort_values(by='DateTime')
+
+def delay_code_category_dict() -> dict:
+    """
+    Creates a dictionary mapping delay codes to their categories. Using manually edited Clean Code Descriptions.csv
+    """
+    df = file_utils.read_csv(PROCESSED_CODE_DESCRIPTIONS_FILE)
+    return dict(zip(df["CODE"], df["CATEGORY"]))
+
+def delay_category(row:pd.Series, delay_code_category: dict, error_rows:list) -> str|float:
+    """
+    Gets the category for the delay code
+    :param row: row of pd.DataFame
+    :param delay_code_category: dictionary mapping delay code to category e.g Mechanical/Infrastructure
+    :param error_rows: list of rows containing delay code errors
+    :return category of delay code or np.nan
+    """
+    delay_code = row["Code"]
+    if delay_code not in delay_code_category:
+        error_rows.append(row.to_dict())
+        return np.nan
+    return delay_code_category[delay_code]
+
+def add_delay_category(df:pd.DataFrame) -> pd.DataFrame:
+    """
+    Adds delay category column to pd.DataFrame
+    :param df:  pd.DataFrame
+    :return: pd.DataFrame with delay category column
+    """
+    delay_code_category = delay_code_category_dict()
+    error_rows = []
+    df['Delay Category'] = df.apply(lambda row: delay_category(row, delay_code_category, error_rows), axis = 1)
+    # Save rows with errors to disk
+    df_code_error = pd.DataFrame(error_rows)
+    file_utils.write_to_csv(df_code_error, "delay_data_w_delay_category_error", DROPPED_RAW_DATA_DIR)
+    df = df.dropna()
+    return df
+
+
