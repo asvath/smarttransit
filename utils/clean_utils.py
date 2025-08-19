@@ -189,6 +189,8 @@ def clean_station_name(name:str) -> str:
         'NORTH YORK CTR STATION': 'NORTH YORK CENTRE STATION',
         'BLOOR STATION': 'BLOOR-YONGE STATION',
         'BLOOR/YONGE STATION': 'BLOOR-YONGE STATION',
+        'YONGE AND BLOOR STATION': 'BLOOR-YONGE STATION',
+        'YONGE-BLOOR STATION': 'BLOOR-YONGE STATION',
         'YONGE STATION': 'BLOOR-YONGE STATION',
         'YONGE-UNIVERSITY AND B': 'BLOOR-YONGE STATION',
         'SHEPPARDYONGE STATION': 'SHEPPARD-YONGE STATION',
@@ -234,6 +236,7 @@ def categorize_station(name:str, valid_station_linecode:dict) -> str:
     This function checks if a station is a valid passenger station, non-passenger (e.g YARD, WYE etc),
     or unknown (e.g SRT stations, approaching Rosedale, spelling error).
     :param name: cleaned str of the station name
+    :param valid_station_linecode: dictionary mapping valid passenger station to linecode
     :return: str indicating passenger, non-passenger or unknown
     """
 
@@ -440,7 +443,7 @@ def clean_day(df: pd.DataFrame):
     df['Day'] = df['DateTime'].dt.day_name()
     return df
 
-def add_IsWeekday(df: pd.DataFrame) -> pd.DataFrame:
+def add_isweekday(df: pd.DataFrame) -> pd.DataFrame:
     """
     Adds a new column 'IsWeekday' to indicate whether each date falls on a weekday.
 
