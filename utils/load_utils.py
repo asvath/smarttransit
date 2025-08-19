@@ -56,7 +56,7 @@ def load_raw_data_files(raw_delay_dir:str=RAW_DELAY_DIR , log_dir:str=LOG_DIR, v
                     file_to_sheets[file_path].append(sheet_df)
 
                 log_lines.append(f"Loaded {file_path} successfully with {len(file_to_sheets[file_path])} out "
-                                 f"{sheets_dict.items()} sheet(s)")
+                                 f"{len(sheets_dict.keys())} sheet(s)")
 
                 if verbose:
                     print(f"Loaded: {file_path}")
