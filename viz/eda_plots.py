@@ -67,7 +67,14 @@ def plot_total_delay_by_year(df:pd.DataFrame, unit: str = "minutes") -> go.Figur
 
     return fig
 
-def plot_category_trend_by_year(df:pd.DataFrame, unit: str = "minutes", top_n: int = 5) -> go.Figure:
+def plot_delay_category_trend_by_year(df:pd.DataFrame, unit: str = "minutes", top_n: int = 5) -> go.Figure:
+    """
+    Plot top-N delay category trends across all years
+    :param df: pd.DataFrame
+    :param unit: measurement of the delay in minutes, hours or days
+    :param top_n: top n delay categories (e.g Patrons, Mechanical/Infrastructure)
+    :return: plot
+    """
     if unit not in {"minutes", "hours", "days"}:
         raise ValueError("unit must be 'minutes', 'hours', or 'days'")
 
@@ -163,7 +170,14 @@ def plot_station_trend_by_year(df:pd.DataFrame, unit: str = "minutes", top_n: in
 
 
 def plot_consistently_top_station_trend(df, unit: str = "minutes", top_n: int = 5, last_n_years: int = None) -> go.Figure:
-
+    """Line graph showing delay trends over the years, of the stations that are consistently ranked in the
+    top-N stations with delays
+    df: pd.DataFrame
+    :param unit: measurement of the delay in minutes, hours or days
+    :param top_n: Ranked top-N stations
+    :param last_n_years: last n years to analyze, if none, all years
+    :return line graph
+    """
     consistently_top_stations = get_consistently_top_stations(df, top_n, last_n_years)
     df_filtered = df[df["Station"].isin(consistently_top_stations)]
     # Extract year
@@ -182,8 +196,6 @@ def plot_consistently_top_station_trend(df, unit: str = "minutes", top_n: int = 
         "hours": 60,
         "days": 60 * 24,
     }
-
-
 
     yearly = (
         df_filtered.groupby(["Year", "Station"])["Min Delay"]
