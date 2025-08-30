@@ -246,6 +246,7 @@ def plot_consistently_top_station_trend(df, unit: str = "minutes", top_n: int = 
 
 
 ### Spatial and Temporal Patterns
+# Which subway lines are most delay-prone
 def plot_line_trends_by_year(df:pd.DataFrame, unit: str = "minutes") -> go.Figure:
     """
     Plots the total delay in given units (min, hours, days) by year across the Lines (YU, BD, SHP)
@@ -287,7 +288,7 @@ def plot_line_trends_by_year(df:pd.DataFrame, unit: str = "minutes") -> go.Figur
         color= "Line",
         barmode= "group",
         title=f"TTC Delays Over Time: Yearly {unit.capitalize()} Lost Across Lines",
-        labels={ "DateTime": "Year", "Total Delay": f"Delay: {unit.capitalize()} Lost"},
+        labels={ "DateTime": "Year", "Total Delay": f"{unit.capitalize()} Lost"},
         color_discrete_map={
             "YU": "goldenrod",   # Yonge–University
             "BD": "green",    # Bloor–Danforth
@@ -327,6 +328,87 @@ def plot_line_trends_by_year(df:pd.DataFrame, unit: str = "minutes") -> go.Figur
     fig.add_annotation(
         x=2020,
         y=yearly.loc[yearly["DateTime"] == 2020, "Total Delay"].max(),
+        text=f"COVID-19",
+        showarrow=False,
+        yshift=20,  # move label a little above the bar
+        font=dict(color="black", size=12)
+    )
+
+    return fig
+
+# When do delays occur most often - during peak or off-peak hours
+def plot_rush_hour_trends_by_year(df:pd.DataFrame, unit: str = "minutes") -> go.Figure:
+    """
+    Plots the total delay in given units (min, hours, days) by year across the Lines (YU, BD, SHP)
+    :param df: pd.Dataframe of TTC delays
+    :param unit: measurement of the delay in minutes, hours or days
+    :return: plot
+    """
+    # Group by year and sum delays
+    if unit not in {"minutes", "hours", "days"}:
+        raise ValueError("unit must be 'minutes', 'hours', or 'days'")
+
+    # conversation factor
+    factors = {
+        "minutes": 1,
+        "hours": 60,
+        "days": 60 * 24,
+    }
+
+    df["Year"] = df["DateTime"].dt.year
+    rush = (
+        df.groupby(["Year", "Rush Hour"], as_index=False)
+        .agg(
+            Delays=("Min Delay", "count"),  # number of delay events
+            TotalMinutes=("Min Delay", "sum")  # total delay time in minutes (sum of Min Delay)
+        )
+        .rename(columns={"DateTime": "Year"})
+    )
+
+    # latest year & month in dataset
+    latest_date = df["DateTime"].max()
+    latest_year = latest_date.year
+    latest_month = latest_date.strftime("%B")  # e.g. "May"
+
+    # apply conversion
+    rush["Total Delay"] = rush["TotalMinutes"] / factors[unit]
+
+    label_map = {
+        "Morning": "Morning: 6am – 9am",
+        "Evening": "Evening: 3pm – 7pm",
+        "Off peak": "Off Peak: Weekday",
+        "Weekend": "Weekend"
+    }
+    rush["Rush Hour"] = rush["Rush Hour"].replace(label_map)
+
+    fig = px.bar(
+        rush,
+        x="Year",
+        y="Total Delay",
+        color="Rush Hour",
+        barmode="group",
+        title=f"TTC Delays Over Time: Yearly {unit.capitalize()} Lost During Peak vs Off-Peak",
+        labels={ "Total Delay": f"{unit.capitalize()} Lost"},
+        category_orders = {"Rush Hour": ["Morning: 6am – 9am", "Evening: 3pm – 7pm", "Off Peak: Weekday", "Weekend"]}  # forces order
+    )
+
+    # add annotation if dataset is not complete (e.g. till May 2025)
+    if latest_month != "December":
+        latest_value =\
+            rush.loc[rush["Year"] == latest_year, "Total Delay"].max()# Total Delay in the latest year
+        fig.add_annotation(
+            x=latest_year,
+            y=latest_value,
+            text=f"till {latest_month} {latest_year}",
+            showarrow=False,
+            yshift=20,  # move label a little above the bar
+            font=dict(color="black", size=12)
+        )
+
+    # Add covid annotation
+    fig.add_annotation(
+        x=2020,
+        y=rush.loc[rush["Year"] == 2020, "Total Delay"].max(),
         text=f"COVID-19",
         showarrow=False,
         yshift=20,  # move label a little above the bar
