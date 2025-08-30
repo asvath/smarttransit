@@ -178,14 +178,23 @@ def plot_consistently_top_station_trend(df, unit: str = "minutes", top_n: int = 
     :param last_n_years: last n years to analyze, if none, all years
     :return line graph
     """
+    # latest year & month in dataset, as the dataset might not be complete (e.g till May 2025)
+    latest_date = df["DateTime"].max()
+    latest_year = latest_date.year
+    latest_month = latest_date.strftime("%B")  # e.g. "May"
+
+    # get stations that are consistently in the top-N stations for the last N years
     consistently_top_stations = get_consistently_top_stations(df, top_n, last_n_years)
+
+    # filter dataframe for stations that are consistently in the top-N stations
     df_filtered = df[df["Station"].isin(consistently_top_stations)]
-    # Extract year
+    # filter dataframe for last N years
     df_filtered["Year"] = df_filtered["DateTime"].dt.year
     if last_n_years is not None:
         all_years_sorted = sorted(df_filtered["Year"].unique())
         selected_years = all_years_sorted[-last_n_years:]
         df_filtered = df_filtered[df_filtered["Year"].isin(selected_years)]
+
 
     if unit not in {"minutes", "hours", "days"}:
         raise ValueError("unit must be 'minutes', 'hours', or 'days'")
@@ -205,15 +214,13 @@ def plot_consistently_top_station_trend(df, unit: str = "minutes", top_n: int = 
 
     yearly["Total Delay"] = yearly["Total Delay"] / factors[unit]
 
-
-    # Plot as line chart
-    fig = px.line(
+    fig = px.bar(
         yearly,
         x="Year",
         y="Total Delay",
         color="Station",
-        markers=True,
-        title=f"Trend of Consistently Top {top_n} Stations Over Time (in {unit})",
+        barmode = "group",
+        title=f"TTC Delays Over Time: Stations that are consistently in the Top {top_n} stations by {unit.capitalize()} Lost per Year",
         labels={
             "Year": "Year",
             "Total Delay": f"Total Delay ({unit})",
@@ -221,7 +228,109 @@ def plot_consistently_top_station_trend(df, unit: str = "minutes", top_n: int = 
         }
     )
 
+    # add annotation if the dataset is not complete (e.g till May 2025)
+    if latest_month != "December":
+
+        biggest_delay_in_latest_year = yearly[yearly['Year'] == latest_year]['Total Delay'].max()
+
+        fig.add_annotation(
+            x=latest_year,
+            y=biggest_delay_in_latest_year,
+            text=f"till {latest_month} {latest_year}",
+            showarrow=False,
+            yshift=10,  # move label a little above the bar
+            font=dict(color="black", size=12)
+        )
     return fig
 
 
 
+### Spatial and Temporal Patterns
+def plot_line_trends_by_year(df:pd.DataFrame, unit: str = "minutes") -> go.Figure:
+    """
+    Plots the total delay in given units (min, hours, days) by year across the Lines (YU, BD, SHP)
+    :param df: pd.Dataframe of TTC delays
+    :param unit: measurement of the delay in minutes, hours or days
+    :return: plot
+    """
+    # Group by year and sum delays
+    if unit not in {"minutes", "hours", "days"}:
+        raise ValueError("unit must be 'minutes', 'hours', or 'days'")
+
+    # conversation factor
+    factors = {
+        "minutes": 1,
+        "hours": 60,
+        "days": 60 * 24,
+    }
+
+    yearly = (
+        df.groupby([df["DateTime"].dt.year, "Line"])["Min Delay"]
+          .sum()
+          .reset_index(name="Total Delay")
+    )
+
+
+    # latest year & month in dataset
+    latest_date = df["DateTime"].max()
+    latest_year = latest_date.year
+    latest_month = latest_date.strftime("%B")  # e.g. "May"
+
+    # apply conversion
+    yearly["Total Delay"] = yearly["Total Delay"] / factors[unit]
+
+    # plot bar graph
+    fig = px.bar(
+        yearly,
+        x="DateTime",
+        y="Total Delay",
+        color= "Line",
+        barmode= "group",
+        title=f"TTC Delays Over Time: Yearly {unit.capitalize()} Lost Across Lines",
+        labels={ "DateTime": "Year", "Total Delay": f"Delay: {unit.capitalize()} Lost"},
+        color_discrete_map={
+            "YU": "goldenrod",   # Yonge–University
+            "BD": "green",    # Bloor–Danforth
+            "SHP": "red"      # Sheppard
+        },
+        category_orders={"Line": ["BD", "YU", "SHP"]}  # forces order
+    )
+
+    # Add trend, linegraph
+    # Map Year + small offset per line for the x-coordinate on the plot
+    offsets = {"BD": -0.25, "YU": 0, "SHP": 0.25}
+    yearly["Year_offset"] = yearly["DateTime"] + yearly["Line"].map(offsets)
+    for line in ["BD", "YU", "SHP"]:
+        line_data = yearly[yearly["Line"] == line]
+        fig.add_scatter(
+            x=line_data["Year_offset"],  # shifted per line
+            y=line_data["Total Delay"],
+            mode="lines+markers",
+            name=f"{line} Trend",
+            line=dict(dash="dot")
+        )
+
+    # add annotation if dataset is not complete (e.g. till May 2025)
+    if latest_month != "December":
+        latest_value =\
+            yearly.loc[yearly["DateTime"] == latest_year, "Total Delay"].max()# Total Delay in the latest year
+        fig.add_annotation(
+            x=latest_year,
+            y=latest_value,
+            text=f"till {latest_month} {latest_year}",
+            showarrow=False,
+            yshift=20,  # move label a little above the bar
+            font=dict(color="black", size=12)
+        )
+
+    # Add covid annotation
+    fig.add_annotation(
+        x=2020,
+        y=yearly.loc[yearly["DateTime"] == 2020, "Total Delay"].max(),
+        text=f"COVID-19",
+        showarrow=False,
+        yshift=20,  # move label a little above the bar
+        font=dict(color="black", size=12)
+    )
+
+    return fig
