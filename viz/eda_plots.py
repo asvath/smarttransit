@@ -416,3 +416,90 @@ def plot_rush_hour_trends_by_year(df:pd.DataFrame, unit: str = "minutes") -> go.
     )
 
     return fig
+
+# Which season has the most delays
+def plot_season_trends_by_year(df:pd.DataFrame, unit: str = "minutes") -> go.Figure:
+    """
+    Plots the total delay in given units (min, hours, days) by year across the Lines (YU, BD, SHP)
+    :param df: pd.Dataframe of TTC delays
+    :param unit: measurement of the delay in minutes, hours or days
+    :return: plot
+    """
+    # Group by year and sum delays
+    if unit not in {"minutes", "hours", "days"}:
+        raise ValueError("unit must be 'minutes', 'hours', or 'days'")
+
+    # conversation factor
+    factors = {
+        "minutes": 1,
+        "hours": 60,
+        "days": 60 * 24,
+    }
+
+    df["Year"] = df["DateTime"].dt.year
+    season = (
+        df.groupby(["Year", "Season"], as_index=False)
+        .agg(
+            Delays=("Min Delay", "count"),  # number of delay events
+            TotalMinutes=("Min Delay", "sum")  # total delay time in minutes (sum of Min Delay)
+        )
+        .rename(columns={"DateTime": "Year"})
+    )
+
+    # latest year & month in dataset
+    latest_date = df["DateTime"].max()
+    latest_year = latest_date.year
+    latest_month = latest_date.strftime("%B")  # e.g. "May"
+
+    # apply conversion
+    season["Total Delay"] = season["TotalMinutes"] / factors[unit]
+    # Mapping season to month
+    label_map = {
+        "Winter": "Winter: Dec - Feb",
+        "Spring": "Spring: Mar - May",
+        "Summer": "Summer: Jun - Aug",
+        "Fall": "Fall; Sep - Nov"
+    }
+    season["Season"] = season["Season"].replace(label_map)
+
+    fig = px.bar(
+        season,
+        x="Year",
+        y="Total Delay",
+        color="Season",
+        barmode="group",
+        title=f"TTC Delays Over Time: Yearly {unit.capitalize()} Lost Across the Seasons",
+        labels={ "Total Delay": f"{unit.capitalize()} Lost"},
+        color_discrete_map={
+            "Winter: Dec - Feb": "navy",
+            "Spring: Mar - May": "forestgreen",
+            "Summer: Jun - Aug": "gold",
+            "Fall: Sep - Nov": "darkorange"
+        },
+        category_orders = {"Season": ["Winter: Dec - Feb", "Spring: Mar - May", "Summer: Jun - Aug", "Fall; Sep - Nov" ]}  # forces order
+    )
+
+    # add annotation if dataset is not complete (e.g. till May 2025)
+    if latest_month != "December":
+        latest_value =\
+            season.loc[season["Year"] == latest_year, "Total Delay"].max()# Total Delay in the latest year
+        fig.add_annotation(
+            x=latest_year,
+            y=latest_value,
+            text=f"till {latest_month} {latest_year}",
+            showarrow=False,
+            yshift=20,  # move label a little above the bar
+            font=dict(color="black", size=12)
+        )
+
+    # Add covid annotation
+    fig.add_annotation(
+        x=2020,
+        y=season.loc[season["Year"] == 2020, "Total Delay"].max(),
+        text=f"COVID-19",
+        showarrow=False,
+        yshift=20,  # move label a little above the bar
+        font=dict(color="black", size=12)
+    )
+
+    return fig
