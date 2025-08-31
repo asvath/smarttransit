@@ -1,6 +1,8 @@
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+
 from eda_utils import get_consistently_top_stations
 
 
@@ -187,9 +189,9 @@ def plot_consistently_top_station_trend(df, unit: str = "minutes", top_n: int = 
     consistently_top_stations = get_consistently_top_stations(df, top_n, last_n_years)
 
     # filter dataframe for stations that are consistently in the top-N stations
-    df_filtered = df[df["Station"].isin(consistently_top_stations)]
+    df_filtered = df[df["Station"].isin(consistently_top_stations)].copy()
     # filter dataframe for last N years
-    df_filtered["Year"] = df_filtered["DateTime"].dt.year
+    df_filtered.loc[:, "Year"] = df_filtered["DateTime"].dt.year
     if last_n_years is not None:
         all_years_sorted = sorted(df_filtered["Year"].unique())
         selected_years = all_years_sorted[-last_n_years:]
@@ -502,4 +504,167 @@ def plot_season_trends_by_year(df:pd.DataFrame, unit: str = "minutes") -> go.Fig
         font=dict(color="black", size=12)
     )
 
+    return fig
+
+def plot_histogram_delay_duration(df, last_n_years: int = None) -> go.Figure:
+    """Line graph showing delay trends over the years, of the stations that are consistently ranked in the
+    top-N stations with delays
+    df: pd.DataFrame
+    :param unit: measurement of the delay in minutes, hours or days
+    :param top_n: Ranked top-N stations
+    :param last_n_years: last n years to analyze, if none, all years
+    :return line graph
+    """
+    # latest year & month in dataset, as the dataset might not be complete (e.g till May 2025)
+    latest_date = df["DateTime"].max()
+    latest_year = latest_date.year
+    latest_month = latest_date.strftime("%B")  # e.g. "May"
+
+    # filter dataframe for last N years
+    df.loc[:, "Year"] = df["DateTime"].dt.year
+    if last_n_years is not None:
+        all_years_sorted = sorted(df["Year"].unique())
+        selected_years = all_years_sorted[-last_n_years:]
+        df = df[df["Year"].isin(selected_years)]
+
+    # Histogram of delay duration
+    fig = px.histogram(
+        df, x="Min Delay", nbins=100,
+        title="Distribution of TTC Delay Durations",
+        labels={"Min Delay": "Delay Duration (minutes)", "count": "Number of Delays"}
+    )
+
+    max_delay = df["Min Delay"].max()
+    print("YOLO")
+    print(max_delay)
+    fig.update_xaxes(range=[20, 60])  # force x-axis to the data max
+
+    return fig
+
+def plot_major_delay_trend(df, last_n_years: int = None) -> go.Figure:
+    """Line graph showing delay trends over the years, of the stations that are consistently ranked in the
+    top-N stations with delays
+    df: pd.DataFrame
+    :param unit: measurement of the delay in minutes, hours or days
+    :param top_n: Ranked top-N stations
+    :param last_n_years: last n years to analyze, if none, all years
+    :return line graph
+    """
+    # latest year & month in dataset, as the dataset might not be complete (e.g till May 2025)
+    latest_date = df["DateTime"].max()
+    latest_year = latest_date.year
+    latest_month = latest_date.strftime("%B")  # e.g. "May"
+
+    # filter dataframe for last N years
+    df.loc[:, "Year"] = df["DateTime"].dt.year
+    if last_n_years is not None:
+        all_years_sorted = sorted(df["Year"].unique())
+        selected_years = all_years_sorted[-last_n_years:]
+        df = df[df["Year"].isin(selected_years)]
+
+    df["Major Delay"] = df["Min Delay"] >= 20
+
+    df["Year"] = df["DateTime"].dt.year
+
+    major_counts = (
+        df.groupby("Year")["Major Delay"]
+        .sum()
+        .reset_index(name="Major Delays")
+    )
+
+    fig = px.line(
+        major_counts,
+        x="Year", y="Major Delays",
+        markers=True,
+        title="TTC Delays Over Time: Trend of Major TTC Delays (>20 minutes)",
+        labels={"Major Delays": "Number of Delays"}
+    )
+
+    # add annotation if dataset is not complete (e.g. till May 2025)
+    if latest_month != "December":
+        latest_value =\
+            major_counts.loc[major_counts["Year"] == latest_year, "Major Delays"].item()
+        fig.add_annotation(
+            x=latest_year,
+            y=latest_value,
+            text=f"till {latest_month} {latest_year}",
+            showarrow=False,
+            yshift = 30,
+            xshift=40,
+            font=dict(color="black", size=12)
+        )
+
+    # Add covid annotation
+    fig.add_annotation(
+        x=2020,
+        y=major_counts.loc[major_counts["Year"] == 2020, "Major Delays"].item(),
+        text=f"COVID-19",
+        showarrow=False,
+        yshift=30,
+        font=dict(color="black", size=12)
+    )
+    return fig
+
+def plot_minor_delay_trend(df, last_n_years: int = None) -> go.Figure:
+    """Line graph showing delay trends over the years, of the stations that are consistently ranked in the
+    top-N stations with delays
+    df: pd.DataFrame
+    :param unit: measurement of the delay in minutes, hours or days
+    :param top_n: Ranked top-N stations
+    :param last_n_years: last n years to analyze, if none, all years
+    :return line graph
+    """
+    # latest year & month in dataset, as the dataset might not be complete (e.g till May 2025)
+    latest_date = df["DateTime"].max()
+    latest_year = latest_date.year
+    latest_month = latest_date.strftime("%B")  # e.g. "May"
+
+    # filter dataframe for last N years
+    df.loc[:, "Year"] = df["DateTime"].dt.year
+    if last_n_years is not None:
+        all_years_sorted = sorted(df["Year"].unique())
+        selected_years = all_years_sorted[-last_n_years:]
+        df = df[df["Year"].isin(selected_years)]
+
+    df["Minor Delay"] = df["Min Delay"] < 20
+
+    df["Year"] = df["DateTime"].dt.year
+
+    major_counts = (
+        df.groupby("Year")["Minor Delay"]
+        .sum()
+        .reset_index(name="Minor Delay")
+    )
+
+    fig = px.line(
+        major_counts,
+        x="Year", y="Minor Delay",
+        markers=True,
+        title="TTC Delays Over Time: Trend of Minor TTC Delays (<20 minutes)",
+        labels={"Minor Delay": "Number of Delays"}
+    )
+
+    # add annotation if dataset is not complete (e.g. till May 2025)
+    if latest_month != "December":
+        latest_value =\
+            major_counts.loc[major_counts["Year"] == latest_year, "Minor Delay"].item()
+        fig.add_annotation(
+            x=latest_year,
+            y=latest_value,
+            text=f"till {latest_month} {latest_year}",
+            showarrow=False,
+            yshift = 30,
+            xshift=40,
+            font=dict(color="black", size=12)
+        )
+
+    # Add covid annotation
+    fig.add_annotation(
+        x=2020,
+        y=major_counts.loc[major_counts["Year"] == 2020, "Minor Delay"].item(),
+        text=f"COVID-19",
+        showarrow=False,
+        yshift=30,
+        font=dict(color="black", size=12)
+    )
     return fig
