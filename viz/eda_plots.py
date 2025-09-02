@@ -6,7 +6,7 @@ from plotly.subplots import make_subplots
 from eda_utils import get_consistently_top_stations
 
 
-def plot_total_delay_by_year(df:pd.DataFrame, unit: str = "minutes") -> go.Figure:
+def plot_total_delay_by_year(df:pd.DataFrame, unit: str = "minutes", graphtype: str = "bar") -> go.Figure:
     """
     Plots the total delay in given units (min, hours, days) by year
     :param df: pd.Dataframe of TTC delays
@@ -39,13 +39,23 @@ def plot_total_delay_by_year(df:pd.DataFrame, unit: str = "minutes") -> go.Figur
     # apply conversion
     yearly["Total Delay"] = yearly["Total Delay"] / factors[unit]
 
-    fig = px.bar(
-        yearly,
-        x="DateTime",
-        y="Total Delay",
-        title=f"Total TTC Delay Measured in {unit.capitalize()} Lost by Year",
-        labels={ "DateTime": "Year", "Total Delay": f"Delay: {unit.capitalize()} Lost"}
-    )
+    if graphtype == "bar":
+        fig = px.bar(
+            yearly,
+            x="DateTime",
+            y="Total Delay",
+            title=f"Total TTC Delay Measured in {unit.capitalize()} Lost by Year",
+            labels={ "DateTime": "Year", "Total Delay": f"Delay: {unit.capitalize()} Lost"}
+        )
+    else:
+        fig = px.line(
+            yearly,
+            x="DateTime",
+            y="Total Delay",
+            title=f"Total TTC Delay Measured in {unit.capitalize()} Lost by Year",
+            labels={ "DateTime": "Year", "Total Delay": f"Delay: {unit.capitalize()} Lost"}
+        )
+
 
     latest_value =\
         yearly.loc[yearly["DateTime"] == latest_year, "Total Delay"].item()# Total Delay in the latest year
@@ -101,12 +111,58 @@ def plot_delay_category_trend_by_year(df:pd.DataFrame, unit: str = "minutes", to
         .groupby(yearly_cat["Year"]).head(top_n)
     )
 
+
+    fig = px.bar(
+        top_n_cat,
+        x="Year",
+        y="Total Delay",
+        color= "Delay Category",
+        barmode="group",
+        title=f"TTC Delay by Category over Time measured in {unit.capitalize()} Lost by Year",
+        labels={ "Year": "Year", "Total Delay": f"Delay: {unit.capitalize()} Lost"}
+    )
+
+    fig = fig.for_each_xaxis(lambda ax: ax.update(categoryorder="total descending"))
+    return fig
+
+def plot_delay_description_trend_by_year(df:pd.DataFrame, unit: str = "minutes", top_n: int = 5) -> go.Figure:
+    """
+    Plot top-N delay category trends across all years
+    :param df: pd.DataFrame
+    :param unit: measurement of the delay in minutes, hours or days
+    :param top_n: top n delay categories (e.g Patrons, Mechanical/Infrastructure)
+    :return: plot
+    """
+    if unit not in {"minutes", "hours", "days"}:
+        raise ValueError("unit must be 'minutes', 'hours', or 'days'")
+
+    # conversation factor
+    factors = {
+        "minutes": 1,
+        "hours": 60,
+        "days": 60 * 24,
+    }
+
+    yearly_cat = (
+        df
+        .groupby([df["DateTime"].dt.year.rename("Year"), "Delay Description"])["Min Delay"]
+        .sum()
+        .reset_index(name="Total Delay")
+    )
+
+    yearly_cat["Total Delay"] = yearly_cat["Total Delay"] / factors[unit]
+
+    top_n_cat =(
+        yearly_cat.sort_values(["Year", "Total Delay"], ascending = [True, False]) # sort rows by year and total delay
+        .groupby(yearly_cat["Year"]).head(top_n)
+    )
+
     years = top_n_cat["Year"].unique()
-    categories = top_n_cat["Delay Category"].unique()
-    full_index = pd.MultiIndex.from_product([years, categories], names=["Year", "Delay Category"])
+    categories = top_n_cat["Delay Description"].unique()
+    full_index = pd.MultiIndex.from_product([years, categories], names=["Year", "Delay Description"])
 
     top_n_cat = (
-        top_n_cat.set_index(["Year", "Delay Category"])
+        top_n_cat.set_index(["Year", "Delay Description"])
         .reindex(full_index, fill_value=0)
         .reset_index()
     )
@@ -115,7 +171,7 @@ def plot_delay_category_trend_by_year(df:pd.DataFrame, unit: str = "minutes", to
         top_n_cat,
         x="Year",
         y="Total Delay",
-        color= "Delay Category",
+        color= "Delay Description",
         barmode="group",
         title=f"TTC Delay by Category over Time measured in {unit.capitalize()} Lost by Year",
         labels={ "Year": "Year", "Total Delay": f"Delay: {unit.capitalize()} Lost"}
@@ -378,7 +434,8 @@ def plot_rush_hour_trends_by_year(df:pd.DataFrame, unit: str = "minutes") -> go.
     label_map = {
         "Morning": "Morning: 6am – 9am",
         "Evening": "Evening: 3pm – 7pm",
-        "Off peak": "Off Peak: Weekday",
+        "Off-peak: Afternoon": "Off-Peak: Weekday 9am - 3pm",
+        "Off-peak: Night" : "Off-peak: Weekday 7pm - 2am",
         "Weekend": "Weekend"
     }
     rush["Rush Hour"] = rush["Rush Hour"].replace(label_map)
@@ -391,7 +448,8 @@ def plot_rush_hour_trends_by_year(df:pd.DataFrame, unit: str = "minutes") -> go.
         barmode="group",
         title=f"TTC Delays Over Time: Yearly {unit.capitalize()} Lost During Peak vs Off-Peak",
         labels={ "Total Delay": f"{unit.capitalize()} Lost"},
-        category_orders = {"Rush Hour": ["Morning: 6am – 9am", "Evening: 3pm – 7pm", "Off Peak: Weekday", "Weekend"]}  # forces order
+        category_orders = {"Rush Hour": ["Morning: 6am – 9am", "Off-Peak: Weekday 9am - 3pm",
+                                         "Evening: 3pm – 7pm", "Off-peak: Weekday 7pm - 2am", "Weekend"]}  # forces order
     )
 
     # add annotation if dataset is not complete (e.g. till May 2025)
