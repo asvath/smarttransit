@@ -464,12 +464,21 @@ def categorize_rush_hour(row:  pd.Series, weekday_rush_hour:dict= WEEKDAY_RUSH_H
 
     if row['IsWeekday']:
         t = row['DateTime'].time()
-        if  weekday_rush_hour["morning start"]  <= t <= weekday_rush_hour["morning end"]:
+        # Morning peak: 6am - 9am
+        if  weekday_rush_hour["morning start"]  <= t < weekday_rush_hour["morning end"]:
             return "Morning"
-        elif weekday_rush_hour["evening start"]  <= t <= weekday_rush_hour["evening end"]:
+
+        # Midday off-peak: 9am - 3pm
+        elif weekday_rush_hour["morning end"]  <= t < weekday_rush_hour["evening start"]:
+            return "Off-peak: Afternoon"
+
+        # Evening peak: 3pm - 7pm
+        elif weekday_rush_hour["evening start"]  <= t < weekday_rush_hour["evening end"]:
             return "Evening"
+
+        # Night off-peak, 7pm onwards
         else:
-            return "Off peak"
+            return "Off-peak: Night"
 
     else:
         return "Weekend"
