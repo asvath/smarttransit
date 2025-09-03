@@ -1,8 +1,8 @@
 import osmnx as ox
 from config import VALID_STATIONS_FILE
-from file_utils import read_txt_to_list
+from utils.file_utils import read_txt_to_list
 
-def station_lat_long() -> list:
+def extract_station_lat_long() -> list:
     """
     Extract station's lat long
     :return: list containing dictionaries for stations and corresponding geodata
