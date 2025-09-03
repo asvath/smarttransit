@@ -2,7 +2,7 @@ import osmnx as ox
 from config import VALID_STATIONS_FILE
 from utils.file_utils import read_txt_to_list
 
-def extract_station_lat_long() -> list:
+def extract_station_lat_lon() -> list:
     """
     Extract station's lat long
     :return: list containing dictionaries for stations and corresponding geodata
@@ -35,8 +35,8 @@ def extract_station_lat_long() -> list:
             station_lat_long_data.append(
             {
                 "station name": name,
-                "lat": pt.x,
-                "long": pt.y
+                "lat": pt.y,
+                "lon": pt.x
             })
 
     station_lat_long_data = sorted(station_lat_long_data, key=lambda x: x['station name'])
