@@ -1,4 +1,3 @@
-from typing import Tuple
 import osmnx as ox
 from config import VALID_STATIONS_FILE
 from file_utils import read_txt_to_list
@@ -6,8 +5,7 @@ from file_utils import read_txt_to_list
 def station_lat_long() -> list:
     """
     Extract station's lat long
-    :param name:
-    :return:
+    :return: list containing dictionaries for stations and corresponding geodata
     """
     station_lat_long_data = []
     valid_stations_list = read_txt_to_list(VALID_STATIONS_FILE)
@@ -42,6 +40,7 @@ def station_lat_long() -> list:
             })
 
     station_lat_long_data = sorted(station_lat_long_data, key=lambda x: x['station name'])
+
     # verify that lat long has been extracted for all our valid stations, if not we will add them manually
     stations_with_coords = {s["station name"] for s in station_lat_long_data}
     all_names = set(valid_stations_list)
