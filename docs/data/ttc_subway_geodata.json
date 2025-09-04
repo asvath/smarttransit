@@ -1,0 +1,352 @@
+[
+    {
+        "station name": "Bathurst Station",
+        "lat": 43.6659322,
+        "lon": -79.4112359
+    },
+    {
+        "station name": "Bay Station",
+        "lat": 43.6701851,
+        "lon": -79.3902694
+    },
+    {
+        "station name": "Bayview Station",
+        "lat": 43.7667987,
+        "lon": -79.3873787
+    },
+    {
+        "station name": "Bessarion Station",
+        "lat": 43.7691308,
+        "lon": -79.3765761
+    },
+    {
+        "station name": "Bloor-Yonge Station",
+        "lat": 43.6707855,
+        "lon": -79.3856867
+    },
+    {
+        "station name": "Broadview Station",
+        "lat": 43.67699462413741,
+        "lon": -79.3582180732809
+    },
+    {
+        "station name": "Castle Frank Station",
+        "lat": 43.6734986,
+        "lon": -79.3690458
+    },
+    {
+        "station name": "Chester Station",
+        "lat": 43.6782277,
+        "lon": -79.3525143
+    },
+    {
+        "station name": "Christie Station",
+        "lat": 43.6641066,
+        "lon": -79.4183969
+    },
+    {
+        "station name": "College Station",
+        "lat": 43.6606617,
+        "lon": -79.3827952
+    },
+    {
+        "station name": "Coxwell Station",
+        "lat": 43.6841524,
+        "lon": -79.323043
+    },
+    {
+        "station name": "Davisville Station",
+        "lat": 43.697936,
+        "lon": -79.3972908
+    },
+    {
+        "station name": "Don Mills Station",
+        "lat": 43.775347,
+        "lon": -79.3459439
+    },
+    {
+        "station name": "Donlands Station",
+        "lat": 43.6810265,
+        "lon": -79.3377871
+    },
+    {
+        "station name": "Downsview Park Station",
+        "lat": 43.7535823,
+        "lon": -79.4784809
+    },
+    {
+        "station name": "Dufferin Station",
+        "lat": 43.6602635,
+        "lon": -79.4353869
+    },
+    {
+        "station name": "Dundas Station",
+        "lat": 43.6565367,
+        "lon": -79.3810223
+    },
+    {
+        "station name": "Dundas West Station",
+        "lat": 43.6570301,
+        "lon": -79.4529728
+    },
+    {
+        "station name": "Dupont Station",
+        "lat": 43.6747046,
+        "lon": -79.406983
+    },
+    {
+        "station name": "Eglinton Station",
+        "lat": 43.7061229,
+        "lon": -79.39853
+    },
+    {
+        "station name": "Eglinton West Station",
+        "lat": 43.7000172,
+        "lon": -79.4363964
+    },
+    {
+        "station name": "Finch Station",
+        "lat": 43.7812974,
+        "lon": -79.4158993
+    },
+    {
+        "station name": "Finch West Station",
+        "lat": 43.764653,
+        "lon": -79.491279
+    },
+    {
+        "station name": "Glencairn Station",
+        "lat": 43.7087117,
+        "lon": -79.4406853
+    },
+    {
+        "station name": "Greenwood Station",
+        "lat": 43.6825599,
+        "lon": -79.3302652
+    },
+    {
+        "station name": "High Park Station",
+        "lat": 43.6538668,
+        "lon": -79.4668644
+    },
+    {
+        "station name": "Highway 407 Station",
+        "lat": 43.78333,
+        "lon": -79.52306
+    },
+    {
+        "station name": "Islington Station",
+        "lat": 43.645335,
+        "lon": -79.5248163
+    },
+    {
+        "station name": "Jane Station",
+        "lat": 43.6499177,
+        "lon": -79.4838463
+    },
+    {
+        "station name": "Keele Station",
+        "lat": 43.655569,
+        "lon": -79.4595795
+    },
+    {
+        "station name": "Kennedy Station",
+        "lat": 43.732429,
+        "lon": -79.2637529
+    },
+    {
+        "station name": "King Station",
+        "lat": 43.6489494,
+        "lon": -79.3777538
+    },
+    {
+        "station name": "Kipling Station",
+        "lat": 43.6376161,
+        "lon": -79.5355081
+    },
+    {
+        "station name": "Lansdowne Station",
+        "lat": 43.6591114,
+        "lon": -79.4427866
+    },
+    {
+        "station name": "Lawrence Station",
+        "lat": 43.7263483,
+        "lon": -79.4024743
+    },
+    {
+        "station name": "Lawrence West Station",
+        "lat": 43.7152827,
+        "lon": -79.4439143
+    },
+    {
+        "station name": "Leslie Station",
+        "lat": 43.7710725,
+        "lon": -79.365634
+    },
+    {
+        "station name": "Main Street Station",
+        "lat": 43.6890489,
+        "lon": -79.3016043
+    },
+    {
+        "station name": "Museum Station",
+        "lat": 43.6668462,
+        "lon": -79.3933506
+    },
+    {
+        "station name": "North York Centre Station",
+        "lat": 43.7686787,
+        "lon": -79.4126298
+    },
+    {
+        "station name": "Old Mill Station",
+        "lat": 43.649826,
+        "lon": -79.4943338
+    },
+    {
+        "station name": "Osgoode Station",
+        "lat": 43.6508016,
+        "lon": -79.3865409
+    },
+    {
+        "station name": "Ossington Station",
+        "lat": 43.6623839,
+        "lon": -79.4261128
+    },
+    {
+        "station name": "Pape Station",
+        "lat": 43.6799212,
+        "lon": -79.3449046
+    },
+    {
+        "station name": "Pioneer Village Station",
+        "lat": 43.7768588,
+        "lon": -79.5092824
+    },
+    {
+        "station name": "Queen Station",
+        "lat": 43.6529083,
+        "lon": -79.3794575
+    },
+    {
+        "station name": "Queen's Park Station",
+        "lat": 43.6596838,
+        "lon": -79.3901923
+    },
+    {
+        "station name": "Rosedale Station",
+        "lat": 43.67654777729441,
+        "lon": -79.38854091895715
+    },
+    {
+        "station name": "Royal York Station",
+        "lat": 43.6481827,
+        "lon": -79.5112961
+    },
+    {
+        "station name": "Runnymede Station",
+        "lat": 43.6517026,
+        "lon": -79.4759978
+    },
+    {
+        "station name": "Sheppard West Station",
+        "lat": 43.7492988,
+        "lon": -79.462248
+    },
+    {
+        "station name": "Sheppard-Yonge Station",
+        "lat": 43.7614518,
+        "lon": -79.4109148
+    },
+    {
+        "station name": "Sherbourne Station",
+        "lat": 43.6722828,
+        "lon": -79.376394
+    },
+    {
+        "station name": "Spadina Station",
+        "lat": 43.6685404,
+        "lon": -79.4047039
+    },
+    {
+        "station name": "St. Andrew Station",
+        "lat": 43.6477917,
+        "lon": -79.3848711
+    },
+    {
+        "station name": "St. Clair Station",
+        "lat": 43.6879512,
+        "lon": -79.3936947
+    },
+    {
+        "station name": "St. Clair West Station",
+        "lat": 43.6850034,
+        "lon": -79.4153079
+    },
+    {
+        "station name": "St. George Station",
+        "lat": 43.6684465,
+        "lon": -79.398844
+    },
+    {
+        "station name": "St. Patrick Station",
+        "lat": 43.6548199,
+        "lon": -79.3882736
+    },
+    {
+        "station name": "Summerhill Station",
+        "lat": 43.6816776,
+        "lon": -79.3905037
+    },
+    {
+        "station name": "Union Station",
+        "lat": 43.6456424,
+        "lon": -79.3802085
+    },
+    {
+        "station name": "Vaughan Metropolitan Centre Station",
+        "lat": 43.79417,
+        "lon": -79.5275
+    },
+    {
+        "station name": "Victoria Park Station",
+        "lat": 43.6948696,
+        "lon": -79.288797
+    },
+    {
+        "station name": "Warden Station",
+        "lat": 43.7111204,
+        "lon": -79.2790432
+    },
+    {
+        "station name": "Wellesley Station",
+        "lat": 43.6655242,
+        "lon": -79.3838011
+    },
+    {
+        "station name": "Wilson Station",
+        "lat": 43.7344762,
+        "lon": -79.4500619
+    },
+    {
+        "station name": "Woodbine Station",
+        "lat": 43.6864139,
+        "lon": -79.3126246
+    },
+    {
+        "station name": "York Mills Station",
+        "lat": 43.7440391,
+        "lon": -79.406657
+    },
+    {
+        "station name": "York University Station",
+        "lat": 43.7741232,
+        "lon": -79.4996291
+    },
+    {
+        "station name": "Yorkdale Station",
+        "lat": 43.7246418,
+        "lon": -79.4475031
+    }
+]

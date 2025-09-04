@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TTC Delay Insights — Data today, better commutes tomorrow</title>
+  <style>
+    :root{ --red:#dc2626; --border:#313131; --muted:#9ca3af; }
+    *{ box-sizing:border-box }
+    body{ margin:0; font-family: Inter, system-ui, Segoe UI, Arial; background:#0b0b0c; color:#f5f5f6; }
+    header{ position:sticky; top:0; z-index:10; background:#0f0f11; border-bottom:1px solid var(--border); }
+    .container{ max-width:1120px; margin:0 auto; padding:12px 18px; }
+    .brand{ display:flex; align-items:center; gap:10px; }
+    .badge{ width:36px; height:36px; border-radius:12px; background:var(--red); color:#fff; display:grid; place-items:center; font-weight:700; }
+    .muted{ color:var(--muted); }
+    .nav{ display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; }
+    .btn{ border:1px solid var(--border); background:#121214; color:#f5f5f6; padding:8px 12px; border-radius:10px; cursor:pointer; font-weight:600; }
+    .btn.primary{ background:var(--red); color:#fff; border-color:var(--red); }
+    main{ max-width:1120px; margin:16px auto; padding:0 18px; }
+    .hero{ display:grid; grid-template-columns:2fr 1fr; gap:16px; }
+    @media (max-width:960px){ .hero{ grid-template-columns:1fr; } }
+    .card{ background:#121214; border:1px solid var(--border); border-radius:14px; box-shadow:0 1px 3px rgba(0,0,0,.35); }
+    .content{ padding:14px; }
+    .mapbox{ height:60vh; min-height:420px; position:relative; border:1px solid var(--border); border-radius:14px; overflow:hidden; background:#0b0b0c; }
+    .legend{ display:flex; gap:12px; align-items:center; font-size:12px; color:#d1d5db; flex-wrap:wrap; }
+    .dot{ width:10px; height:10px; border-radius:999px; display:inline-block; }
+    .chipbar{ display:flex; gap:8px; flex-wrap:wrap; margin:8px 0; }
+    .chip{ border:1px solid var(--border); padding:6px 10px; border-radius:999px; font-size:12px; cursor:pointer; background:#121214; color:#e5e7eb; }
+    .chip.active{ border-color:var(--red); box-shadow:0 0 0 2px rgba(220,38,38,.25); }
+    .kpi{ display:flex; justify-content:space-between; margin:8px 0; padding:10px; border:1px solid var(--border); border-radius:10px; }
+    footer{ padding:24px 18px; text-align:center; color:#9ca3af; }
+    #leaflet-map{ position:absolute; inset:0; }
+<!--    .legend-box{-->
+<!--      position: fixed; bottom: 20px; left: 20px; z-index: 20;-->
+<!--      background: rgba(18,18,20,.95); padding: 10px 12px; border: 1px solid #2a2a2a;-->
+<!--      border-radius: 8px; font-size: 14px; color:#e5e7eb;-->
+<!--      backdrop-filter: blur(6px);-->
+<!--    }-->
+    .sw{display:inline-block;width:12px;height:12px;margin-right:6px;vertical-align:middle}
+    .leaflet-control-attribution {
+      background: rgba(18,18,20,.85) !important;
+      color: #c7c9ce !important;
+      border-radius: 8px !important;
+      padding: 2px 6px !important;
+      font-size: 11px !important;
+    }
+    .leaflet-control-container .leaflet-control a { color: #a7b0ff !important; }
+
+    /* Sidebar buffer section */
+    .buffer-box{ margin-top:10px; border:1px solid var(--border); border-radius:10px; padding:10px; }
+    .buffer-box h4{ margin:0 0 8px 0; font-size:13px; }
+    .buffer-row{ display:flex; justify-content:space-between; padding:4px 0; font-size:12px; }
+    .buffer-row + .buffer-row{ border-top:1px dashed #2a2a2a; }
+    .buffer-controls{ display:flex; gap:6px; flex-wrap:wrap; margin-bottom:8px; }
+    select, .slim{ background:#141417; border:1px solid #2a2a2a; color:#e5e7eb; border-radius:8px; padding:6px 8px; font-size:12px; }
+    .badge-dot{ width:10px; height:10px; border-radius:999px; display:inline-block; vertical-align:middle; margin-right:6px; }
+  </style>
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+</head>
+<body>
+  <header>
+    <div class="container" style="display:flex;align-items:center;justify-content:space-between;">
+      <div class="brand">
+        <div class="badge">TTC</div>
+        <div>
+          <div style="font-weight:700">TTC Delay Insights</div>
+          <div class="muted" style="font-size:13px;">Data today, better commutes tomorrow: Bringing clarity
+            and transparency to Toronto’s transit delays.</div>
+        </div>
+      </div>
+      <div class="nav">
+        <button class="btn primary">Home</button>
+        <button class="btn">Overview</button>
+        <button class="btn">Trends</button>
+        <button class="btn">Stations</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="hero">
+      <div class="card">
+        <div class="content">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+            <div style="font-weight:600">Toronto Subway: Delay Hotspots</div>
+            <div class="legend">
+              <span><span class="dot" style="background:#FFD300"></span> Line 1</span>
+              <span><span class="dot" style="background:#00A94F"></span> Line 2</span>
+              <span><span class="dot" style="background:#9C27B0"></span> Line 4</span>
+            </div>
+          </div>
+
+          <div class="chipbar" id="type-chips">
+            <div class="chip active" data-type="GENERAL">General</div>
+            <div class="chip" data-type="TRACK">Track Intrusion</div>
+            <div class="chip" data-type="DISORDER">Disorderly Patron</div>
+          </div>
+
+          <div class="mapbox"><div id="leaflet-map"></div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="content">
+          <h3 id="st-name" style="margin:0 0 4px 0">Select a station</h3>
+          <div id="st-sub" class="muted" style="font-size:13px;margin-bottom:8px">Click a station marker.</div>
+          <div class="kpi"><span>Total delays (last yr)</span><strong id="st-delays">—</strong></div>
+          <div class="kpi"><span>Days lost (last yr)</span><strong id="st-mins">—</strong></div>
+          <div class="kpi"><span>Major delays (>20m)</span><strong id="st-major">—</strong></div>
+          <div class="kpi"><span>Top reason for Delay</span><strong id="st-reason">—</strong></div>
+
+          <!-- Moved here: buffer widget lives in the sidebar -->
+          <div class="buffer-box">
+            <h4>Add to Travel Time</h4>
+            <div class="muted" style="font-size:13px;margin-bottom:8px">Based on avg. delay over the last 3 years.</div>
+            <div class="buffer-controls">
+              <label class="slim">
+                <span class="badge-dot" id="line-dot"></span>
+                <select id="line-select"></select>
+              </label>
+              <select id="dir-select"></select>
+            </div>
+            <div id="buffer-rows"></div>
+            <div class="muted" style="font-size:11px;margin-top:8px;">Avg extra minutes by time of day.</div>
+          </div>
+
+          <div class="muted" style="font-size:13px;margin-top:10px">Overview/Trends/Stations would be separate pages in the full app.</div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>Toronto Open Data • Leaflet • Created by Asha Asvathaman</footer>
+
+<!--  <div class="legend-box">-->
+<!--    <b>TTC Subway Lines</b><br>-->
+<!--    <span class="sw" style="background:#FFD300"></span> Line 1 – Yonge–University<br>-->
+<!--    <span class="sw" style="background:#00A94F"></span> Line 2 – Bloor–Danforth<br>-->
+<!--    <span class="sw" style="background:#9C27B0"></span> Line 4 – Sheppard-->
+<!--  </div>-->
+
+<script>
+  const LINES_URL    = "./data/ttc_lines.geojson";
+  const STATIONS_URL = "./data/ttc_subway_geodata.json";
+
+  const COLOR = {
+    "Line 1 – Yonge–University": "#FFD300",
+    "Line 2 – Bloor–Danforth":   "#00A94F",
+    "Line 3 – Scarborough (legacy)": "#00B5E2",
+    "Line 4 – Sheppard":         "#9C27B0",
+  };
+  const DEFAULT_COLOR = "#6aa3ff";
+
+  function canonical_line(name){
+    if(typeof name !== "string") return "Unknown";
+    const n = name.toUpperCase();
+    if(n.includes("LINE 1") || n.includes("YONGE") || n.includes("UNIVERSITY")) return "Line 1 – Yonge–University";
+    if(n.includes("LINE 2") || n.includes("BLOOR") || n.includes("DANFORTH"))   return "Line 2 – Bloor–Danforth";
+    if(n.includes("LINE 3") || n.includes("SCARBOROUGH"))                        return "Line 3 – Scarborough (legacy)";
+    if(n.includes("LINE 4") || n.includes("SHEPPARD"))                           return "Line 4 – Sheppard";
+    return name;
+  }
+  function get_route_name(props){
+    if(!props) return null;
+    if("ROUTE_NAME" in props) return props.ROUTE_NAME;
+    if("ROUTE_LONG_NAME" in props) return props.ROUTE_LONG_NAME;
+    if("route" in props) return props.route;
+    if("name" in props) return props.name;
+    return null;
+  }
+
+  // Map
+  const map = L.map('leaflet-map').setView([43.70, -79.40], 11.8);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    maxZoom: 19,
+    attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
+  }).addTo(map);
+
+  const stationsGroup = L.layerGroup().addTo(map);
+  let linesLayer;
+
+  // Lines
+  fetch(LINES_URL)
+    .then(r => r.json())
+    .then(geojson => {
+      linesLayer = L.geoJSON(geojson, {
+        style: f => {
+          const rn = get_route_name(f.properties);
+          const canon = canonical_line(rn);
+          const color = COLOR[canon] || DEFAULT_COLOR;
+          return { color, weight: 5, opacity: 0.95 };
+        },
+        filter: f => {
+          const rn = get_route_name(f.properties);
+          const canon = canonical_line(rn);
+          return canon !== "Line 3 – Scarborough (legacy)";
+        },
+        onEachFeature: (f, layer) => {
+          const rn = get_route_name(f.properties) || "TTC Subway Line";
+          layer.bindTooltip(rn);
+        }
+      }).addTo(map);
+
+      try {
+        const b = linesLayer.getBounds();
+        if (b.isValid()) map.fitBounds(b.pad(0.05));
+      } catch(e) {}
+    });
+
+  // Stations
+  fetch(STATIONS_URL)
+    .then(r => r.json())
+    .then(rows => {
+      rows.forEach(s => {
+        if (typeof s.lat !== "number" || typeof s.lon !== "number") return;
+        const marker = L.circleMarker([s.lat, s.lon], {
+          radius: 4,
+          color: "black",
+          weight: 2,
+          fillColor: "white",
+          fillOpacity: 1.0
+        }).bindTooltip(s["station name"] || "Station");
+
+        marker.on("click", () => {
+          document.getElementById("st-name").textContent = s["station name"] || "Station";
+          document.getElementById("st-sub").textContent  = `Lat ${s.lat.toFixed(6)}, Lon ${s.lon.toFixed(6)}`;
+          document.getElementById("st-delays").textContent = "—";
+          document.getElementById("st-mins").textContent   = "—";
+          document.getElementById("st-major").textContent  = "—";
+          document.getElementById("st-reason").textContent = "—";
+        });
+
+        stationsGroup.addLayer(marker);
+      });
+    });
+
+  // Incident chips (visual only)
+  document.querySelectorAll('#type-chips .chip').forEach(ch => ch.addEventListener('click', () => {
+    document.querySelectorAll('#type-chips .chip').forEach(x => x.classList.remove('active'));
+    ch.classList.add('active');
+  }));
+
+  // ---- Sidebar buffer widget (compact) ----
+  const SAMPLE_LINE_BUFFERS = {
+    "Line 1 – Yonge–University": {
+      "Northbound": { morning_rush: 4, offpeak_day: 2, evening_rush: 5, offpeak_night: 1, weekend: 2 },
+      "Southbound": { morning_rush: 5, offpeak_day: 2, evening_rush: 6, offpeak_night: 1, weekend: 3 }
+    },
+    "Line 2 – Bloor–Danforth": {
+      "Eastbound":  { morning_rush: 3, offpeak_day: 2, evening_rush: 4, offpeak_night: 1, weekend: 2 },
+      "Westbound":  { morning_rush: 3, offpeak_day: 1, evening_rush: 4, offpeak_night: 1, weekend: 2 }
+    },
+    "Line 4 – Sheppard": {
+      "Eastbound":  { morning_rush: 2, offpeak_day: 1, evening_rush: 2, offpeak_night: 1, weekend: 1 },
+      "Westbound":  { morning_rush: 2, offpeak_day: 1, evening_rush: 2, offpeak_night: 1, weekend: 1 }
+    }
+  };
+  const BUCKET_LABEL = {
+    morning_rush:  "Morning rush (6–9am)",
+    offpeak_day:   "Off-peak (9am–4pm)",
+    evening_rush:  "Evening rush (4–7pm)",
+    offpeak_night: "Off-peak night (7pm–12am)",
+    weekend:       "Weekend"
+  };
+  const COLOR_MAP = {
+    "Line 1 – Yonge–University": "#FFD300",
+    "Line 2 – Bloor–Danforth":   "#00A94F",
+    "Line 4 – Sheppard":         "#9C27B0",
+  };
+
+  const lineSel = document.getElementById('line-select');
+  const dirSel  = document.getElementById('dir-select');
+  const rowsEl  = document.getElementById('buffer-rows');
+  const dotEl   = document.getElementById('line-dot');
+
+  function initSelectors(){
+    Object.keys(SAMPLE_LINE_BUFFERS).forEach(l => {
+      const opt = document.createElement('option');
+      opt.value = l; opt.textContent = l;
+      lineSel.appendChild(opt);
+    });
+    lineSel.value = "Line 1 – Yonge–University";
+    updateDirOptions();
+    renderRows();
+  }
+  function updateDirOptions(){
+    dirSel.innerHTML = "";
+    const dirs = Object.keys(SAMPLE_LINE_BUFFERS[lineSel.value] || {});
+    dirs.forEach(d => {
+      const opt = document.createElement('option');
+      opt.value = d; opt.textContent = d;
+      dirSel.appendChild(opt);
+    });
+    dirSel.value = dirs[0] || "";
+    dotEl.style.background = COLOR_MAP[lineSel.value] || "#6aa3ff";
+  }
+  function renderRows(){
+    const buckets = (SAMPLE_LINE_BUFFERS[lineSel.value] || {})[dirSel.value] || {};
+    rowsEl.innerHTML = "";
+    Object.keys(BUCKET_LABEL).forEach(key => {
+      const val = buckets[key] ?? "—";
+      const row = document.createElement('div');
+      row.className = "buffer-row";
+      row.innerHTML = `<div>${BUCKET_LABEL[key]}</div><div>+${val} min</div>`;
+      rowsEl.appendChild(row);
+    });
+  }
+
+  lineSel.addEventListener('change', () => { updateDirOptions(); renderRows(); });
+  dirSel.addEventListener('change', renderRows);
+
+  initSelectors();
+</script>
+</body>
+</html>
+
