@@ -1,6 +1,12 @@
 import pandas as pd
+from config import VALID_STATIONS_FILE
+from utils.file_utils import read_txt_to_list
+from utils.ttc_loader import TTCLoader
 
-def station_stats(df_year_station:pd.DataFrame, total_system_wide_delays_year, unit: str = "minutes") ->dict:
+
+
+
+def generate_station_stats(df_year_station:pd.DataFrame, total_num_system_wide_delays_year, unit: str = "minutes") ->dict:
     """
     Generates the following station stats for a given year and station:
     - total delays
@@ -9,10 +15,11 @@ def station_stats(df_year_station:pd.DataFrame, total_system_wide_delays_year, u
     - % of system-wide delays originating here
     - top reason for delay
     :param df_year_station: pd.DataFrame filtered by year and station
-    :param total_system_wide_delays_year: total number of system-wide delays for year
+    :param total_num_system_wide_delays_year: total number of system-wide delays for year
     :param unit: units for time lost
     :return: dict containing stats
     """
+    station_stats = {}
     # Group by year and sum delays
     if unit not in {"minutes", "hours", "days"}:
         raise ValueError("unit must be 'minutes', 'hours', or 'days'")
@@ -30,12 +37,11 @@ def station_stats(df_year_station:pd.DataFrame, total_system_wide_delays_year, u
     total_delays = len(df_year_station)
     time_lost = (df_year_station["Min Delay"].sum())/factors[unit]
     number_of_major_delays = len(df_year_station[df_year_station["Min Delay"] >=20])
-    percentage_of_delays_orig = (total_delays/total_system_wide_delays_year) * 100
+    percentage_of_delays_orig = (total_delays/total_num_system_wide_delays_year) * 100
     top_reason_for_delays = f"{top_delay_category}: {top_delay_category_description}"
 
-    return {
-        "station_name": df_year_station["Station"].unique()[0],
-        "year" : df_year_station["DateTime"].dt.year.unique()[0],
+    station_stats[df_year_station["Station"].unique()[0]] = {
+        "year": df_year_station["DateTime"].dt.year.unique()[0],
         "total_delays": total_delays,
         f"time_lost_{unit}": round(time_lost, 2),
         "major_delays": number_of_major_delays,
@@ -43,7 +49,26 @@ def station_stats(df_year_station:pd.DataFrame, total_system_wide_delays_year, u
         "top_reason_for_delays": top_reason_for_delays,
     }
 
-def code_specific_station_stats(df: pd.DataFrame, code:list, code_name:str, top_n:int, unit: str = "minutes"):
+    return station_stats
+
+def generate_all_station_stats(year_start,year_end):
+    loader = TTCLoader()
+    valid_stations_list = read_txt_to_list(VALID_STATIONS_FILE)
+    # Load the full dataset for the year once
+    df_year = loader.filter_selected_years(year_start,year_end).df
+    total_num_of_system_wide_delays = len(df_year)
+
+    stations_stats_list = []
+    for station in valid_stations_list:
+        # Filter only this station's data from the already-loaded year
+        df_station = df_year[df_year["Station"] == station.upper()]
+        station_stats = generate_station_stats(df_station, total_num_of_system_wide_delays)
+        stations_stats_list.append(station_stats)
+
+    return {"stations_stats": stations_stats_list}
+
+
+def code_specific_station_stats(df: pd.DataFrame, code:list, code_name:str, top_n:int, unit: str = "minutes") -> dict:
     """
     Get the stations that are consistently in the top N stations with a particular delay code
      (e.g disorderly patron) across different years
@@ -129,13 +154,25 @@ def num_of_mths(df:pd.DataFrame)-> int:
     :param df: pd.DataFrame
     :return: total number of months
     """
-    number_of_years = len(df["Year"].unique())
-    if number_of_years > 1:
-        current_year = df["Year"].max()
-        months = df.loc[df["Year"] == current_year, "DateTime"].dt.month.max()
+    return df["DateTime"].dt.to_period("M").nunique()
 
-        # if dataset is incomplete (i.e. the most recent year has not ended)
-        if months < number_of_years:
-            return (number_of_years - 1) * 12 + months
+def check_dataset_complete(df:pd.DataFrame) -> bool:
+    """
+    check if dataset is complete as the latest year may not be over
+    :param df: pd.DataFrame
+    :return: bool
+    """
+    latest_year = df["Year"].max()
+    months = df.loc[df["Year"] == latest_year, "DateTime"].dt.month.max()
+    return months == 12
 
-    return number_of_years * 12
+
+# from utils.ttc_loader import TTCLoader
+# loader = TTCLoader()
+#
+# df = loader.filter_selected_years(2023,2025).df
+# df["Year"] = df["DateTime"].dt.year
+# print(num_of_mths(df))
+# print(code_specific_station_stats(df, ["SUUT", "MUPR1"], "Track Intrusion", 10, "minutes"))
+# print(code_specific_station_stats(df, ["SUDP"], "Disorderly Patron", 10, "minutes"))
+# print(code_specific_station_stats(df, ["MUPLB"],"Fire: Track Level", 10, "minutes"))
