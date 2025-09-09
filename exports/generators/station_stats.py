@@ -49,6 +49,7 @@ def code_specific_station_stats(df: pd.DataFrame, code:list, code_name:str, top_
      (e.g disorderly patron) across different years
     :param df: pd.DataFrame filtered by years (e.g. 2023 to 2025)
     :param code: delay code (e.g. SUDP)
+    :param code_name: name of delay code, (e.g. Disorderly Patron)
     :param top_n: top N stations
     :param unit: units for time lost
     :return: dict containing stats
