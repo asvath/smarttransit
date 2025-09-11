@@ -1,9 +1,8 @@
 import pandas as pd
-from config import VALID_STATIONS_FILE
+from config import VALID_STATIONS_FILE, PROCESSED_CODE_DESCRIPTIONS_FILE
+from utils import file_utils
 from utils.file_utils import read_txt_to_list
-from utils.ttc_loader import TTCLoader
-
-
+from utils.clean_utils import delay_code_category_dict
 
 
 def generate_station_stats(df_year_station:pd.DataFrame, total_num_system_wide_delays_year, unit: str = "minutes") ->dict:
@@ -30,45 +29,50 @@ def generate_station_stats(df_year_station:pd.DataFrame, total_num_system_wide_d
         "hours": 60,
         "days": 60 * 24,
     }
-    top_delay_category = df_year_station["Delay Category"].value_counts().idxmax()
-    top_delay_category_description =df_year_station["Delay Description"].value_counts().idxmax().lower().capitalize()
+    # delay code: public explanation dict
+    delay_code_public_explanation = delay_code_public_explanation_dict()
+    # delay code: category dict
+    delay_code_category = delay_code_category_dict()
+    top_delay_code = df_year_station["Code"].value_counts().idxmax()
+    top_delay_public_explanation  = delay_code_public_explanation[top_delay_code]
+    top_delay_category = delay_code_category[top_delay_code]
 
     # stats
     total_delays = len(df_year_station)
     time_lost = (df_year_station["Min Delay"].sum())/factors[unit]
     number_of_major_delays = len(df_year_station[df_year_station["Min Delay"] >=20])
     percentage_of_delays_orig = (total_delays/total_num_system_wide_delays_year) * 100
-    top_reason_for_delays = f"{top_delay_category}: {top_delay_category_description}"
+    top_reason_for_delays = f"{top_delay_category}:{top_delay_public_explanation}"
+    years = df_year_station["DateTime"].dt.year.unique().tolist()
+    years = [int(y) for y in years]
 
     station_stats[df_year_station["Station"].unique()[0]] = {
-        "year": df_year_station["DateTime"].dt.year.unique()[0],
-        "total_delays": total_delays,
-        f"time_lost_{unit}": round(time_lost, 2),
-        "major_delays": number_of_major_delays,
-        "pct_of_system_delays_originating": round(percentage_of_delays_orig, 2),
+        "year": years,
+        "total_delays": int(total_delays),
+        f"time_lost_{unit}": float(round(time_lost, 2)),
+        "major_delays": int(number_of_major_delays),
+        "pct_of_system_delays_originating": float(round(percentage_of_delays_orig, 2)),
         "top_reason_for_delays": top_reason_for_delays,
     }
 
     return station_stats
 
-def generate_all_station_stats(year_start,year_end):
-    loader = TTCLoader()
+def generate_all_station_stats(df, year_start,year_end, unit):
     valid_stations_list = read_txt_to_list(VALID_STATIONS_FILE)
-    # Load the full dataset for the year once
-    df_year = loader.filter_selected_years(year_start,year_end).df
+    df_year = df[df["Year"].isin([year_start,year_end])]
     total_num_of_system_wide_delays = len(df_year)
 
     stations_stats_list = []
     for station in valid_stations_list:
         # Filter only this station's data from the already-loaded year
         df_station = df_year[df_year["Station"] == station.upper()]
-        station_stats = generate_station_stats(df_station, total_num_of_system_wide_delays)
+        station_stats = generate_station_stats(df_station, total_num_of_system_wide_delays, unit)
         stations_stats_list.append(station_stats)
 
     return {"stations_stats": stations_stats_list}
 
 
-def code_specific_station_stats(df: pd.DataFrame, code:list, code_name:str, top_n:int, unit: str = "minutes") -> dict:
+def code_specific_station_stats(df: pd.DataFrame, year_start:int, year_end:int, code:list, code_name:str, top_n:int, unit: str = "minutes") -> dict:
     """
     Get the stations that are consistently in the top N stations with a particular delay code
      (e.g disorderly patron) across different years
@@ -81,6 +85,7 @@ def code_specific_station_stats(df: pd.DataFrame, code:list, code_name:str, top_
     """
     code_stats ={}
     df = df.copy()
+    df = df[df["Year"].isin([year_start, year_end])]
     df = df[df["Code"].isin(code)]
     df["Year"] = df["DateTime"].dt.year
 
@@ -142,6 +147,7 @@ def code_specific_station_stats(df: pd.DataFrame, code:list, code_name:str, top_
         station_stats["Avg Time Lost per Year (hours)"] =\
             ((station_stats["Avg Delay per Incident"] * station_stats["Avg Count per Year"])
              / factors["hours"]).round(2)
+        station_stats["Year"] = f"{year_start} - {year_end}"
         consistent_stations_stats[s] = station_stats
 
     code_stats[code_name] = consistent_stations_stats
@@ -166,13 +172,9 @@ def check_dataset_complete(df:pd.DataFrame) -> bool:
     months = df.loc[df["Year"] == latest_year, "DateTime"].dt.month.max()
     return months == 12
 
-
-# from utils.ttc_loader import TTCLoader
-# loader = TTCLoader()
-#
-# df = loader.filter_selected_years(2023,2025).df
-# df["Year"] = df["DateTime"].dt.year
-# print(num_of_mths(df))
-# print(code_specific_station_stats(df, ["SUUT", "MUPR1"], "Track Intrusion", 10, "minutes"))
-# print(code_specific_station_stats(df, ["SUDP"], "Disorderly Patron", 10, "minutes"))
-# print(code_specific_station_stats(df, ["MUPLB"],"Fire: Track Level", 10, "minutes"))
+def delay_code_public_explanation_dict() -> dict:
+    """
+    Creates a dictionary mapping delay codes to their categories. Using manually edited Clean Code Descriptions.csv
+    """
+    df = file_utils.read_csv(PROCESSED_CODE_DESCRIPTIONS_FILE)
+    return dict(zip(df["CODE"], df["PUBLIC EXPLANATION"]))
