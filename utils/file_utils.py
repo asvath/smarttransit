@@ -53,7 +53,7 @@ def read_txt_to_list(filepath:str) -> list:
 
     return lines
 
-def write_to_json(filepath:str, data:list) -> str:
+def write_to_json(filepath:str, data:list|dict) -> str:
     """
     Writes data into a json file
     :param filepath: Path to data
