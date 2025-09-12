@@ -179,11 +179,10 @@ def code_specific_station_stats(df: pd.DataFrame, year_start:int, year_end:int, 
         time_stats = time_severity[time_severity["Station"] == s]
         count_stats = count_severity[count_severity["Station"] == s]
 
-        station_stats["Avg Delay per Incident"] = time_stats["Avg Delay per Incident"].iloc[0].round(2)
+        station_stats[f"Avg Delay per Incident ({unit})"] = time_stats["Avg Delay per Incident"].iloc[0].round(2)
         station_stats["Avg Count per Year"] = count_stats["Avg Count per Year"].iloc[0].round(2)
         station_stats[f"Avg Time Lost per Year ({unit})"] =\
-            ((station_stats["Avg Delay per Incident"] * station_stats["Avg Count per Year"])
-             / factors[unit]).round(2)
+            (station_stats[f"Avg Delay per Incident ({unit})"] * station_stats["Avg Count per Year"]).round(2)
         station_stats["Year"] = f"{year_start} - {year_end}"
         consistent_stations_stats[s] = station_stats
 
