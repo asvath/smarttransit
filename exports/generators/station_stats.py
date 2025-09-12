@@ -7,12 +7,15 @@ from utils.clean_utils import delay_code_category_dict
 
 def generate_station_stats(df_year_station:pd.DataFrame, total_num_system_wide_delays_year, unit: str = "minutes") ->dict:
     """
-    Generates the following station stats for given years and station:
+    Generates the following station stats for given year and station:
     - total delays
     - time lost measured in days
     - number of major delays (> 20min)
     - % of system-wide delays originating here
-    - top reason for delay
+    - top reason for delay by count
+    - time lost due to top delay by count
+    - top reason for delay by time
+    - time lost due to top delay by time
     :param df_year_station: pd.DataFrame filtered by year and station
     :param total_num_system_wide_delays_year: total number of system-wide delays for year
     :param unit: units for time lost
@@ -29,45 +32,69 @@ def generate_station_stats(df_year_station:pd.DataFrame, total_num_system_wide_d
         "hours": 60,
         "days": 60 * 24,
     }
+
+    #
+    delay = (
+        df_year_station.groupby("Code")["Min Delay"]
+        .sum()
+        .reset_index(name="Total Delay")
+        .sort_values("Total Delay", ascending= False)
+    )
     # delay code: public explanation dict
     delay_code_public_explanation = delay_code_public_explanation_dict()
     # delay code: category dict
     delay_code_category = delay_code_category_dict()
-    top_delay_code = df_year_station["Code"].value_counts().idxmax()
+
+    # top delay by count
+    top_delay_code = df_year_station["Code"].value_counts().idxmax() # by count
     top_delay_public_explanation  = delay_code_public_explanation[top_delay_code]
     top_delay_category = delay_code_category[top_delay_code]
+    time_lost_due_to_delay = delay[delay["Code"]==top_delay_code]["Total Delay"].iloc[0]
+
+
+    # top delay by time lost
+    top_time_delay_code = delay.iloc[0]["Code"]
+    top_time_delay_public_explanation = delay_code_public_explanation[top_time_delay_code]
+    top_time_delay_category = delay_code_category[top_time_delay_code]
+    time_lost_due_to_top_time_delay = delay.iloc[0]["Total Delay"]
+
 
     # stats
     total_delays = len(df_year_station)
     time_lost = (df_year_station["Min Delay"].sum())/factors[unit]
     number_of_major_delays = len(df_year_station[df_year_station["Min Delay"] >=20])
     percentage_of_delays_orig = (total_delays/total_num_system_wide_delays_year) * 100
-    top_reason_for_delays = f"{top_delay_category}:{top_delay_public_explanation}"
-    years = df_year_station["DateTime"].dt.year.unique().tolist()
-    years = [int(y) for y in years]
+    top_reason_for_delays = f"{top_delay_category}: {top_delay_public_explanation}"
+    time_lost_due_to_top_delay_by_count = round(time_lost_due_to_delay/factors[unit],2)
+    top_reason_for_delays_by_time = f"{top_time_delay_category}: {top_time_delay_public_explanation}"
+    time_lost_due_to_top_delay_by_time = round(time_lost_due_to_top_time_delay/factors[unit], 2)
+    year = df_year_station["DateTime"].dt.year.unique().tolist()
+
 
     station_stats[df_year_station["Station"].unique()[0]] = {
-        "year": years,
+        "year": year,
         "total_delays": int(total_delays),
         f"time_lost_{unit}": float(round(time_lost, 2)),
         "major_delays": int(number_of_major_delays),
         "pct_of_system_delays_originating": float(round(percentage_of_delays_orig, 2)),
-        "top_reason_for_delays": top_reason_for_delays,
+        "top_reason_for_delays (by count)": top_reason_for_delays,
+        "time_lost_due_to_top_delay_by_count" : float(time_lost_due_to_top_delay_by_count),
+        "top_reason_for_delays_by_time": top_reason_for_delays_by_time,
+        "time_lost_due_to_top_delay_by_time": float(time_lost_due_to_top_delay_by_time)
     }
 
     return station_stats
 
-def generate_all_station_stats(df:pd.DataFrame, year_start: int,year_end:int, unit:str = "minutes") ->dict:
+def generate_all_station_stats(df:pd.DataFrame, year:int, unit:str = "minutes") ->dict:
     """
     Generates stats for all stations for given years
     :param df: pd.DataFrame
-    :param year_start: start year
-    :param year_end: end year
+    :param year: year
     :param unit: units for time lost
     :return: dict containing stats for all stations
     """
     valid_stations_list = read_txt_to_list(VALID_STATIONS_FILE)
-    df_year = df[df["Year"].isin([year_start,year_end])]
+    df_year = df[df["Year"]==year]
     total_num_of_system_wide_delays = len(df_year)
 
     stations_stats_list = []
