@@ -64,7 +64,7 @@ def generate_station_stats(df_year_station:pd.DataFrame, total_num_system_wide_d
     time_lost = (df_year_station["Min Delay"].sum())/factors[unit]
     number_of_major_delays = len(df_year_station[df_year_station["Min Delay"] >=20])
     percentage_of_delays_orig = (total_delays/total_num_system_wide_delays_year) * 100
-    top_reason_for_delays = f"{top_delay_category}: {top_delay_public_explanation}"
+    top_reason_for_delays_by_count = f"{top_delay_category}: {top_delay_public_explanation}"
     time_lost_due_to_top_delay_by_count = round(time_lost_due_to_delay/factors[unit],2)
     top_reason_for_delays_by_time = f"{top_time_delay_category}: {top_time_delay_public_explanation}"
     time_lost_due_to_top_delay_by_time = round(time_lost_due_to_top_time_delay/factors[unit], 2)
@@ -77,7 +77,7 @@ def generate_station_stats(df_year_station:pd.DataFrame, total_num_system_wide_d
         f"time_lost_{unit}": float(round(time_lost, 2)),
         "major_delays": int(number_of_major_delays),
         "pct_of_system_delays_originating": float(round(percentage_of_delays_orig, 2)),
-        "top_reason_for_delays (by count)": top_reason_for_delays,
+        "top_reason_for_delays (by count)": top_reason_for_delays_by_count,
         "time_lost_due_to_top_delay_by_count" : float(time_lost_due_to_top_delay_by_count),
         "top_reason_for_delays_by_time": top_reason_for_delays_by_time,
         "time_lost_due_to_top_delay_by_time": float(time_lost_due_to_top_delay_by_time)
