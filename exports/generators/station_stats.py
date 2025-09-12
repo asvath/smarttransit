@@ -7,7 +7,7 @@ from utils.clean_utils import delay_code_category_dict
 
 def generate_station_stats(df_year_station:pd.DataFrame, total_num_system_wide_delays_year, unit: str = "minutes") ->dict:
     """
-    Generates the following station stats for a given year and station:
+    Generates the following station stats for given years and station:
     - total delays
     - time lost measured in days
     - number of major delays (> 20min)
@@ -57,14 +57,21 @@ def generate_station_stats(df_year_station:pd.DataFrame, total_num_system_wide_d
 
     return station_stats
 
-def generate_all_station_stats(df, year_start,year_end, unit):
+def generate_all_station_stats(df:pd.DataFrame, year_start: int,year_end:int, unit:str = "minutes") ->dict:
+    """
+    Generates stats for all stations for given years
+    :param df: pd.DataFrame
+    :param year_start: start year
+    :param year_end: end year
+    :param unit: units for time lost
+    :return: dict containing stats for all stations
+    """
     valid_stations_list = read_txt_to_list(VALID_STATIONS_FILE)
     df_year = df[df["Year"].isin([year_start,year_end])]
     total_num_of_system_wide_delays = len(df_year)
 
     stations_stats_list = []
     for station in valid_stations_list:
-        # Filter only this station's data from the already-loaded year
         df_station = df_year[df_year["Station"] == station.upper()]
         station_stats = generate_station_stats(df_station, total_num_of_system_wide_delays, unit)
         stations_stats_list.append(station_stats)
@@ -74,11 +81,13 @@ def generate_all_station_stats(df, year_start,year_end, unit):
 
 def code_specific_station_stats(df: pd.DataFrame, year_start:int, year_end:int, code:list, code_name:str, top_n:int, unit: str = "minutes") -> dict:
     """
-    Get the stations that are consistently in the top N stations with a particular delay code
+    Get the stats of stations that are consistently in the top N stations with a particular delay code
      (e.g disorderly patron) across different years
     :param df: pd.DataFrame filtered by years (e.g. 2023 to 2025)
+    :param year_start: start year
+    :param year_end: end year
     :param code: delay code (e.g. SUDP)
-    :param code_name: name of delay code, (e.g. Disorderly Patron)
+    :param code_name: user-defined name of delay code, (e.g. Disorderly Patron)
     :param top_n: top N stations
     :param unit: units for time lost
     :return: dict containing stats
@@ -123,10 +132,11 @@ def code_specific_station_stats(df: pd.DataFrame, year_start:int, year_end:int, 
         track_intrusion_stations.sort_values(["Year", "Count"], ascending = [True, False]).
         groupby("Year").head(top_n))
 
-    # Top N stations in a year as a set e.g {Bloor-Yonge, Spadina, St. George}, where year is the index
+    # Top N stations in a year as a set
+    # e.g. 2018: (Bloor-Yonge, Spadina, St. George), 2019: (Bloor-Yonge, Rosedale), where year is the index
     station_sets = (
         top_n_stations_by_year.groupby("Year")
-                    ["Station"].apply(set)) # e.g 2018
+                    ["Station"].apply(set))
 
     stations_list_of_sets = station_sets.tolist() # e.g [{Bloor-Yonge, Spadina}, {Bloor-Yonge, Rosedale}]
 
@@ -134,7 +144,7 @@ def code_specific_station_stats(df: pd.DataFrame, year_start:int, year_end:int, 
     consistent_stations = set.intersection(*stations_list_of_sets)
 
     if not consistent_stations:
-        return []
+        return {}
 
     consistent_stations_stats = {}
     for s in consistent_stations:
@@ -144,9 +154,9 @@ def code_specific_station_stats(df: pd.DataFrame, year_start:int, year_end:int, 
 
         station_stats["Avg Delay per Incident"] = time_stats["Avg Delay per Incident"].iloc[0].round(2)
         station_stats["Avg Count per Year"] = count_stats["Avg Count per Year"].iloc[0].round(2)
-        station_stats["Avg Time Lost per Year (hours)"] =\
+        station_stats[f"Avg Time Lost per Year ({unit})"] =\
             ((station_stats["Avg Delay per Incident"] * station_stats["Avg Count per Year"])
-             / factors["hours"]).round(2)
+             / factors[unit]).round(2)
         station_stats["Year"] = f"{year_start} - {year_end}"
         consistent_stations_stats[s] = station_stats
 
@@ -174,7 +184,7 @@ def check_dataset_complete(df:pd.DataFrame) -> bool:
 
 def delay_code_public_explanation_dict() -> dict:
     """
-    Creates a dictionary mapping delay codes to their categories. Using manually edited Clean Code Descriptions.csv
+    Creates a dictionary mapping delay codes public friendly explanation. e.g SUDP: Disorderly Patron
     """
     df = file_utils.read_csv(PROCESSED_CODE_DESCRIPTIONS_FILE)
     return dict(zip(df["CODE"], df["PUBLIC EXPLANATION"]))
