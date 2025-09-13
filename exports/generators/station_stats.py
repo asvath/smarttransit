@@ -5,7 +5,8 @@ from utils.file_utils import read_txt_to_list
 from utils.clean_utils import delay_code_category_dict
 
 
-def generate_station_stats(df_year_station:pd.DataFrame, total_num_system_wide_delays_year, unit: str = "minutes") ->dict:
+def generate_station_stats(df_year_station:pd.DataFrame, total_num_system_wide_delays_year,
+                           unit: str = "minutes") ->dict:
     """
     Generates the following station stats for given year and station:
     - total delays
@@ -106,17 +107,18 @@ def generate_all_station_stats(df:pd.DataFrame, year:int, unit:str = "minutes") 
     return {"stations_stats": stations_stats_list}
 
 
-def code_specific_station_stats(df: pd.DataFrame, year_start:int, year_end:int, code:list, code_name:str, top_n:int, unit: str = "minutes") -> dict:
+def code_specific_station_stats(df: pd.DataFrame, year_start:int, year_end:int, code:list, code_name:str, top_n:int,
+                                unit: str = "minutes") -> dict:
     """
     Get the stats of stations that are consistently in the top N stations with a particular delay code
-     (e.g disorderly patron) across different years
+    across the given year range (e.g. top n stations for disorderly patron across year range)
     :param df: pd.DataFrame filtered by years (e.g. 2023 to 2025)
-    :param year_start: start year
-    :param year_end: end year
+    :param year_start: start year for analysis
+    :param year_end: end year for analysis
     :param code: delay code (e.g. SUDP)
     :param code_name: user-defined name of delay code, (e.g. Disorderly Patron)
-    :param top_n: top N stations
-    :param unit: units for time lost
+    :param top_n: ranked in top N stations
+    :param unit: units for time output
     :return: dict containing stats
     """
     code_stats ={}
@@ -188,6 +190,13 @@ def code_specific_station_stats(df: pd.DataFrame, year_start:int, year_end:int, 
 
     code_stats[code_name] = consistent_stations_stats
 
+    # sort by avg time lost per year due to delay code
+    code_stats[code_name] = dict(sorted(
+        code_stats[code_name].items(),
+        key = lambda x : x[1][f"Avg Time Lost per Year ({unit})"],
+        reverse=True
+    ))
+
     return code_stats
 
 def num_of_mths(df:pd.DataFrame)-> int:
@@ -214,3 +223,21 @@ def delay_code_public_explanation_dict() -> dict:
     """
     df = file_utils.read_csv(PROCESSED_CODE_DESCRIPTIONS_FILE)
     return dict(zip(df["CODE"], df["PUBLIC EXPLANATION"]))
+
+def generate_all_code_specific_station_stats(df: pd.DataFrame, year_start: int, year_end: int,
+                                             code_dict: dict, top_n:int, unit: str = "minutes") -> dict:
+    """
+     For each delay code in given dict, generates the stats of stations that are consistently ranked in top N stations
+     for that code, across specified years
+    :param year_start: start year for analysis
+    :param year_end: end year  for analysis
+    :param code_dict: mapping of user-specified code name to TTC specified delay code (e.g. "Disorderly Patron": "SUDP")
+    :param top_n: ranking in the top n
+    :param unit: output time unit
+    :return: dict containing stats for each delay code
+    """
+    code_stats = []
+    for code_name, code in code_dict.items():
+        stats = code_specific_station_stats(df, year_start, year_end, code, code_name, top_n, unit)
+        code_stats.append(stats)
+    return {"Code Specific Station Stats" : code_stats}
