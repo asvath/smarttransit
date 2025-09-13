@@ -1,7 +1,10 @@
-from utils import file_utils
-from station_stats import code_specific_station_stats, generate_all_station_stats, check_dataset_complete
-from line_stats import line_stats
+import os.path
+
+from utils.file_utils import write_to_json
+from station_stats import (code_specific_station_stats, generate_all_station_stats, check_dataset_complete,
+                           generate_all_code_specific_station_stats)
 from utils.ttc_loader import TTCLoader
+from config import EXPORTS_STATS_DIR, PROCESSED_CODE_DESCRIPTIONS_FILE
 """
 Generates the following stats and saves them in JSON file:
     Generates the following station stats for a given year:
@@ -32,23 +35,39 @@ Generates the following stats and saves them in JSON file:
 
 
 def generate_stats():
+    # load data
     loader = TTCLoader()
     df = loader.df
     df["Year"] = df["DateTime"].dt.year
 
     # generate station stats
-    is_complete = check_dataset_complete(df)
+    is_complete = check_dataset_complete(df) # check if the latest year is over
     if is_complete:
         year = df["Year"].max()
     else:
         year = df["Year"].max() - 1
 
+    # station stats for the latest complete year
+    stations_stats = generate_all_station_stats(df=df,year=year, unit = "hours")
+    filepath = os.path.join(EXPORTS_STATS_DIR, 'stations_stats.json')
+    write_to_json(filepath, stations_stats)
 
-    stations_stats = generate_all_station_stats(year,year)
+    # station stats for the latest complete year
+    year = df["Year"].max()
+    stations_stats_for_leaderboard = generate_all_station_stats(df=df,year=year, unit = "hours")
+    filepath = os.path.join(EXPORTS_STATS_DIR, 'leaderboard_stations_stats.json')
+    write_to_json(filepath, stations_stats_for_leaderboard)
+
+    # delay code specific stats for the last three years
+    code_dict = {"Track Intrusion": ["SUUT", "MUPR1"],"Disorderly Patron" : ["SUDP"], "Fire: Track Level" : ["MUPLB"]}
+    code_specific_stats = (
+        generate_all_code_specific_station_stats(df, 2023, 2025, code_dict, 10, "hours"))
+    filepath = os.path.join(EXPORTS_STATS_DIR, 'code_specific_stats.json')
+    write_to_json(filepath, code_specific_stats)
 
 
-generate_stats()
-
+if __name__=="__main__":
+    generate_stats()
 
 
 
