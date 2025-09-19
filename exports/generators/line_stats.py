@@ -35,31 +35,27 @@ def freq_of_delays(row) -> float:
           (delays per weekend day ÷ 19 hours) × 5 hours.
       This yields a λ for a 5-hour weekend window instead of the whole day.
     """
+    # Normalize weekend “per day” to a 5-hour slice:
     if row["Rush Hour"] == "Weekend":
-        # Normalize weekend “per day” to a 5-hour slice:
-        #   delays_per_day   = number_of_delays / (weekend) days_in_dataset
-        #   delays_per_hour  = delays_per_day / 19    (avg weekend service span)
-        #   lambda_for_5hrs  = delays_per_hour * 5
         return ((row["number_of_delays"] / row["days_in_dataset"]) / 19) * 5
 
     # Weekday windows: number_of_delays already refers to that bucket only.
-    # So λ = delays_in_window_per_day (i.e., per weekday with data).
     return row["number_of_delays"] / row["days_in_dataset"]
 
-def line_stats(df_year_line:pd.DataFrame,line_name: str) ->dict | None:
+def line_stats(df_year_line:pd.DataFrame, line_name: str) ->dict | None:
     """
-    Generates the following stats individual lines for given years e.g 2023-2025:
+    Generates the following stats for individual lines (e.g. YU, BD) for given years e.g. 2023-2025:
     - For each line we get stats per bound per time window (e.g Line: YU, Bound: N, Rush Hour: Evening):
         - total number of delays
         - total delay min
         - avg delay min
         - number of days (weekday or weekend)
-        - expected no. of delay
+        - expected no.of delay
         - probability of having at least 1 delay
         - 90th-percentile delay count: smallest k with P(X ≤ k) ≥ 0.90
         - recommended buffer to add to travel time
     :param df_year_line: pd.DataFrame filtered by line and years (e.g "YU" from 2023-2025)
-    :param line_name: name of line, e.g ("YU"
+    :param line_name: name of line, e.g ("YU")
     :return: dict containing stats
     """
     results = {}
@@ -90,10 +86,11 @@ def line_stats(df_year_line:pd.DataFrame,line_name: str) ->dict | None:
         num_weekends = df_bound.loc[~df_bound["IsWeekday"], "DateTime"].dt.date.nunique()
 
         def pick_days(row):
+            """Number of weekdays or weekends"""
             return num_weekends if row["Rush Hour"] == "Weekend" else num_weekdays
 
         # add column that shows the number of days for that rush hour time frame
-        # e.g Morning: 500 days, weekends 200 days
+        # e.g. Morning: 500 days, weekends 200 days
         rush_stats["days_in_dataset"] = rush_stats.apply(pick_days, axis=1)
 
         # lambda for this time window: expected number of delay events (Poisson rate)
@@ -119,3 +116,37 @@ def line_stats(df_year_line:pd.DataFrame,line_name: str) ->dict | None:
     results[line_name] = bound_stats
 
     return results
+
+def generate_all_line_stats(df: pd.DataFrame, year_start: int, year_end: int, unit: str = "minutes") -> dict:
+    """
+    Generates the following stats for all the lines:
+        - For each line we get stats per bound per time window (e.g Line: YU, Bound: N, Rush Hour: Evening):
+        - total number of delays
+        - total delay min
+        - avg delay min
+        - number of days (weekday or weekend)
+        - expected no.of delay
+        - probability of having at least 1 delay
+        - 90th-percentile delay count: smallest k with P(X ≤ k) ≥ 0.90
+        - recommended buffer to add to travel time
+    :param df: pd.DataFrame
+    :param year_start: start year for analysis
+    :param year_end: end year for analysis
+    :param unit: units for time output
+    :return: dict containing all line stats
+    """
+    line_stats_list =[]
+    df = df.copy()
+    df["Year"] = df["DateTime"].dt.year
+    df = df[df["Year"].isin([year_start, year_end])]
+
+
+    lines= VALID_LINECODES_TO_BOUND_DICT.keys()
+    print(lines)
+
+    for line in lines:
+        df_line =  df[df["Line"] == line]
+        stats = line_stats(df_line, line)
+        line_stats_list.append(stats)
+
+    return {"line stats": line_stats_list}
