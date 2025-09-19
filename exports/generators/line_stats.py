@@ -14,7 +14,10 @@ def solve_for_k(lmbda, p=0.9):
 
 def round_to_nearest_5(x):
     """Round number to nearest 5"""
-    return int(round(x / 5.0)) * 5
+    num = int(round(x / 5.0)) * 5
+    if num ==0:
+        return 5
+    return num
 
 WEEKEND_SERVICE_HOURS = 19   # avg span across Sat (~20h) & Sun (~18h)
 WEEKEND_EXPOSURE_HOURS = 5   # chosen comparable to weekday exposure window
