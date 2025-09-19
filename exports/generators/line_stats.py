@@ -145,7 +145,6 @@ def generate_all_line_stats(df: pd.DataFrame, year_start: int, year_end: int, un
 
 
     lines= VALID_LINECODES_TO_BOUND_DICT.keys()
-    print(lines)
 
     for line in lines:
         df_line =  df[df["Line"] == line]
