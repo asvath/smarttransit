@@ -112,7 +112,7 @@ def code_specific_station_stats(df: pd.DataFrame, year_start:int, year_end:int, 
     """
     Get the stats of stations that are consistently in the top N stations with a particular delay code
     across the given year range (e.g. top n stations for disorderly patron across year range)
-    :param df: pd.DataFrame filtered by years (e.g. 2023 to 2025)
+    :param df: pd.DataFrame
     :param year_start: start year for analysis
     :param year_end: end year for analysis
     :param code: delay code (e.g. SUDP)
@@ -145,20 +145,20 @@ def code_specific_station_stats(df: pd.DataFrame, year_start:int, year_end:int, 
     time_severity["Avg Delay per Incident"] = time_severity["Avg Delay per Incident"] / factors[unit]
 
     # create dataframe with number of counts of delay per station by year
-    track_intrusion_stations = (
+    delay_stations = (
         df.groupby(["Year", "Station"])
         .size()
         .reset_index(name="Count")
     )
 
     # get the avg count per year
-    count_severity = track_intrusion_stations.groupby(["Station"])["Count"].sum().reset_index(name="Total Count")
+    count_severity = delay_stations.groupby(["Station"])["Count"].sum().reset_index(name="Total Count")
     total_num_of_mths = num_of_mths(df) # dataframe might not be complete as the latest year may not be over
     count_severity["Avg Count per Year"] = ((count_severity["Total Count"] / total_num_of_mths) * 12).round(1)
 
     # get top n stations by year
     top_n_stations_by_year =(
-        track_intrusion_stations.sort_values(["Year", "Count"], ascending = [True, False]).
+        delay_stations.sort_values(["Year", "Count"], ascending = [True, False]).
         groupby("Year").head(top_n))
 
     # Top N stations in a year as a set
@@ -178,8 +178,8 @@ def code_specific_station_stats(df: pd.DataFrame, year_start:int, year_end:int, 
     consistent_stations_stats = {}
     for s in consistent_stations:
         station_stats = {}
-        time_stats = time_severity[time_severity["Station"] == s]
-        count_stats = count_severity[count_severity["Station"] == s]
+        time_stats = time_severity[time_severity["Station"] == s] # station delay time stats
+        count_stats = count_severity[count_severity["Station"] == s] # station delay count stats
 
         station_stats[f"Avg Delay per Incident ({unit})"] = time_stats["Avg Delay per Incident"].iloc[0].round(2)
         station_stats["Avg Count per Year"] = count_stats["Avg Count per Year"].iloc[0].round(2)
@@ -229,6 +229,7 @@ def generate_all_code_specific_station_stats(df: pd.DataFrame, year_start: int, 
     """
      For each delay code in given dict, generates the stats of stations that are consistently ranked in top N stations
      for that code, across specified years
+    :param df: pd.DataFrame
     :param year_start: start year for analysis
     :param year_end: end year  for analysis
     :param code_dict: mapping of user-specified code name to TTC specified delay code (e.g. "Disorderly Patron": "SUDP")
