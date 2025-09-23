@@ -3,61 +3,105 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>TTC Delay Insights — Data today, better commutes tomorrow</title>
+  <title>TTC Delay Insights — Toronto Subway: Delay Stats</title>
   <style>
-    :root{ --red:#dc2626; --border:#313131; --muted:#9ca3af; }
-    *{ box-sizing:border-box }
-    body{ margin:0; font-family: Inter, system-ui, Segoe UI, Arial; background:#0b0b0c; color:#f5f5f6; }
-    header{ position:sticky; top:0; z-index:10; background:#0f0f11; border-bottom:1px solid var(--border); }
-    .container{ max-width:1120px; margin:0 auto; padding:12px 18px; }
-    .brand{ display:flex; align-items:center; gap:10px; }
-    .badge{ width:36px; height:36px; border-radius:12px; background:var(--red); color:#fff; display:grid; place-items:center; font-weight:700; }
-    .muted{ color:var(--muted); }
-    .nav{ display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; }
-    .btn{ border:1px solid var(--border); background:#121214; color:#f5f5f6; padding:8px 12px; border-radius:10px; cursor:pointer; font-weight:600; }
-    .btn.primary{ background:var(--red); color:#fff; border-color:var(--red); }
-    main{ max-width:1120px; margin:16px auto; padding:0 18px; }
-    .hero{ display:grid; grid-template-columns:2fr 1fr; gap:16px; }
-    @media (max-width:960px){ .hero{ grid-template-columns:1fr; } }
-    .card{ background:#121214; border:1px solid var(--border); border-radius:14px; box-shadow:0 1px 3px rgba(0,0,0,.35); }
-    .content{ padding:14px; }
-    .mapbox{ height:60vh; min-height:420px; position:relative; border:1px solid var(--border); border-radius:14px; overflow:hidden; background:#0b0b0c; }
-    .legend{ display:flex; gap:12px; align-items:center; font-size:12px; color:#d1d5db; flex-wrap:wrap; }
-    .dot{ width:10px; height:10px; border-radius:999px; display:inline-block; }
-    .chipbar{ display:flex; gap:8px; flex-wrap:wrap; margin:8px 0; }
-    .chip{ border:1px solid var(--border); padding:6px 10px; border-radius:999px; font-size:12px; cursor:pointer; background:#121214; color:#e5e7eb; }
-    .chip.active{ border-color:var(--red); box-shadow:0 0 0 2px rgba(220,38,38,.25); }
-    .kpi{ display:flex; justify-content:space-between; margin:8px 0; padding:10px; border:1px solid var(--border); border-radius:10px; }
-    footer{ padding:24px 18px; text-align:center; color:#9ca3af; }
-    #leaflet-map{ position:absolute; inset:0; }
-<!--    .legend-box{-->
-<!--      position: fixed; bottom: 20px; left: 20px; z-index: 20;-->
-<!--      background: rgba(18,18,20,.95); padding: 10px 12px; border: 1px solid #2a2a2a;-->
-<!--      border-radius: 8px; font-size: 14px; color:#e5e7eb;-->
-<!--      backdrop-filter: blur(6px);-->
-<!--    }-->
-    .sw{display:inline-block;width:12px;height:12px;margin-right:6px;vertical-align:middle}
-    .leaflet-control-attribution {
-      background: rgba(18,18,20,.85) !important;
-      color: #c7c9ce !important;
-      border-radius: 8px !important;
-      padding: 2px 6px !important;
-      font-size: 11px !important;
+    :root{
+      --red:#dc2626; --border:#313131; --muted:#9ca3af; --bg:#0b0b0c;
+      --btn:#16171a; --btn-border:#2a2a2f; --btn-hover:#1e2024; --btn-active:#262a30; --focus:#a7b0ff;
     }
+    *{ box-sizing:border-box }
+    body{ margin:0; font-family: Inter, system-ui, Segoe UI, Arial; background:var(--bg); color:#f5f5f6; font-size:18px; line-height:1.55; }
+
+    header{ position:sticky; top:0; z-index:10; background:#0f0f11; border-bottom:1px solid var(--border); }
+    .container{ max-width:1360px; margin:0 auto; padding:18px 22px; }
+    .brand{ display:flex; align-items:center; gap:12px; }
+    .badge{ width:44px; height:44px; border-radius:12px; background:var(--red); color:#fff; display:grid; place-items:center; font-weight:700; font-size:18px; }
+    .muted{ color:var(--muted); }
+
+    .nav{ display:flex; gap:12px; flex-wrap:wrap; margin-top:8px; }
+    .btn{ border:1px solid var(--border); background:#121214; color:#f5f5f6; padding:16px 22px; border-radius:12px; cursor:pointer; font-weight:700; font-size:18px; text-decoration:none; display:inline-block; }
+    .btn.primary{ background:var(--red); color:#fff; border-color:var(--red); }
+
+    main{ max-width:1360px; margin:20px auto; padding:0 22px; }
+
+    .welcome{ display:flex; gap:16px; align-items:flex-start; margin-bottom:16px; border:1px solid var(--border); border-radius:14px; background:#101012; padding:16px 18px; }
+    .welcome h2{ margin:0 0 8px; font-size:24px; }
+    .welcome p{ margin:6px 0; color:#d1d5db; font-size:17px; }
+    .welcome p.lead{ font-size:21px; line-height:1.65; color:#e8eaee; }
+    @media (max-width: 768px){ .welcome p.lead{ font-size:19px; } }
+
+    .tip{ margin:12px 0; border:1px dashed #2a2a2a; border-radius:12px; background:#0f1012; padding:12px 14px; font-size:16.5px; color:#d8dbe2; }
+
+    .buffer-card{ background:#121214; border:1px solid var(--border); border-radius:16px; margin:16px 0 20px; }
+    .buffer-content{ padding:18px; }
+    .buffer-header{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+    /* Match font size + weight with 'Toronto Subway: Delay Stats' (22px, 700) */
+    .buffer-title{ font-weight:700; font-size:22px; }
+    .buffer-controls{ display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
+    select, .pill{ background:#141417; border:1px solid #2a2a2a; color:#e5e7eb; border-radius:12px; padding:14px 16px; font-size:18px; min-width:200px; }
+    .badge-dot{ width:16px; height:16px; border-radius:999px; display:inline-block; vertical-align:middle; }
+    .buffer-rows{ margin-top:12px; border:1px solid var(--border); border-radius:12px; }
+    .buffer-row{ display:flex; justify-content:space-between; padding:15px 18px; font-size:18px; }
+    .buffer-row + .buffer-row{ border-top:1px dashed #2a2a2a; }
+    .buffer-note{ color:#cfd3da; font-size:14.5px; margin-top:10px; }
+
+    .hero{ display:grid; grid-template-columns: 8fr 4fr; gap:22px; }
+    @media (max-width:1200px){ .hero{ grid-template-columns:1fr; } }
+
+    .card{ background:#121214; border:1px solid var(--border); border-radius:16px; box-shadow:0 1px 3px rgba(0,0,0,.35); }
+    .content{ padding:18px; }
+
+    .mapbox{ height:72vh; min-height:540px; position:relative; border:1px solid var(--border); border-radius:16px; overflow:hidden; background:#0b0b0c; }
+    #leaflet-map{ position:absolute; inset:0; }
+    .legend{ display:flex; gap:14px; align-items:center; font-size:14.5px; color:#d1d5db; flex-wrap:wrap; }
+    .dot{ width:12px; height:12px; border-radius:999px; display:inline-block; }
+
+    .kpi{ display:flex; justify-content:space-between; gap:10px; margin:10px 0; padding:14px; border:1px solid var(--border); border-radius:12px; font-size:18px; }
+    .kpi > span{ flex:1; }
+    .kpi > strong{ flex:1; text-align:right; display:block; font-size:20px; }
+
+    footer{ padding:28px 22px; text-align:center; color:#9ca3af; }
+
+    .leaflet-control-attribution{ background: rgba(18,18,20,.85) !important; color: #c7c9ce !important; border-radius: 8px !important; padding: 2px 6px !important; font-size: 12px !important; }
     .leaflet-control-container .leaflet-control a { color: #a7b0ff !important; }
 
-    /* Sidebar buffer section */
-    .buffer-box{ margin-top:10px; border:1px solid var(--border); border-radius:10px; padding:10px; }
-    .buffer-box h4{ margin:0 0 8px 0; font-size:13px; }
-    .buffer-row{ display:flex; justify-content:space-between; padding:4px 0; font-size:12px; }
-    .buffer-row + .buffer-row{ border-top:1px dashed #2a2a2a; }
-    .buffer-controls{ display:flex; gap:6px; flex-wrap:wrap; margin-bottom:8px; }
-    select, .slim{ background:#141417; border:1px solid #2a2a2a; color:#e5e7eb; border-radius:8px; padding:6px 8px; font-size:12px; }
-    .badge-dot{ width:10px; height:10px; border-radius:999px; display:inline-block; vertical-align:middle; margin-right:6px; }
+    /* Hotspot controls as buttons */
+    .hotspot-toggle { display:flex; gap:10px; flex-wrap:wrap; margin:10px 0 8px; }
+    .hot-btn{
+      appearance:none; border:1px solid var(--btn-border); background:var(--btn);
+      color:#e8eaee; padding:10px 14px; border-radius:10px; font-size:15px; font-weight:700;
+      cursor:pointer; transition:background .15s ease, border-color .15s ease, transform .02s ease;
+    }
+    .hot-btn:hover{ background:var(--btn-hover); }
+    .hot-btn:active{ transform:translateY(1px); }
+    .hot-btn:focus-visible{ outline:2px solid var(--focus); outline-offset:2px; }
+    .hot-btn.is-active{ background:var(--btn-active); border-color:#3a3f47; box-shadow: inset 0 0 0 1px rgba(255,255,255,.06); }
+
+    /* Hotspots label + caption */
+    .hot-label{ color:#d1d5db; font-size:18px; margin-top:6px; }
+    .hot-caption{ color:#cfd3da; font-size:17px; margin-top:2px; }
+
+    /* Hotspot icons on the map (bigger) */
+    .hotspot-icon { width:44px; height:44px; border-radius:999px; display:grid; place-items:center; background:#1a1b1e; border:1px solid #2a2a2a; font-size:24px; }
+    /* Visually center emojis in their circles */
+    .hotspot-emoji { display:inline-block; transform: translateY(2px); }
+
+    /* Clear, black close "X" for Leaflet popups */
+    .leaflet-popup-close-button{
+      color:#000 !important;
+      font-weight:900 !important;
+      font-size:22px !important;
+      line-height:22px !important;
+      width:28px; height:28px;
+      top:6px; right:6px;
+      opacity:1 !important;
+      text-shadow:none !important;
+    }
+    .leaflet-popup-close-button:hover{ opacity:1; }
   </style>
 
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
 <body>
   <header>
@@ -65,26 +109,55 @@
       <div class="brand">
         <div class="badge">TTC</div>
         <div>
-          <div style="font-weight:700">TTC Delay Insights</div>
-          <div class="muted" style="font-size:13px;">Data today, better commutes tomorrow: Bringing clarity
-            and transparency to Toronto’s transit delays.</div>
+          <div style="font-weight:700; font-size:20px;">TTC Delay Insights</div>
+          <div class="muted" style="font-size:14px;">Data today, better commutes tomorrow.</div>
         </div>
       </div>
       <div class="nav">
-        <button class="btn primary">Home</button>
-        <button class="btn">Overview</button>
-        <button class="btn">Trends</button>
-        <button class="btn">Stations</button>
+        <a class="btn primary" href="index.html" aria-current="page">Home</a>
+        <a class="btn" href="#">Overview</a>
+        <a class="btn" href="delayleaderboard.html">Delay Leaderboard</a>
+        <a class="btn" href="#">Play TTC Delay Dodge Game</a>
       </div>
     </div>
   </header>
 
   <main>
+    <!-- Welcome banner -->
+    <div class="welcome container" role="region" aria-label="Welcome">
+      <div>
+        <h2>Welcome to TTC Delay Insights: Data today, better commutes tomorrow.</h2>
+        <p class="lead">Use the <strong>Plan your buffer time</strong> tool below to avoid delays.</p>
+        <p class="lead">Explore the <strong> Toronto Subway: Delay Stats </strong> interactive map to see delay stats for each station.</p>
+        <p class="lead">Want more? Visit the <strong>Overview</strong> for detailed stats and graphs, check the <strong>Delay Leaderboard</strong> to see which stations have the most time lost,
+          or play the <strong> TTC Delay Dodge Game</strong> and beat the highscore.</p>
+      </div>
+    </div>
+
+    <!-- Buffer module -->
+    <section class="buffer-card container" aria-label="Plan your buffer time">
+      <div class="buffer-content">
+        <div class="buffer-header">
+          <div class="buffer-title">Toronto Subway: Delay Stats</div> <!-- title text kept: only style match requested -->
+          <div class="buffer-controls">
+            <span class="pill" style="display:flex;align-items:center;gap:10px">
+              <span class="badge-dot" id="line-dot"></span>
+              <select id="line-select" aria-label="Select Line"></select>
+            </span>
+            <select id="dir-select" aria-label="Select Direction"></select>
+          </div>
+        </div>
+        <div id="buffer-rows" class="buffer-rows" role="table" aria-label="Average extra minutes by time of day"></div>
+        <div class="buffer-note">Based on average delays over the last 3 years. Add these minutes to your trip as a buffer.</div>
+      </div>
+    </section>
+
     <div class="hero">
       <div class="card">
         <div class="content">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-            <div style="font-weight:600">Toronto Subway: Delay Hotspots</div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+            <!-- This heading establishes the size/weight to match -->
+            <div style="font-weight:700; font-size:22px;">Toronto Subway: Delay Stats</div>
             <div class="legend">
               <span><span class="dot" style="background:#FFD300"></span> Line 1</span>
               <span><span class="dot" style="background:#00A94F"></span> Line 2</span>
@@ -92,59 +165,78 @@
             </div>
           </div>
 
-          <div class="chipbar" id="type-chips">
-            <div class="chip active" data-type="GENERAL">General</div>
-            <div class="chip" data-type="TRACK">Track Intrusion</div>
-            <div class="chip" data-type="DISORDER">Disorderly Patron</div>
+          <!-- Static tip -->
+          <div id="tip-banner" class="tip" role="note" aria-label="Map tip">
+            <strong>Tip:</strong> Select a station to view its general delay stats in the side panel. Use Hotspots to highlight station hotspots for Track Intrusions, Disorderly Patrons, or Fires.
           </div>
 
-          <div class="mapbox"><div id="leaflet-map"></div></div>
+          <!-- Map -->
+          <div class="mapbox">
+            <button id="legend-toggle" class="btn" style="position:absolute;right:12px;top:12px;z-index:500">Legend</button>
+            <div id="legend-panel" class="card" style="position:absolute;right:12px;top:62px;z-index:500;display:none">
+              <div class="content" style="font-size:14px">
+                <div><span class="dot" style="background:#FFD300"></span> Line 1</div>
+                <div><span class="dot" style="background:#00A94F"></span> Line 2</div>
+                <div><span class="dot" style="background:#9C27B0"></span> Line 4</div>
+              </div>
+            </div>
+            <div id="leaflet-map"></div>
+          </div>
         </div>
       </div>
 
       <div class="card">
         <div class="content">
-          <h3 id="st-name" style="margin:0 0 4px 0">Select a station</h3>
-          <div id="st-sub" class="muted" style="font-size:13px;margin-bottom:8px">Click a station marker.</div>
-          <div class="kpi"><span>Total delays (last yr)</span><strong id="st-delays">—</strong></div>
-          <div class="kpi"><span>Days lost (last yr)</span><strong id="st-mins">—</strong></div>
-          <div class="kpi"><span>Major delays (>20m)</span><strong id="st-major">—</strong></div>
-          <div class="kpi"><span>Top reason for Delay</span><strong id="st-reason">—</strong></div>
-
-          <!-- Moved here: buffer widget lives in the sidebar -->
-          <div class="buffer-box">
-            <h4>Add to Travel Time</h4>
-            <div class="muted" style="font-size:13px;margin-bottom:8px">Based on avg. delay over the last 3 years.</div>
-            <div class="buffer-controls">
-              <label class="slim">
-                <span class="badge-dot" id="line-dot"></span>
-                <select id="line-select"></select>
-              </label>
-              <select id="dir-select"></select>
-            </div>
-            <div id="buffer-rows"></div>
-            <div class="muted" style="font-size:11px;margin-top:8px;">Avg extra minutes by time of day.</div>
+          <!-- Station search -->
+          <div style="display:flex; gap:8px; align-items:center; margin-bottom:10px">
+            <input id="station-search" type="search" placeholder="Search station…" aria-label="Search station"
+                   style="flex:1; padding:12px 14px; border-radius:10px; border:1px solid #2a2a2a; background:#141417; color:#e5e7eb; font-size:16px"
+                   list="stations-list"/>
+            <datalist id="stations-list"></datalist>
+            <button id="station-go" class="btn" type="button" aria-label="Search station">Search</button>
           </div>
 
-          <div class="muted" style="font-size:13px;margin-top:10px">Overview/Trends/Stations would be separate pages in the full app.</div>
+          <!-- Station panel -->
+          <h3 id="st-name" style="margin:0 0 8px 0; font-size:20px;">Select a station</h3>
+
+          <!-- Hotspot label + controls -->
+          <div class="hot-label">Hotspots</div>
+          <div class="hot-caption">(click buttons to toggle hotspots on the map).</div>
+          <div class="hotspot-toggle" id="hotspot-toggles" aria-label="Delay Hotspot Filters">
+            <button type="button" class="hot-btn is-active" data-hot="ALL" aria-pressed="true">All off</button>
+            <button type="button" class="hot-btn" data-hot="Track Intrusion" aria-pressed="false">Track Intrusion</button>
+            <button type="button" class="hot-btn" data-hot="Disorderly Patron" aria-pressed="false">Disorderly Patron</button>
+            <button type="button" class="hot-btn" data-hot="Fire: Track Level" aria-pressed="false">Fire</button>
+          </div>
+
+          <!-- KPIs -->
+          <div id="station-kpis" aria-live="polite">
+            <div class="kpi"><span>Total delays</span><strong id="st-delays">—</strong></div>
+            <div class="kpi"><span>Time lost to delays</span><strong id="st-time-total">—</strong></div>
+            <div class="kpi"><span>Major delays (&gt; 20m)</span><strong id="st-major">—</strong></div>
+            <div class="kpi"><span>Top delay cause</span><strong id="st-top-reason">—</strong></div>
+            <div class="kpi"><span>Time lost due to top delay</span><strong id="st-time-top">—</strong></div>
+          </div>
+
+          <div class="muted" style="font-size:15px;margin-top:10px">
+            <div>Stats based on 2024 data</div>
+          </div>
         </div>
       </div>
     </div>
   </main>
 
-  <footer>Toronto Open Data • Leaflet • Created by Asha Asvathaman</footer>
-
-<!--  <div class="legend-box">-->
-<!--    <b>TTC Subway Lines</b><br>-->
-<!--    <span class="sw" style="background:#FFD300"></span> Line 1 – Yonge–University<br>-->
-<!--    <span class="sw" style="background:#00A94F"></span> Line 2 – Bloor–Danforth<br>-->
-<!--    <span class="sw" style="background:#9C27B0"></span> Line 4 – Sheppard-->
-<!--  </div>-->
+  <footer>Toronto Open Data • Asha Asvathaman</footer>
 
 <script>
-  const LINES_URL    = "./data/ttc_lines.geojson";
-  const STATIONS_URL = "./data/ttc_subway_geodata.json";
+  // Data URLs
+  const LINES_URL      = "./data/ttc_lines.geojson";
+  const STATIONS_URL   = "./data/ttc_subway_geodata.json";
+  const STATS_URL      = "./data/stations_stats.json";
+  const CODE_STATS_URL = "./data/code_specific_stats.json";
+  const LINE_STATS_URL = "./data/line_stats.json";
 
+  // Colors
   const COLOR = {
     "Line 1 – Yonge–University": "#FFD300",
     "Line 2 – Bloor–Danforth":   "#00A94F",
@@ -152,7 +244,21 @@
     "Line 4 – Sheppard":         "#9C27B0",
   };
   const DEFAULT_COLOR = "#6aa3ff";
+  const COLOR_MAP = {
+    "Line 1 – Yonge–University": "#FFD300",
+    "Line 2 – Bloor–Danforth":   "#00A94F",
+    "Line 4 – Sheppard":         "#9C27B0",
+  };
 
+  // Helpers
+  function get_route_name(props){
+    if(!props) return null;
+    if("ROUTE_NAME" in props) return props.ROUTE_NAME;
+    if("ROUTE_LONG_NAME" in props) return props.ROUTE_LONG_NAME;
+    if("route" in props) return props.route;
+    if("name" in props) return props.name;
+    return null;
+  }
   function canonical_line(name){
     if(typeof name !== "string") return "Unknown";
     const n = name.toUpperCase();
@@ -162,145 +268,332 @@
     if(n.includes("LINE 4") || n.includes("SHEPPARD"))                           return "Line 4 – Sheppard";
     return name;
   }
-  function get_route_name(props){
-    if(!props) return null;
-    if("ROUTE_NAME" in props) return props.ROUTE_NAME;
-    if("ROUTE_LONG_NAME" in props) return props.ROUTE_LONG_NAME;
-    if("route" in props) return props.route;
-    if("name" in props) return props.name;
-    return null;
+  function hoursToHM(h){
+    if (typeof h !== "number" || !isFinite(h)) return "—";
+    const totalMinutes = Math.round(h * 60);
+    const hrs = Math.floor(totalMinutes / 60);
+    const mins = totalMinutes % 60;
+    return hrs > 0 ? `${hrs} hr ${mins} min` : `${mins} min`;
+  }
+  function hoursToHMVerbose(h){
+    if (typeof h !== "number" || !isFinite(h)) return "—";
+    const totalMinutes = Math.max(0, Math.round(h * 60));
+    const hrs = Math.floor(totalMinutes / 60);
+    const mins = totalMinutes % 60;
+    return `${hrs} h ${mins} min`;
+  }
+  function formatReason(s){
+    if (!s || s === "—") return "—";
+    const idx = s.indexOf(":");
+    if (idx > -1){
+      const cat = s.slice(0, idx).trim();
+      const det = s.slice(idx+1).trim();
+      return `<span class="reason-cat">${cat}:</span><br><span class="reason-detail">${det}</span>`;
+    }
+    return s;
   }
 
+  // Station stats
+  const stationStatsMap = {};
+  fetch(STATS_URL).then(r => {
+    if(!r.ok) throw new Error("Failed to load station stats JSON");
+    return r.json();
+  }).then(js => {
+    const list = js.stations_stats || js.station_stats || [];
+    list.forEach(entry => {
+      const [rawName, data] = Object.entries(entry)[0] || [];
+      if(!rawName || !data) return;
+      const key = String(rawName).toUpperCase().trim();
+
+      stationStatsMap[key] = {
+        year: data.year,
+        total_delays: data.total_delays ?? data["total_delays"],
+        time_lost_hours:
+          data.time_lost_hours ?? data["time_lost_hours"] ??
+          (typeof data.time_lost_minutes === "number" ? (data.time_lost_minutes/60) : undefined),
+        major_delays: data.major_delays ?? data["major_delays"],
+        top_reason_for_delays_by_time:
+          data.top_reason_for_delays_by_time ??
+          data["top_reason_for_delays_by_time"] ??
+          data["top_reason_for_delays (by time)"],
+        time_lost_due_to_top_delay_by_time:
+          data.time_lost_due_to_top_delay_by_time ??
+          data["time_lost_due_to_top_delay_by_time"],
+        fallback_reason:
+          data.top_reason_for_delays ??
+          data.top_reason_for_delay ??
+          data["top_reason_for_delays (by count)"],
+        fallback_reason_time:
+          data.time_lost_due_to_top_delay_by_count
+      };
+    });
+  }).catch(err => {
+    console.error(err);
+  });
+
   // Map
-  const map = L.map('leaflet-map').setView([43.70, -79.40], 11.8);
+  const map = L.map('leaflet-map', { zoomSnap: 0.1, zoomDelta: 0.1 }).setView([43.71, -79.41], 11.7);
   L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-    maxZoom: 19,
-    attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
+    maxZoom: 19, attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
   }).addTo(map);
 
   const stationsGroup = L.layerGroup().addTo(map);
   let linesLayer;
 
+  // Index and default target
+  const stationLatLngIndex = new Map();
+  const stationMarkersByName = new Map(); // for search -> marker
+  let defaultTarget = null;
+
   // Lines
-  fetch(LINES_URL)
-    .then(r => r.json())
-    .then(geojson => {
-      linesLayer = L.geoJSON(geojson, {
-        style: f => {
-          const rn = get_route_name(f.properties);
-          const canon = canonical_line(rn);
-          const color = COLOR[canon] || DEFAULT_COLOR;
-          return { color, weight: 5, opacity: 0.95 };
-        },
-        filter: f => {
-          const rn = get_route_name(f.properties);
-          const canon = canonical_line(rn);
-          return canon !== "Line 3 – Scarborough (legacy)";
-        },
-        onEachFeature: (f, layer) => {
-          const rn = get_route_name(f.properties) || "TTC Subway Line";
-          layer.bindTooltip(rn);
-        }
-      }).addTo(map);
+  fetch(LINES_URL).then(r => {
+    if(!r.ok) throw new Error("Failed to load lines geojson");
+    return r.json();
+  }).then(geojson => {
+    linesLayer = L.geoJSON(geojson, {
+      style: f => {
+        const rn = get_route_name(f.properties);
+        const canon = canonical_line(rn);
+        const color = COLOR[canon] || DEFAULT_COLOR;
+        return { color, weight: 5, opacity: 0.95 };
+      },
+      filter: f => canonical_line(get_route_name(f.properties)) !== "Line 3 – Scarborough (legacy)",
+      onEachFeature: (f, layer) => {
+        const rn = get_route_name(f.properties) || "TTC Subway Line";
+        layer.bindTooltip(rn);
+      }
+    }).addTo(map);
+    stationsGroup.bringToFront();
+  }).catch(err => {
+    console.error(err);
+  });
 
-      try {
-        const b = linesLayer.getBounds();
-        if (b.isValid()) map.fitBounds(b.pad(0.05));
-      } catch(e) {}
-    });
+  // NOTE: buildStationPopup kept in case needed later, but not used for general stations
+  function buildStationPopup(name){
+    const key = name.toUpperCase().trim();
+    const s = stationStatsMap[key] || {};
+    const total = (typeof s.total_delays === "number") ? s.total_delays : "—";
+    const timeH = (typeof s.time_lost_hours === "number") ? s.time_lost_hours : "—";
+    const major = (typeof s.major_delays === "number") ? s.major_delays : "—";
+    const reason= s.top_reason_for_delays_by_time || s.fallback_reason || "—";
+    return `
+      <div style="min-width:220px">
+        <div style="font-weight:700;margin-bottom:6px">${name}</div>
+        <div class="kpi" style="margin:6px 0"><span>Total delays</span><strong>${total}</strong></div>
+        <div class="kpi" style="margin:6px 0"><span>Time lost</span><strong>${timeH}</strong></div>
+        <div class="kpi" style="margin:6px 0"><span>Major delays</span><strong>${major}</strong></div>
+        <div class="kpi" style="margin:6px 0"><span>Top cause</span><strong>${reason}</strong></div>
+      </div>
+    `;
+  }
 
-  // Stations
-  fetch(STATIONS_URL)
-    .then(r => r.json())
-    .then(rows => {
-      rows.forEach(s => {
-        if (typeof s.lat !== "number" || typeof s.lon !== "number") return;
-        const marker = L.circleMarker([s.lat, s.lon], {
-          radius: 4,
-          color: "black",
-          weight: 2,
-          fillColor: "white",
-          fillOpacity: 1.0
-        }).bindTooltip(s["station name"] || "Station");
+  // Stations (NO popups on general stations)
+  fetch(STATIONS_URL).then(r => {
+    if(!r.ok) throw new Error("Failed to load stations geodata");
+    return r.json();
+  }).then(rows => {
+    const namesForDatalist = [];
 
-        marker.on("click", () => {
-          document.getElementById("st-name").textContent = s["station name"] || "Station";
-          document.getElementById("st-sub").textContent  = `Lat ${s.lat.toFixed(6)}, Lon ${s.lon.toFixed(6)}`;
-          document.getElementById("st-delays").textContent = "—";
-          document.getElementById("st-mins").textContent   = "—";
-          document.getElementById("st-major").textContent  = "—";
-          document.getElementById("st-reason").textContent = "—";
-        });
+    rows.forEach(s => {
+      if (typeof s.lat !== "number" || typeof s.lon !== "number") return;
+      const stationName = s["station name"] || "Station";
 
-        stationsGroup.addLayer(marker);
+      const stationKey = String(stationName).toUpperCase().trim();
+      stationLatLngIndex.set(stationKey, [s.lat, s.lon]);
+
+      const marker = L.circleMarker([s.lat, s.lon], {
+        radius: 8,
+        color: "black",
+        weight: 2,
+        fillColor: "white",
+        fillOpacity: 1.0
+      })
+      .bindTooltip(stationName);
+
+      marker.on("click", () => {
+        selectStation(stationName, s.lat, s.lon);
       });
+
+      stationsGroup.addLayer(marker);
+      stationMarkersByName.set(stationKey, marker);
+      namesForDatalist.push(stationName);
+
+      if (!defaultTarget) {
+        const u = stationKey;
+        if (u.includes("BLOOR") && u.includes("YONGE")) {
+          defaultTarget = { name: stationName, lat: s.lat, lon: s.lon };
+        }
+      }
     });
 
-  // Incident chips (visual only)
-  document.querySelectorAll('#type-chips .chip').forEach(ch => ch.addEventListener('click', () => {
-    document.querySelectorAll('#type-chips .chip').forEach(x => x.classList.remove('active'));
-    ch.classList.add('active');
-  }));
+    // Populate datalist for search
+    const dl = document.getElementById('stations-list');
+    namesForDatalist.sort().forEach(n => {
+      const opt = document.createElement('option');
+      opt.value = n;
+      dl.appendChild(opt);
+    });
 
-  // ---- Sidebar buffer widget (compact) ----
-  const SAMPLE_LINE_BUFFERS = {
-    "Line 1 – Yonge–University": {
-      "Northbound": { morning_rush: 4, offpeak_day: 2, evening_rush: 5, offpeak_night: 1, weekend: 2 },
-      "Southbound": { morning_rush: 5, offpeak_day: 2, evening_rush: 6, offpeak_night: 1, weekend: 3 }
-    },
-    "Line 2 – Bloor–Danforth": {
-      "Eastbound":  { morning_rush: 3, offpeak_day: 2, evening_rush: 4, offpeak_night: 1, weekend: 2 },
-      "Westbound":  { morning_rush: 3, offpeak_day: 1, evening_rush: 4, offpeak_night: 1, weekend: 2 }
-    },
-    "Line 4 – Sheppard": {
-      "Eastbound":  { morning_rush: 2, offpeak_day: 1, evening_rush: 2, offpeak_night: 1, weekend: 1 },
-      "Westbound":  { morning_rush: 2, offpeak_day: 1, evening_rush: 2, offpeak_night: 1, weekend: 1 }
+    focusDefaultStation(defaultTarget);
+    loadHotspots();
+  }).catch(err => {
+    console.error(err);
+  });
+
+  // Select station -> sidebar
+  function selectStation(stationName, lat, lon){
+    document.getElementById("st-name").textContent = stationName;
+
+    const key = stationName.toUpperCase().trim();
+    const stats = stationStatsMap[key];
+
+    const totalDelays = stats?.total_delays;
+    const totalTimeH  = stats?.time_lost_hours;
+    const majorDelays = stats?.major_delays;
+
+    const topReasonByTime =
+      stats?.top_reason_for_delays_by_time ??
+      stats?.fallback_reason ?? "—";
+
+    const topTimeHours =
+      (typeof stats?.time_lost_due_to_top_delay_by_time === "number" ? stats.time_lost_due_to_top_delay_by_time
+        : (typeof stats?.fallback_reason_time === "number" ? stats.fallback_reason_time : undefined));
+
+    document.getElementById("st-delays").textContent     = (typeof totalDelays === "number") ? totalDelays : "—";
+    document.getElementById("st-time-total").textContent = hoursToHM(totalTimeH);
+    document.getElementById("st-major").textContent      = (typeof majorDelays === "number") ? majorDelays : "—";
+    document.getElementById("st-top-reason").innerHTML   = formatReason(topReasonByTime);
+    document.getElementById("st-time-top").textContent   = hoursToHM(topTimeHours);
+  }
+
+  // Default focus
+  let didAutoFocus = false;
+  function focusDefaultStation(target){
+    if (didAutoFocus) return;
+
+    if (target && typeof target.lat === "number" && typeof target.lon === "number") {
+      map.setView([target.lat, target.lon], 13);
+      selectStation(target.name, target.lat, target.lon);
+      didAutoFocus = true;
+      setTimeout(()=>map.invalidateSize(), 0);
+      return;
     }
-  };
+
+    const tryKeys = [
+      "BLOOR–YONGE","BLOOR-YONGE","BLOOR YONGE",
+      "BLOOR–YONGE STATION","BLOOR-YONGE STATION"
+    ];
+    for (const k of tryKeys){
+      const ll = stationLatLngIndex.get(k);
+      if (ll){
+        map.setView(ll, 13);
+        selectStation(toTitle(k), ll[0], ll[1]);
+        didAutoFocus = true;
+        setTimeout(()=>map.invalidateSize(),0);
+        return;
+      }
+    }
+
+    const unionKeys = ["UNION","UNION STATION"];
+    for(const k of unionKeys){
+      const ll = stationLatLngIndex.get(k);
+      if(ll){
+        map.setView(ll, 13);
+        selectStation(toTitle(k), ll[0], ll[1]);
+        didAutoFocus = true;
+        setTimeout(()=>map.invalidateSize(),0);
+        return;
+      }
+    }
+  }
+
+  function toTitle(s){
+    return String(s).toLowerCase().split(" ").map(w => w ? w[0].toUpperCase()+w.slice(1) : "").join(" ");
+  }
+
+  // Buffer module
   const BUCKET_LABEL = {
-    morning_rush:  "Morning rush (6–9am)",
+    morning_rush:  "Morning rush (6am–9am)",
     offpeak_day:   "Off-peak (9am–4pm)",
-    evening_rush:  "Evening rush (4–7pm)",
-    offpeak_night: "Off-peak night (7pm–12am)",
+    evening_rush:  "Evening rush (4pm–7pm)",
+    offpeak_night: "Off-peak night (7pm–2am)",
     weekend:       "Weekend"
   };
-  const COLOR_MAP = {
-    "Line 1 – Yonge–University": "#FFD300",
-    "Line 2 – Bloor–Danforth":   "#00A94F",
-    "Line 4 – Sheppard":         "#9C27B0",
+  const RUSH_TO_BUCKET = {
+    "Morning":             "morning_rush",
+    "Off-peak: Afternoon": "offpeak_day",
+    "Evening":             "evening_rush",
+    "Off-peak: Night":     "offpeak_night",
+    "Weekend":             "weekend"
   };
+  function lineKeyToCanon(k){ if(k==="YU") return "Line 1 – Yonge–University"; if(k==="BD") return "Line 2 – Bloor–Danforth"; if(k==="SHP") return "Line 4 – Sheppard"; return k; }
+  function boundToDir(lineCanon, b){ if(lineCanon.includes("Yonge–University")) return (b==="N"?"Northbound":"Southbound"); return (b==="E"?"Eastbound":"Westbound"); }
 
   const lineSel = document.getElementById('line-select');
   const dirSel  = document.getElementById('dir-select');
   const rowsEl  = document.getElementById('buffer-rows');
   const dotEl   = document.getElementById('line-dot');
+  const LINE_BUFFERS = {};
 
-  function initSelectors(){
-    Object.keys(SAMPLE_LINE_BUFFERS).forEach(l => {
-      const opt = document.createElement('option');
-      opt.value = l; opt.textContent = l;
-      lineSel.appendChild(opt);
+  function loadLineBuffers(){
+    fetch(LINE_STATS_URL).then(r => {
+      if(!r.ok) throw new Error("Failed to load line stats");
+      return r.json();
+    }).then(js => {
+      const lines = js["line stats"] || [];
+      lines.forEach(entryObj => {
+        const rawLineKey = Object.keys(entryObj)[0];
+        const canonLine = lineKeyToCanon(rawLineKey);
+        LINE_BUFFERS[canonLine] = LINE_BUFFERS[canonLine] || {};
+
+        const boundsObj = entryObj[rawLineKey] || {};
+        Object.keys(boundsObj).forEach(boundLetter => {
+          const dirLabel = boundToDir(canonLine, boundLetter);
+          const bucketMap = (LINE_BUFFERS[canonLine][dirLabel] = LINE_BUFFERS[canonLine][dirLabel] || {});
+          (boundsObj[boundLetter] || []).forEach(rec => {
+            const bucket = RUSH_TO_BUCKET[rec["Rush Hour"]];
+            if(!bucket) return;
+            bucketMap[bucket] = rec["recommended_buffer_min"] ?? "—";
+          });
+        });
+      });
+
+      lineSel.innerHTML = "";
+      Object.keys(LINE_BUFFERS).forEach(line => {
+        const opt = document.createElement('option');
+        opt.value = line; opt.textContent = line;
+        lineSel.appendChild(opt);
+      });
+      setChosenLine(lineSel.value || "Line 1 – Yonge–University");
+    }).catch(err => {
+      console.error(err);
     });
-    lineSel.value = "Line 1 – Yonge–University";
-    updateDirOptions();
-    renderRows();
   }
-  function updateDirOptions(){
+
+  function setChosenLine(lineCanon){
+    if(!LINE_BUFFERS[lineCanon]) return;
+    lineSel.value = lineCanon;
+    dotEl.style.background = COLOR_MAP[lineCanon] || "#6aa3ff";
+
     dirSel.innerHTML = "";
-    const dirs = Object.keys(SAMPLE_LINE_BUFFERS[lineSel.value] || {});
+    const dirs = Object.keys(LINE_BUFFERS[lineCanon] || {});
     dirs.forEach(d => {
       const opt = document.createElement('option');
       opt.value = d; opt.textContent = d;
       dirSel.appendChild(opt);
     });
-    dirSel.value = dirs[0] || "";
-    dotEl.style.background = COLOR_MAP[lineSel.value] || "#6aa3ff";
+    if(dirs.length) dirSel.value = dirs[0];
+    renderRows();
   }
+
   function renderRows(){
-    const buckets = (SAMPLE_LINE_BUFFERS[lineSel.value] || {})[dirSel.value] || {};
+    const line = lineSel.value;
+    const dir  = dirSel.value;
+    const buckets = (LINE_BUFFERS[line] || {})[dir] || {};
+
     rowsEl.innerHTML = "";
     Object.keys(BUCKET_LABEL).forEach(key => {
-      const val = buckets[key] ?? "—";
+      const val = (buckets[key] ?? "—");
       const row = document.createElement('div');
       row.className = "buffer-row";
       row.innerHTML = `<div>${BUCKET_LABEL[key]}</div><div>+${val} min</div>`;
@@ -308,11 +601,153 @@
     });
   }
 
-  lineSel.addEventListener('change', () => { updateDirOptions(); renderRows(); });
+  lineSel.addEventListener('change', () => setChosenLine(lineSel.value));
   dirSel.addEventListener('change', renderRows);
+  loadLineBuffers();
 
-  initSelectors();
+  // Hotspots (bigger icons; emoji nudged)
+  const HOT_ICONS = {
+    "Track Intrusion":   L.divIcon({ className: "hotspot-icon hotspot-track",    html: '<span class="hotspot-emoji">🦝</span>', iconSize: [44,44], iconAnchor: [22,22] }),
+    "Disorderly Patron": L.divIcon({ className: "hotspot-icon hotspot-disorder", html: '<span class="hotspot-emoji">🙃</span>', iconSize: [44,44], iconAnchor: [22,22] }),
+    "Fire: Track Level": L.divIcon({ className: "hotspot-icon hotspot-fire",     html: '<span class="hotspot-emoji">🔥</span>', iconSize: [44,44], iconAnchor: [22,22] })
+  };
+  const hotspotLayers = {
+    "Track Intrusion": L.layerGroup(),
+    "Disorderly Patron": L.layerGroup(),
+    "Fire: Track Level": L.layerGroup()
+  };
+
+  // Remember a default hotspot marker per code for auto-open
+  const hotspotDefaultMarkers = {};
+  function isBloorYongeKey(k){
+    const u = String(k).toUpperCase();
+    return u.includes("BLOOR") && u.includes("YONGE");
+    }
+
+  function buildHotspotPopup(codeName, stName, rec){
+    const avgDelH  = rec["Avg Delay per Incident (hours)"];
+    const avgCount = rec["Avg Count per Year"];
+    const avgLostH = rec["Avg Time Lost per Year (hours)"];
+    const year     = rec["Year"];
+    return `
+      <div style="min-width:240px">
+        <div style="font-weight:700;margin-bottom:4px">${stName}</div>
+        <div style="font-size:18px;font-weight:800;margin-bottom:6px">${codeName}</div>
+        <div class="kpi" style="margin:6px 0"><span>Avg. Delay/Incident</span><strong>${hoursToHMVerbose(avgDelH)}</strong></div>
+        <div class="kpi" style="margin:6px 0"><span>Avg. Count / Year</span><strong>${typeof avgCount === "number" ? avgCount.toFixed(1) : "—"}</strong></div>
+        <div class="kpi" style="margin:6px 0"><span>Avg. Time Lost / Year</span><strong>${hoursToHMVerbose(avgLostH)}</strong></div>
+        <div class="muted" style="font-size:12px;margin-top:6px">${year ?? ""}</div>
+      </div>
+    `;
+  }
+
+  function loadHotspots(){
+    fetch(CODE_STATS_URL).then(r => {
+      if(!r.ok) throw new Error("Failed to load code-specific stats");
+      return r.json();
+    }).then(js => {
+      const blocks = js["Code Specific Station Stats"] || [];
+      blocks.forEach(obj => {
+        const codeName = Object.keys(obj)[0];
+        const stations = obj[codeName] || {};
+        Object.entries(stations).forEach(([stName, rec]) => {
+          const key = String(stName).toUpperCase().trim();
+          const ll = stationLatLngIndex.get(key);
+          if(!ll) return;
+          const marker = L.marker(ll, { icon: HOT_ICONS[codeName] || HOT_ICONS["Disorderly Patron"] })
+            .bindPopup(buildHotspotPopup(codeName, stName, rec), { closeButton: true });
+          (hotspotLayers[codeName] ?? hotspotLayers["Disorderly Patron"]).addLayer(marker);
+
+          if (isBloorYongeKey(key)) { hotspotDefaultMarkers[codeName] = marker; }
+        });
+      });
+
+      // Button behavior
+      const container = document.getElementById('hotspot-toggles');
+      container.addEventListener('click', (e) => {
+        const btn = e.target.closest('button.hot-btn');
+        if(!btn) return;
+
+        // Remove all hotspot layers
+        Object.values(hotspotLayers).forEach(lg => { if(map.hasLayer(lg)) map.removeLayer(lg); });
+
+        // Active styles and aria
+        container.querySelectorAll('button.hot-btn').forEach(b => {
+          b.classList.remove('is-active');
+          b.setAttribute('aria-pressed', 'false');
+        });
+        btn.classList.add('is-active');
+        btn.setAttribute('aria-pressed', 'true');
+
+        // Add chosen layer
+        const key = btn.dataset.hot;
+        if(key !== "ALL"){
+          (hotspotLayers[key] || null)?.addTo(map);
+        }
+        // Auto-open Bloor–Yonge for the selected code if available
+        if (key !== "ALL") {
+          const m = hotspotDefaultMarkers[key];
+          if (m) {
+            const ll = m.getLatLng();
+            map.setView(ll, Math.max(map.getZoom(), 13), { animate: true });
+            m.openPopup();
+          }
+        }
+      });
+    }).catch(e => {
+      console.error(e);
+    });
+  }
+
+  // Legend toggle
+  document.getElementById('legend-toggle').onclick = () => {
+    const p = document.getElementById('legend-panel');
+    p.style.display = (p.style.display === 'none' ? 'block' : 'none');
+    setTimeout(()=>map.invalidateSize(), 0);
+  };
+
+  // Resize handling
+  window.addEventListener('resize', () => { if (map) map.invalidateSize(); });
+
+  // ---- Station search interactions ----
+  function goToSearchedStation(){
+    const input = document.getElementById('station-search');
+    const query = String(input.value || "").trim();
+    if(!query) return;
+
+    // Try exact (case-insensitive) match first
+    const exactKey = query.toUpperCase();
+    let targetKey = null;
+
+    if (stationLatLngIndex.has(exactKey)) {
+      targetKey = exactKey;
+    } else {
+      // try find first "includes" match
+      for (const k of stationLatLngIndex.keys()){
+        if (k.includes(exactKey)) { targetKey = k; break; }
+      }
+    }
+
+    if (!targetKey) return;
+
+    const ll = stationLatLngIndex.get(targetKey);
+    const name = toTitle(targetKey);
+
+    map.setView(ll, Math.max(map.getZoom(), 13), { animate: true });
+    selectStation(name, ll[0], ll[1]);
+    // NOTE: no popup opening here (general stations don't have popups)
+  }
+
+  document.getElementById('station-go').addEventListener('click', goToSearchedStation);
+  document.getElementById('station-search').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') goToSearchedStation();
+  });
 </script>
 </body>
 </html>
+
+
+
+
+
 
