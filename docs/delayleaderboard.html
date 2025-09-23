@@ -5,30 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>TTC Delay Insights — Delay Leaderboard (2025)</title>
   <style>
-    :root{ --red:#dc2626; --border:#313131; --muted:#9ca3af; }
+    :root{
+      --red:#dc2626; --border:#313131; --muted:#9ca3af; --bg:#0b0b0c;
+      --btn:#16171a; --btn-border:#2a2a2f; --btn-hover:#1e2024; --btn-active:#262a30; --focus:#a7b0ff;
+    }
     *{ box-sizing:border-box }
-    body{ margin:0; font-family: Inter, system-ui, Segoe UI, Arial; background:#0b0b0c; color:#f5f5f6; }
+    body{ margin:0; font-family: Inter, system-ui, Segoe UI, Arial; background:var(--bg); color:#f5f5f6; font-size:18px; line-height:1.55; }
 
     header{ position:sticky; top:0; z-index:10; background:#0f0f11; border-bottom:1px solid var(--border); }
     .container{ max-width:1360px; margin:0 auto; padding:18px 22px; }
     .brand{ display:flex; align-items:center; gap:12px; }
-    .badge{ width:36px; height:36px; border-radius:12px; background:var(--red); color:#fff; display:grid; place-items:center; font-weight:700; }
-    .muted{ color:#9ca3af; }
+    .badge{ width:44px; height:44px; border-radius:12px; background:var(--red); color:#fff; display:grid; place-items:center; font-weight:700; font-size:18px; }
+    .muted{ color:var(--muted); }
 
-    /* Top nav */
     .nav{ display:flex; gap:12px; flex-wrap:wrap; margin-top:8px; }
-    .btn{
-      border:1px solid var(--border);
-      background:#121214;
-      color:#f5f5f6;
-      padding:16px 22px;
-      border-radius:12px;
-      cursor:pointer;
-      font-weight:700;
-      font-size:18px;
-      text-decoration:none;
-      display:inline-block;
-    }
+    .btn{ border:1px solid var(--border); background:#121214; color:#f5f5f6; padding:16px 22px; border-radius:12px; cursor:pointer; font-weight:700; font-size:18px; text-decoration:none; display:inline-block; }
     .btn.primary{ background:var(--red); color:#fff; border-color:var(--red); }
 
     main{ max-width:1360px; margin:22px auto; padding:0 22px; }
@@ -39,13 +30,11 @@
     h1{ font-size:24px; margin:0; }
     .sub{ font-size:15px; color:#d1d5db; }
 
-    /* Controls */
     .controls{ display:flex; gap:10px; flex-wrap:wrap; margin:8px 0 14px; align-items:center; }
     input[type="search"]{
       background:#141417; border:1px solid #2a2a2a; color:#e5e7eb; border-radius:10px; padding:10px 12px; font-size:16px;
     }
 
-    /* Table */
     .table-wrap{ overflow:auto; border:1px solid var(--border); border-radius:12px; }
     table{ width:100%; border-collapse:separate; border-spacing:0; min-width:860px; }
     thead th{
@@ -59,28 +48,22 @@
     tbody tr:last-child td{ border-bottom:0; }
     .num{ text-align:right; white-space:nowrap; }
 
-    /* Rank */
     .rank{ width:120px; white-space:nowrap; font-size:18px; font-weight:700; }
-
-    /* Station + Line columns */
     .station{ font-weight:400; }
     .dots-col{ width:90px; }
     .line-dots{ display:inline-flex; gap:6px; vertical-align:middle; }
     .dot{ width:12px; height:12px; border-radius:999px; display:inline-block; }
-    .yu{ background:#FFD300; } /* Line 1 */
-    .bd{ background:#00A94F; } /* Line 2 */
-    .shp{ background:#9C27B0; } /* Line 4 */
+    .yu{ background:#FFD300; }
+    .bd{ background:#00A94F; }
+    .shp{ background:#9C27B0; }
 
-    /* Top delay text */
     .reason{ font-size:20px; line-height:1.35; font-weight:400; color:#f2f3f7; }
 
-    /* medals & animals */
     .medal{ font-size:24px; margin:0 6px; }
     .animal{ font-size:24px; margin-left:6px; }
 
     footer{ padding:24px 18px; text-align:center; color:#9ca3af; }
 
-    /* ---------- Mobile tweaks ---------- */
     @media (max-width: 640px){
       .container{ padding:18px 22px; }
       .btn{ padding:16px 22px; font-size:18px; }
@@ -102,8 +85,8 @@
       <div class="brand">
         <div class="badge">TTC</div>
         <div>
-          <div style="font-weight:700">TTC Delay Insights</div>
-          <div class="muted" style="font-size:13px;">Data today, better commutes tomorrow.</div>
+          <div style="font-weight:700; font-size:20px;">TTC Delay Insights</div>
+          <div class="muted" style="font-size:14px;">Data today, better commutes tomorrow.</div>
         </div>
       </div>
       <div class="nav">
@@ -153,7 +136,6 @@
 
 <script>
   const DATA_URL = "./data/leaderboard_stations_stats.json";
-
   function hoursToHM(h){
     if (typeof h !== "number" || !isFinite(h)) return "—";
     const totalMinutes = Math.round(h * 60);
@@ -163,32 +145,25 @@
     const mPart = `${mins} min`;
     return hrs > 0 ? `${hPart} ${mPart}` : mPart;
   }
-
   function escapeHTML(s){
     return String(s ?? "").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
   }
-
   const rowsEl = document.getElementById('rows');
   const countLabel = document.getElementById('countLabel');
   const searchEl = document.getElementById('search');
-
   let allRows = [];
-
   function normalizeData(json){
     const list = json.stations_stats || json.station_stats || [];
     const out = [];
     list.forEach(entry => {
       const [name, d] = Object.entries(entry)[0] || [];
       if(!name || !d) return;
-
       const station = String(name).toUpperCase().trim();
-
       let codes = [];
       const rawLine = d.line;
       if(Array.isArray(rawLine)) codes = rawLine.map(String);
       else if(typeof rawLine === "string" || typeof rawLine === "number") codes = [String(rawLine)];
       codes = codes.map(c => String(c).toUpperCase());
-
       out.push({
         station,
         time_lost_hours: d.time_lost_hours ?? (typeof d.time_lost_minutes === 'number' ? d.time_lost_minutes/60 : 0),
@@ -200,7 +175,6 @@
     });
     return out;
   }
-
   function applyFilters(){
     const q = searchEl.value.trim().toUpperCase();
     let rows = allRows.slice();
@@ -208,22 +182,18 @@
     rows.sort((a,b) => (b.time_lost_hours||0) - (a.time_lost_hours||0));
     render(rows);
   }
-
   function render(rows){
     rowsEl.innerHTML = '';
     rows.forEach((r, idx) => {
       const rank = idx + 1;
       const medal = rank===1? '🥇' : rank===2? '🥈' : rank===3? '🥉' : '';
-
       const animal = rank===1? '🦥' : rank===2? '🐌' : rank===3? '🐢' : '';
       const animalTitle = rank===1? 'Sloth' : rank===2? 'Snail' : rank===3? 'Tortoise' : '';
-
       const dots = (Array.isArray(r.lines)? r.lines: []).map(code => {
         const c = String(code || '').toUpperCase();
         const cls = c === 'YU' ? 'yu' : (c === 'BD' ? 'bd' : (c === 'SHP' ? 'shp' : ''));
         return cls ? `<span class="dot ${cls}" title="${c}"></span>` : '';
       }).join('');
-
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td class="rank">${rank} <span class="medal">${medal}</span>${animal?` <span class="animal" title="${animalTitle}">${animal}</span>`:''}</td>
@@ -237,16 +207,15 @@
     });
     countLabel.textContent = `${rows.length} station${rows.length===1?'':'s'}`;
   }
-
   fetch(DATA_URL)
     .then(r => r.json())
     .then(js => { allRows = normalizeData(js); applyFilters(); })
     .catch(err => { rowsEl.innerHTML = `<tr><td colspan="7" class="muted">Failed to load data.</td></tr>`; console.warn(err); });
-
   searchEl.addEventListener('input', applyFilters);
 </script>
 </body>
 </html>
+
 
 
 
