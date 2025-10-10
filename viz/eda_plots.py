@@ -45,7 +45,6 @@ def annotate(df: pd.DataFrame, yearly: pd.DataFrame, fig: go.Figure) ->  go.Figu
     return fig
 
 
-
 def plot_total_delay_by_year(df:pd.DataFrame, unit: str = "minutes", graphtype: str = "bar") -> go.Figure:
     """
     Plots the total delay in given units (min, hours, days) by year
@@ -326,6 +325,14 @@ def plot_line_trends_by_year(df:pd.DataFrame, unit: str = "minutes") -> go.Figur
     # apply conversion
     yearly["Total Delay"] = yearly["Total Delay"] / factors[unit]
 
+    label_map = {
+        "BD": "Bloor–Danforth",
+        "YU": "Yonge–University",
+        "SHP": "Sheppard",
+    }
+    yearly["Line"] = yearly["Line"].replace(label_map)
+
+
     # plot bar graph
     fig = px.bar(
         yearly,
@@ -336,18 +343,18 @@ def plot_line_trends_by_year(df:pd.DataFrame, unit: str = "minutes") -> go.Figur
         title=f"TTC Delays: {unit.capitalize()} Lost per Year Across Station Lines",
         labels={ "Year": "Year", "Total Delay": f"{unit.capitalize()} Lost"},
         color_discrete_map={
-            "YU": "goldenrod",   # Yonge–University
-            "BD": "green",    # Bloor–Danforth
-            "SHP": "red"      # Sheppard
+            "Yonge–University": "goldenrod",   # Yonge–University
+            "Bloor–Danforth": "green",    # Bloor–Danforth
+            "Sheppard": "red"      # Sheppard
         },
-        category_orders={"Line": ["BD", "YU", "SHP"]}  # forces order
+        category_orders={"Line": ["Bloor–Danforth", "Yonge–University", "Sheppard"]}  # forces order
     )
 
     # Add trend, linegraph
     # Map Year + small offset per line for the x-coordinate on the plot
-    offsets = {"BD": -0.25, "YU": 0, "SHP": 0.25}
+    offsets = {"Bloor–Danforth": -0.25, "Yonge–University": 0, "Sheppard": 0.25}
     yearly["Year_offset"] = yearly["Year"] + yearly["Line"].map(offsets)
-    for line in ["BD", "YU", "SHP"]:
+    for line in ["Bloor–Danforth", "Yonge–University", "Sheppard"]:
         line_data = yearly[yearly["Line"] == line]
         fig.add_scatter(
             x=line_data["Year_offset"],  # shifted per line
@@ -549,5 +556,76 @@ def plot_minor_delay_trend(df, last_n_years: int = None) -> go.Figure:
 
     # add annotation for covid 19 and latest year if it is not complete (e.g. till May 2025)
     fig = annotate(df, minor_counts, fig)
+
+    return fig
+
+# When do delays occur most often - during peak or off-peak hours
+def plot_weekday_weekend_trends_by_year(df:pd.DataFrame, unit: str = "minutes") -> go.Figure:
+    """
+    Plots the total delay in given units (min, hours, days) by year across the
+     weekday hours: rush morning, afternoon etc.
+    :param df: pd.Dataframe of TTC delays
+    :param unit: measurement of the delay in minutes, hours or days
+    :return: plot
+    """
+    # Group by year and sum delays
+    if unit not in VALID_UNITS:
+        raise ValueError("unit must be 'minutes', 'hours', or 'days'")
+
+    # conversation factor
+    factors = CONVERSION_FACTORS
+
+    df = df.copy()
+    df["DayType"] = df["IsWeekday"].map({True: "Weekday", False: "Weekend"})
+    df["Year"] = df["DateTime"].dt.year
+    df["Date"] = df["DateTime"].dt.date
+
+    weekday_days = (
+        df[df["IsWeekday"]]
+        .groupby("Year")["Date"]
+        .nunique()
+        .rename("NumWeekdays")
+    )
+
+    weekend_days = (
+        df[~df["IsWeekday"]]
+        .groupby("Year")["Date"]
+        .nunique()
+        .rename("NumWeekends")
+    )
+
+    yearly = (
+        df.groupby(["Year", "DayType"], as_index=False)
+        .agg(
+            Delays=("Min Delay", "count"),  # number of delay events
+            TotalMinutes=("Min Delay", "sum")  # total delay time in minutes (sum of Min Delay)
+        ))
+
+    # apply conversion
+    yearly["Total Delay"] = yearly["TotalMinutes"] / factors[unit]
+
+    # map denominators
+    yearly["DaysCount"] = yearly.apply(
+        lambda r: weekday_days.get(r["Year"], 1)
+        if r["DayType"] == "Weekday"
+        else weekend_days.get(r["Year"], 1),
+        axis=1
+    )
+
+    # Normalize
+    yearly["Total Delay"] = yearly["Total Delay"] / yearly["DaysCount"]
+
+    fig = px.bar(
+        yearly,
+        x="Year",
+        y="Total Delay",
+        color="DayType",
+        barmode="group",
+        title=f"TTC Delays: Average number of {unit.capitalize()} Lost per Day across the years",
+        labels={ "Total Delay": f"Average number of {unit.capitalize()} Lost per Day"},
+    )
+
+    # add annotation for covid 19 and latest year if it is not complete (e.g. till May 2025)
+    fig = annotate(df, yearly, fig)
 
     return fig
