@@ -3,12 +3,16 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Donate — TTC Delay Insights</title>
+  <title>About — Asha Asvathaman</title>
   <style>
+
+
     :root{
       --red:#dc2626; --border:#313131; --muted:#9ca3af; --bg:#0b0b0c; --green:#a3e635;
       --btn:#16171a; --btn-border:#2a2a2f; --btn-hover:#1e2024; --btn-active:#262a30; --focus:#a7b0ff;
     }
+
+
     *{ box-sizing:border-box }
     body{ margin:0; font-family: Inter, system-ui, Segoe UI, Arial; background:var(--bg); color:#f5f5f6; font-size:18px; line-height:1.55; }
 
@@ -27,33 +31,39 @@
   padding:0 22px;
 }
     section.aligned{ display:flex; flex-direction:column; gap:22px; }
-    section.aligned{ display:flex; flex-direction:column; gap:22px; }
 
     .card{ background:#121214; border:1px solid var(--border); border-radius:16px; box-shadow:0 1px 3px rgba(0,0,0,.35); width:100%; }
     .content{ padding:28px; }
 
     .section-title{ font-weight:700; font-size:26px; margin-bottom:10px; }
     .section-sub{ color:#d1d5db; margin-bottom:16px; font-size:18px; line-height:1.7; }
+/* For some consistent style as there is no scroll bar on this page, we need to make one for consistency across the other pages */
+body::after {
+  content: "";
+  display: block;
+  height: clamp(200px, 80vh, 2500px);
+  visibility: hidden;
+}
 
     a{ color:var(--green); text-decoration:none; font-weight:600; }
     a:hover{ color:var(--amber); }
     footer{ padding:28px 22px; text-align:center; color:#9ca3af; }
-
-    .btn-row{ display:flex; flex-wrap:wrap; gap:12px; margin-top:14px; }
-    .donate-btn{
-      background:var(--green);
-      color:#000;
-      padding:12px 18px;
-      border-radius:10px;
-      text-decoration:none;
-      font-weight:700;
-      border:1px solid #000;
-    }
-    .donate-btn:hover{ background:#d9f99d; }
     footer a {
   font-weight: inherit !important;
   color: inherit !important;
   text-decoration: none !important;
+
+    .donate-btn{
+      background:var(--green);
+      color:#000;
+      padding:14px 22px;
+      border-radius:10px;
+      text-decoration:none;
+      font-weight:700;
+      border:1px solid #000;
+      display:inline-block;
+    }
+    .donate-btn:hover{ background:#d9f99d; }
 }
   </style>
 </head>
@@ -80,17 +90,8 @@
 
   <main>
     <section class="aligned">
-      <div class="card">
-        <div class="content">
-          <div class="section-title">Support the Project</div>
-          <div class="section-sub">
-            <em>TTC Delay Insights</em> is an independent open-data project built to make Toronto’s subway delays
-            transparent and actionable. If this work helped you — as a commuter, journalist, planner, or fellow data-nerd —
-            you can support me here. If you enjoyed the <a href="game.html"><em>TTC Delay Dodge Game</em></a>,
-            that’s a great reason to chip in too. Thank you!
-          </div>
-        </div>
-      </div>
+
+
 
       <div class="card">
         <div class="content">
@@ -98,13 +99,32 @@
           <div class="section-sub">
             One-time or recurring support is appreciated. It helps cover hosting and any future projects. :)
           </div>
-          <div class="btn-row">
-            <a class="donate-btn" href="https://ko-fi.com/ashaasvathaman" target="_blank" rel="noopener noreferrer">☕ Buy me a Ko-fi</a>
-
-          </div>
+          <a class="donate-btn" href="https://ko-fi.com/ashaasvathaman" target="_blank" rel="noopener noreferrer">☕ Buy me a Ko-fi</a>
         </div>
       </div>
+
+
+      <div class="card">
+        <div class="content">
+          <div class="section-title">Support This Project</div>
+          <div class="section-sub">
+            If this work helps you, or if you enjoyed playing the <em>TTC Delay Dodge Game</em>, please consider supporting
+            <em>TTC Delay Insights</em>. Your contribution helps cover hosting this website and any future projects.
+          </div>
+<div class="section-sub">
+  You can donate through
+  <a href="https://ko-fi.com/ashaasvathaman" target="_blank" rel="noopener noreferrer" style="color:inherit; text-decoration:underline;">
+    Ko-fi</a>.
+</div>
+        </div>
+      </div>
+
+
+
+
+
     </section>
+
   </main>
 
 <footer>
@@ -113,5 +133,7 @@
     Asha Asvathaman
   </a>
 </footer>
+
 </body>
 </html>
+
