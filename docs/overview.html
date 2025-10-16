@@ -6,11 +6,13 @@
   <title>TTC Delay Insights — Overview</title>
   <style>
     :root{
-      --red:#dc2626; --border:#313131; --muted:#9ca3af; --bg:#0b0b0c;
+      --red:#dc2626; --border:#313131; --muted:#9ca3af; --bg:#0b0b0c; --green:#a3e635;
       --btn:#16171a; --btn-border:#2a2a2f; --btn-hover:#1e2024; --btn-active:#262a30; --focus:#a7b0ff;
     }
     *{ box-sizing:border-box }
     body{ margin:0; font-family: Inter, system-ui, Segoe UI, Arial; background:var(--bg); color:#f5f5f6; font-size:18px; line-height:1.55; }
+
+    /* Header / Nav — match about.html */
     header{ position:sticky; top:0; z-index:10; background:#0f0f11; border-bottom:1px solid var(--border); }
     .container{ max-width:1360px; margin:0 auto; padding:18px 22px; }
     .brand{ display:flex; align-items:center; gap:12px; }
@@ -19,39 +21,38 @@
     .nav{ display:flex; gap:12px; flex-wrap:wrap; margin-top:8px; }
     .btn{ border:1px solid var(--border); background:#121214; color:#f5f5f6; padding:16px 22px; border-radius:12px; cursor:pointer; font-weight:700; font-size:18px; text-decoration:none; display:inline-block; }
     .btn.primary{ background:var(--red); color:#fff; border-color:var(--red); }
-    main {
-  max-width:1360px;
-  margin:20px auto;
-  padding:0 22px;
-}
-    .welcome{ display:flex; gap:16px; align-items:flex-start; margin-bottom:16px; border:1px solid var(--border); border-radius:14px; background:#101012; padding:16px 18px; }
-    .welcome h2{ margin:0 0 8px; font-size:24px; }
-    .welcome p{ margin:6px 0; color:#d1d5db; font-size:17px; }
-    .welcome p.lead{ font-size:21px; line-height:1.65; color:#e8eaee; }
 
-    .card{ background:#121214; border:1px solid var(--border); border-radius:16px; box-shadow:0 1px 3px rgba(0,0,0,.35); }
-    .content{ padding:18px; }
+    /* Main layout — match about.html */
+    main{ max-width:1360px; margin:20px auto; padding:0 22px; }
+    section.aligned{ display:flex; flex-direction:column; gap:22px; }
 
-    .section-title{ font-weight:700; font-size:22px; margin:0 0 10px; }
-    .section-sub{ color:#d1d5db; margin:4px 0 12px; }
+    /* Card + content — match about.html */
+    .card{ background:#121214; border:1px solid var(--border); border-radius:16px; box-shadow:0 1px 3px rgba(0,0,0,.35); width:100%; }
+    .content{ padding:28px; }
 
-    .grid-1{ display:grid; grid-template-columns:1fr; gap:22px; }
-    .grid-2{ display:grid; grid-template-columns:1fr; gap:22px; }
-    @media (max-width:1200px){ .grid-2{ grid-template-columns:1fr; } }
+    /* Typography — match about.html rhythm */
+    .section-title{ font-weight:700; font-size:26px; margin-bottom:10px; }
+    .section-sub{ color:#d1d5db; margin-bottom:16px; font-size:18px; line-height:1.7; }
 
-    .chartframe{ width:100%; height:560px; border:none; border-radius:12px; background:#0f1012; }
-    .note{ color:#cfd3da; font-size:14.5px; margin-top:8px; }
-    .tip{ margin:12px 0 0; border:1px dashed #2a2a2a; border-radius:12px; background:#0f1012; padding:12px 14px; font-size:16.5px; color:#d8dbe2; }
+    a{ color:var(--green); text-decoration:none; font-weight:600; }
 
     footer{ padding:28px 22px; text-align:center; color:#9ca3af; }
-    main > section:last-of-type {
-  margin-bottom: 0;
-  padding-bottom: 0;
-}
+    footer a{ font-weight:inherit !important; color:inherit !important; text-decoration:none !important; }
+
+    /* Overview-specific helpers (kept minimal so look stays identical) */
+    .intro h2{ margin:0 0 8px; font-size:26px; font-weight:700; color:#fff; }
+    .intro p.lead{ margin:6px 0 0; font-size:20px; line-height:1.7; color:#e8eaee; }
+    .chartframe{ width:100%; height:560px; border:none; border-radius:12px; background:#0f1012; }
+    .tip{ margin:12px 0 0; border:1px dashed #2a2a2a; border-radius:12px; background:#0f1012; padding:12px 14px; font-size:16.5px; color:#d8dbe2; }
+
+    @media (max-width:1020px){
+      .content{ padding:18px; }
+      .intro h2{ font-size:20px; }
+      .intro p.lead{ font-size:16px; }
+    }
   </style>
 </head>
 <body>
-
   <header>
     <div class="container" style="display:flex;align-items:center;justify-content:space-between;">
       <div class="brand">
@@ -73,206 +74,165 @@
   </header>
 
   <main>
-    <!-- Intro -->
-    <div class="welcome container" role="region" aria-label="Overview">
-      <div>
-        <h2>Overview: What the Data Says About TTC Delays (2018 - 2025)</h2>
-        <p class="lead">A bird’s-eye view of TTC subway delays through interactive plots. See where delays are worst, why they happen, and when they’re most disruptive, followed by recommendations and next steps.</p>
-      </div>
-    </div>
+    <section class="aligned">
 
-    <!-- Total Time Lost -->
-    <section class="container grid-1" aria-label="Total time lost">
+      <!-- Intro -->
+      <div class="card">
+        <div class="content intro">
+          <h2>Overview: What the Data Says About TTC Delays (2018–2025)</h2>
+          <p class="lead">An in-depth look at TTC subway delays through interactive plots. See where delays are worst, why they happen, and when they’re most disruptive, followed by recommendations and next steps.</p>
+        </div>
+      </div>
+
+      <!-- Total Time Lost -->
       <div class="card">
         <div class="content">
           <div class="section-title">Total Time Lost to Delays</div>
           <div class="section-sub">Days Toronto loses each year across all lines and causes.</div>
-          <iframe class="chartframe" src="data/plots/total_delay_by_year.html"></iframe>
+          <iframe class="chartframe" src="data/plots/total_delay_by_year.html" title="Total time lost by year"></iframe>
         </div>
       </div>
-    </section>
 
-    <!-- Line Trends -->
-    <section class="container grid-1" aria-label="Line trends">
+      <!-- Line Trends -->
       <div class="card">
         <div class="content">
           <div class="section-title">Line Trends</div>
           <div class="section-sub">Time lost by line: Yonge–University (Line 1), Bloor–Danforth (Line 2), and Sheppard (Line 4).</div>
-          <iframe class="chartframe" src="data/plots/line_delay_trends_by_year.html"></iframe>
+          <iframe class="chartframe" src="data/plots/line_delay_trends_by_year.html" title="Line delay trends by year"></iframe>
         </div>
       </div>
-    </section>
 
-    <!-- Station Trends -->
-    <section class="container grid-1" aria-label="Stations">
+      <!-- Station Trends -->
       <div class="card">
         <div class="content">
           <div class="section-title">Which Stations Lose the Most Time?</div>
-          <div class="section-sub">Bloor-Yonge, St.George, Eglinton and
-            Kipling Station are consistently among the top contributors to time loss over the years </div>
-          <iframe class="chartframe" src="data/plots/station_delay_trends_by_year.html"></iframe>
-          <div class="tip">Tip: Visit the <em>Delay Leaderboard</em> to see which stations are leading time-loss this year.
-            On the <em>Home</em> page, checkout the <em>Toronto Subway: Delay Stats</em> interactive map to explore
-            Hotspots for Track Intrusion, Disorderly Patron, and Fire.</div>
+          <div class="section-sub">Bloor–Yonge, St George, Eglinton, and Kipling are consistently among the top contributors to time loss over the years.</div>
+          <iframe class="chartframe" src="data/plots/station_delay_trends_by_year.html" title="Station delay trends by year"></iframe>
+          <div class="tip">Tip: Visit the <em>Delay Leaderboard</em> to see which stations are leading time-loss this year. On the <em>Home</em> page, check out the <em>Toronto Subway: Delay Stats</em> interactive map to explore hotspots for Track Intrusion, Disorderly Patron, and Fire.</div>
         </div>
       </div>
-    </section>
 
-    <!-- Top Reasons for Delays -->
-    <section class="container grid-1" aria-label="Top reasons for delays">
+      <!-- Top Reasons for Delays -->
       <div class="card">
         <div class="content">
           <div class="section-title">Top Reasons for Delays</div>
-          <div class="section-sub">Patron related incidents are the leading cause for time loss over the years,
-            followed by mechanical/infrastructure issues.</div>
-          <iframe class="chartframe" src="data/plots/delay_category_trend_by_year.html"></iframe>
+          <div class="section-sub">Patron-related incidents are the leading cause for time loss over the years, followed by mechanical/infrastructure issues.</div>
+          <iframe class="chartframe" src="data/plots/delay_category_trend_by_year.html" title="Delay categories trend by year"></iframe>
         </div>
       </div>
-    </section>
 
-    <!-- Patron and Mechanical Drivers -->
-    <section class="container grid-2" aria-label="Top drivers">
+      <!-- Patron and Mechanical Drivers -->
       <div class="card">
         <div class="content">
           <div class="section-title">Patron-Related Delays (Top driver for delays)</div>
-          <div class="section-sub">Disorderly patrons, track intrusions, passenger illness and other human factors:
-            A closer look at where patron-related incidents drive time loss.</div>
-          <iframe class="chartframe" src="data/plots/patron_delay_trends_by_year.html"></iframe>
+          <div class="section-sub">Disorderly patrons, track intrusions, passenger illness and other human factors: a closer look at where patron-related incidents drive time loss.</div>
+          <iframe class="chartframe" src="data/plots/patron_delay_trends_by_year.html" title="Patron-related delay trends"></iframe>
         </div>
       </div>
+
       <div class="card">
         <div class="content">
-          <div class="section-title">Mechanical & Infrastructure Delays (Top driver for delays)</div>
-          <div class="section-sub">Signals, track switches, Fire, and other technical causes:
-            A closer look at where Mechanical & Infrastructure-related incidents drive time loss.
-            During the early rollout years, ATC-related delays increased as the system underwent testing and
-            integration. After Line 1 became fully ATC-enabled in late 2022, reliability improved dramatically,
-            with delays dropping sharply between 2023 and 2025.
-
+          <div class="section-title">Mechanical &amp; Infrastructure Delays (Top driver for delays)</div>
+          <div class="section-sub">
+            Signals, track switches, fire, and other technical causes: a closer look at where Mechanical &amp; Infrastructure-related incidents drive time loss.
+            During the early rollout years, ATC-related delays increased as the system underwent testing and integration. After Line 1 became fully ATC-enabled in late 2022, reliability improved, with delays dropping between 2023 and 2025.
           </div>
-          <iframe class="chartframe" src="data/plots/mechanical_infrastructure_delay_trends_by_year.html"></iframe>
+          <iframe class="chartframe" src="data/plots/mechanical_infrastructure_delay_trends_by_year.html" title="Mechanical &amp; infrastructure delay trends"></iframe>
         </div>
       </div>
-    </section>
 
-    <!-- Major vs Minor Delays -->
-    <section class="container grid-2" aria-label="Severity">
+      <!-- Major vs Minor Delays -->
       <div class="card">
         <div class="content">
           <div class="section-title">Major Delays (≥ 20 minutes)</div>
-          <div class="section-sub">An increasing trend of major delays lasting more than 20 mins. </div>
-          <iframe class="chartframe" src="data/plots/major_delay_trends_by_year.html"></iframe>
+          <div class="section-sub">An increasing trend of major delays lasting more than 20 minutes.</div>
+          <iframe class="chartframe" src="data/plots/major_delay_trends_by_year.html" title="Major delay trends"></iframe>
         </div>
       </div>
+
       <div class="card">
         <div class="content">
           <div class="section-title">Minor Delays (&lt; 20 minutes)</div>
-          <div class="section-sub"> Minor delays lasting less than 20 minutues are also trending upward.</div>
-          <iframe class="chartframe" src="data/plots/minor_delay_trends_by_year.html"></iframe>
+          <div class="section-sub">Minor delays lasting less than 20 minutes are also trending upward.</div>
+          <iframe class="chartframe" src="data/plots/minor_delay_trends_by_year.html" title="Minor delay trends"></iframe>
         </div>
       </div>
-    </section>
-<!-- Delay Category Trend for Major Delays -->
-<section class="container grid-1" aria-label="Delay categories for major delays">
-  <div class="card">
-    <div class="content">
-      <div class="section-title">Top Categories Driving Major Delays</div>
-      <div class="section-sub">
-        A closer look at what causes most major (≥20 min) delays.
+
+      <!-- Delay Category Trend for Major Delays -->
+      <div class="card">
+        <div class="content">
+          <div class="section-title">Top Categories Driving Major Delays</div>
+          <div class="section-sub">A closer look at what causes most major (≥20 min) delays.</div>
+          <iframe class="chartframe" src="data/plots/delay_category_trend_for_major_delays_by_year.html" title="Categories driving major delays"></iframe>
+        </div>
       </div>
-      <iframe class="chartframe" src="data/plots/delay_category_trend_for_major_delays_by_year.html"></iframe>
-    </div>
-  </div>
-</section>
-    <!-- Rush Hour and Seasonality -->
-    <section class="container grid-2" aria-label="When delays happen most">
+
+      <!-- Rush Hour, Weekday/Weekend, Seasonality -->
       <div class="card">
         <div class="content">
           <div class="section-title">Rush Hour Patterns</div>
           <div class="section-sub">More delays occur outside the morning peak period.</div>
-          <iframe class="chartframe" src="data/plots/rush_hour_delay_trends_by_year.html"></iframe>
+          <iframe class="chartframe" src="data/plots/rush_hour_delay_trends_by_year.html" title="Rush hour delay trends"></iframe>
         </div>
       </div>
-        <div class="card">
-    <div class="content">
-      <div class="section-title">Weekday vs Weekend Patterns</div>
-      <div class="section-sub">
-        The average minutes lost per service day are nearly identical on weekdays and weekends,
-        showing that disruptions are consistent throughout the week.
+
+      <div class="card">
+        <div class="content">
+          <div class="section-title">Weekday vs Weekend Patterns</div>
+          <div class="section-sub">The average minutes lost per service day are nearly identical on weekdays and weekends, showing that disruptions are consistent throughout the week.</div>
+          <iframe class="chartframe" src="data/plots/weekday_weekend_delay_trends_by_year.html" title="Weekday vs weekend trends"></iframe>
+        </div>
       </div>
-      <iframe class="chartframe" src="data/plots/weekday_weekend_delay_trends_by_year.html"></iframe>
-    </div>
-  </div>
+
       <div class="card">
         <div class="content">
           <div class="section-title">Seasonality</div>
           <div class="section-sub">Patterns are broadly similar across seasons.</div>
-          <iframe class="chartframe" src="data/plots/season_delay_trends_by_year.html"></iframe>
+          <iframe class="chartframe" src="data/plots/season_delay_trends_by_year.html" title="Seasonality of delays"></iframe>
         </div>
       </div>
+
+      <!-- Recommendations & Next Steps -->
+      <div class="card">
+        <div class="content">
+          <div class="section-title" style="font-size:30px; margin-bottom:16px;">Recommendations &amp; Next Steps</div>
+          <div class="section-sub" style="font-size:22px; margin-bottom:24px;">Based on the data, here’s where the TTC can focus next.</div>
+          <ul style="margin:0 0 10px 18px; line-height:1.8; list-style-position:outside; font-size:20px;">
+            <li style="margin-bottom:22px;">
+              <strong>Expand Crisis-Response Coverage:</strong> Strengthen crisis-response teams within the downtown
+              <strong>U-zone of Line&nbsp;1</strong>, with a recommended focus on <strong>Dundas, Bloor–Yonge, St&nbsp;George,</strong>
+              and <strong>Queen</strong>. Extend coverage beyond the U-zone to include <strong>Warden, Sheppard–Yonge, Davisville,
+              Eglinton, Lawrence,</strong> and <strong>Kipling</strong>, where patron-related incidents and track intrusions frequently cluster.
+              On the <em>Home</em> page, explore the <em>Toronto Subway: Delay Stats</em> interactive map to view hotspots related to
+              <strong>Track Intrusions</strong>, <strong>Disorderly Patrons</strong>, and <strong>Fires</strong>.
+            </li>
+            <li style="margin-bottom:22px;">
+              <strong>Install Physical Safety Barriers:</strong> Introduce platform doors or interim safety barriers at
+              high-risk track-intrusion stations — <strong>Queen, Dundas, Bloor–Yonge, Warden,</strong>
+              and <strong>Sheppard–Yonge</strong> — and progressively expand these protections to other stations with recurring
+              patron-related incidents.
+            </li>
+            <li style="margin-bottom:22px;">
+              <strong>Investigate Fire-on-Track Hotspots:</strong> Review recurring <strong>fire-at-track-level incidents</strong>
+              at <strong>Bloor–Yonge, Victoria Park, Islington,</strong> and <strong>Davisville</strong>. Assess underlying causes such
+              as debris buildup or equipment faults and implement targeted maintenance or infrastructure upgrades to reduce recurrence.
+            </li>
+            <li style="margin-bottom:0;">
+              <strong>Set Public Performance Targets:</strong> Establish and publicly report measurable goals for delay reduction,
+              such as decreasing major delays (≥20&nbsp;minutes) by <strong>20%</strong> over three years or cutting
+              <strong>track-intrusion incidents</strong> by <strong>25%</strong>. Regular reporting and transparency would strengthen
+              accountability and demonstrate progress toward a more reliable transit system.
+            </li>
+          </ul>
+        </div>
+      </div>
+
     </section>
-
-<!-- Recommendations & Next Steps -->
-<section class="container grid-1" aria-label="Recommendations">
-  <div class="card" style="padding:28px; border-width:2px;">
-    <div class="content" style="padding:28px;">
-      <div class="section-title" style="font-size:30px; margin-bottom:16px;">Recommendations & Next Steps</div>
-      <div class="section-sub" style="font-size:22px; margin-bottom:24px;">
-        Based on the data, here’s where the TTC can focus next.</div>
-      <ul style="margin:0 0 10px 18px; line-height:1.8; list-style-position:outside; font-size:20px;">
-
-        <li style="margin-bottom:22px;">
-          <strong>Expand Crisis-Response Coverage:</strong> Strengthen crisis-response teams within the downtown
-          <strong>U-zone of Line&nbsp;1</strong>, with a recommended focus on <strong>Dundas, Bloor–Yonge, St&nbsp;George,</strong>
-          and <strong>Queen</strong>. Extend coverage beyond the U-zone to include <strong>Warden, Sheppard–Yonge, Davisville,
-          Eglinton, Lawrence,</strong> and <strong>Kipling</strong>, where patron-related incidents and track intrusions frequently cluster.
-          On the <em>Home</em> page, explore the <em>Toronto Subway: Delay Stats</em> interactive map to view hotspots related to
-          <strong>Track Intrusions</strong>, <strong>Disorderly Patrons</strong>, and <strong>Fires</strong>.
-        </li>
-
-        <li style="margin-bottom:22px;">
-          <strong>Install Physical Safety Barriers:</strong> Introduce platform doors or interim safety barriers at
-          high-risk track-intrusion stations — including <strong>Queen, Dundas, Bloor–Yonge, Warden,</strong>
-          and <strong>Sheppard–Yonge</strong> — and progressively expand these protections to other stations with recurring
-          patron-related incidents.
-        </li>
-
-        <li style="margin-bottom:22px;">
-          <strong>Investigate Fire-on-Track Hotspots:</strong> Review recurring <strong>fire-at-track-level incidents</strong>
-          at <strong>Bloor–Yonge, Victoria Park, Islington,</strong> and <strong>Davisville</strong>. Assess underlying causes such
-          as debris buildup or equipment faults and implement targeted maintenance or infrastructure upgrades to reduce recurrence.
-        </li>
-
-        <li style="margin-bottom:0;">
-          <strong>Set Public Performance Targets:</strong> Establish and publicly report measurable goals for delay reduction,
-          such as decreasing major delays (≥20&nbsp;minutes) by <strong>20%</strong> over three years or cutting
-          <strong>track-intrusion incidents</strong> by <strong>25%</strong>. Regular reporting and transparency would strengthen
-          accountability and demonstrate progress toward a more reliable transit system.
-        </li>
-
-      </ul>
-    </div>
-  </div>
-</section>
-
-
-
   </main>
 
   <footer>
-  Toronto Open Data •
-  <a href="https://ashaasvathaman.com" style="color:inherit; text-decoration:none;">
-    Asha Asvathaman
-  </a>
-</footer>
+    Toronto Open Data •
+    <a href="https://ashaasvathaman.com">Asha Asvathaman</a>
+  </footer>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
