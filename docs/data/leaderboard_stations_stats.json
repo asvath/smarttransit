@@ -1,0 +1,1268 @@
+{
+    "stations_stats": [
+        {
+            "BATHURST STATION": {
+                "year": [
+                    2025
+                ],
+                "line": [
+                    "BD"
+                ],
+                "total_delays": 43,
+                "time_lost_hours": 4.83,
+                "major_delays": 2,
+                "pct_of_system_delays_originating": 0.9,
+                "top_reason_for_delays (by count)": "Patron: Disorderly patron",
+                "time_lost_due_to_top_delay_by_count": 0.73,
+                "top_reason_for_delays_by_time": "Other/Unclear: Unclear security-related incident",
+                "time_lost_due_to_top_delay_by_time": 0.85
+            }
+        },
+        {
+            "BAY STATION": {
+                "year": [
+                    2025
+                ],
+                "line": [
+                    "BD"
+                ],
+                "total_delays": 40,
+                "time_lost_hours": 5.1,
+                "major_delays": 1,
+                "pct_of_system_delays_originating": 0.83,
+                "top_reason_for_delays (by count)": "Patron: Disorderly patron",
+                "time_lost_due_to_top_delay_by_count": 0.9,
+                "top_reason_for_delays_by_time": "Patron: Medical emergency involving a patron on the train: medical aid refused",
+                "time_lost_due_to_top_delay_by_time": 1.2
+            }
+        },
+        {
+            "BAYVIEW STATION": {
+                "year": [
+                    2025
+                ],
+                "line": [
+                    "SHP"
+                ],
+                "total_delays": 23,
+                "time_lost_hours": 2.33,
+                "major_delays": 0,
+                "pct_of_system_delays_originating": 0.48,
+                "top_reason_for_delays (by count)": "Mechanical/Vehicle: Issue with the communications system that monitors train doors",
+                "time_lost_due_to_top_delay_by_count": 0.93,
+                "top_reason_for_delays_by_time": "Mechanical/Vehicle: Issue with the communications system that monitors train doors",
+                "time_lost_due_to_top_delay_by_time": 0.93
+            }
+        },
+        {
+            "BESSARION STATION": {
+                "year": [
+                    2025
+                ],
+                "line": [
+                    "SHP"
+                ],
+                "total_delays": 13,
+                "time_lost_hours": 1.53,
+                "major_delays": 0,
+                "pct_of_system_delays_originating": 0.27,
+                "top_reason_for_delays (by count)": "Operational/Process: Violation of signal by operator",
+                "time_lost_due_to_top_delay_by_count": 0.37,
+                "top_reason_for_delays_by_time": "Operational/Process: Violation of signal by operator",
+                "time_lost_due_to_top_delay_by_time": 0.37
+            }
+        },
+        {
+            "BLOOR-YONGE STATION": {
+                "year": [
+                    2025
+                ],
+                "line": [
+                    "YU",
+                    "BD"
+                ],
+                "total_delays": 245,
+                "time_lost_hours": 28.8,
+                "major_delays": 11,
+                "pct_of_system_delays_originating": 5.1,
+                "top_reason_for_delays (by count)": "Patron: Disorderly patron",
+                "time_lost_due_to_top_delay_by_count": 4.55,
+                "top_reason_for_delays_by_time": "Patron: Disorderly patron",
+                "time_lost_due_to_top_delay_by_time": 4.55
+            }
+        },
+        {
+            "BROADVIEW STATION": {
+                "year": [
+                    2025
+                ],
+                "line": [
+                    "BD"
+                ],
+                "total_delays": 59,
+                "time_lost_hours": 9.62,
+                "major_delays": 8,
+                "pct_of_system_delays_originating": 1.23,
+                "top_reason_for_delays (by count)": "Patron: Disorderly patron",
+                "time_lost_due_to_top_delay_by_count": 1.28,
+                "top_reason_for_delays_by_time": "Patron: Disorderly patron",
+                "time_lost_due_to_top_delay_by_time": 1.28
+            }
+        },
+        {
+            "CASTLE FRANK STATION": {
+                "year": [
+                    2025
+                ],
+                "line": [
+                    "BD"
+                ],
+                "total_delays": 43,
+                "time_lost_hours": 5.33,
+                "major_delays": 1,
+                "pct_of_system_delays_originating": 0.9,
+                "top_reason_for_delays (by count)": "Patron: Disorderly patron",
+                "time_lost_due_to_top_delay_by_count": 1.38,
+                "top_reason_for_delays_by_time": "Patron: Medical emergency involving a patron on the train: medical aid refused",
+                "time_lost_due_to_top_delay_by_time": 1.43
+            }
+        },
+        {
+            "CHESTER STATION": {
+                "year": [
+                    2025
+                ],
+                "line": [
+                    "BD"
+                ],
+                "total_delays": 51,
+                "time_lost_hours": 5.02,
+                "major_delays": 0,
+                "pct_of_system_delays_originating": 1.06,
+                "top_reason_for_delays (by count)": "Patron: Disorderly patron",
+                "time_lost_due_to_top_delay_by_count": 0.92,
+                "top_reason_for_delays_by_time": "Patron: Disorderly patron",
+                "time_lost_due_to_top_delay_by_time": 0.92
+            }
+        },
+        {
+            "CHRISTIE STATION": {
+                "year": [
+                    2025
+                ],
+                "line": [
+                    "BD"
+                ],
+                "total_delays": 42,
+                "time_lost_hours": 5.32,
+                "major_delays": 2,
+                "pct_of_system_delays_originating": 0.87,
+                "top_reason_for_delays (by count)": "Patron: Disorderly patron",
+                "time_lost_due_to_top_delay_by_count": 1.67,
+                "top_reason_for_delays_by_time": "Patron: Disorderly patron",
+                "time_lost_due_to_top_delay_by_time": 1.67
+            }
+        },
+        {
+            "COLLEGE STATION": {
+                "year": [
+                    2025
+                ],
+                "line": [
+                    "YU"
+                ],
+                "total_delays": 89,
+                "time_lost_hours": 10.77,
+                "major_delays": 3,
+                "pct_of_system_delays_originating": 1.85,
+                "top_reason_for_delays (by count)": "Patron: Passenger Assistance Alarm was activated, but no actual issue was found",
+                "time_lost_due_to_top_delay_by_count": 1.2,
+                "top_reason_for_delays_by_time": "Patron: Disorderly patron",
+                "time_lost_due_to_top_delay_by_time": 1.8
+            }
+        },
+        {
+            "COXWELL STATION": {
+                "year": [
+                    2025
+                ],
+                "line": [
+                    "BD"
+                ],
+                "total_delays": 82,
+                "time_lost_hours": 10.47,
+                "major_delays": 2,
+                "pct_of_system_delays_originating": 1.71,
+                "top_reason_for_delays (by count)": "Patron: Disorderly patron",
+                "time_lost_due_to_top_delay_by_count": 0.77,
+                "top_reason_for_delays_by_time": "Patron: Train in contact with person",
+                "time_lost_due_to_top_delay_by_time": 1.82
+            }
+        },
+        {
+            "DAVISVILLE STATION": {
+                "year": [
+                    2025
+                ],
+                "line": [
+                    "YU"
+                ],
+                "total_delays": 107,
+                "time_lost_hours": 11.43,
+                "major_delays": 4,
+                "pct_of_system_delays_originating": 2.23,
+                "top_reason_for_delays (by count)": "Patron: Disorderly patron",
+                "time_lost_due_to_top_delay_by_count": 2.03,
+                "top_reason_for_delays_by_time": "Patron: Disorderly patron",
+                "time_lost_due_to_top_delay_by_time": 2.03
+            }
+        },
+        {
+            "DON MILLS STATION": {
+                "year": [
+                    2025
+                ],
+                "line": [
+                    "SHP"
+                ],
+                "total_delays": 57,
+                "time_lost_hours": 9.1,
+                "major_delays": 3,
+                "pct_of_system_delays_originating": 1.19,
+                "top_reason_for_delays (by count)": "Operational/Process: Violation of signal by operator",
+                "time_lost_due_to_top_delay_by_count": 0.5,
+                "top_reason_for_delays_by_time": "Mechanical/Infrastructure: Track switch problem affecting routing",
+                "time_lost_due_to_top_delay_by_time": 3.57
+            }
+        },
+        {
+            "DONLANDS STATION": {
+                "year": [
+                    2025
+                ],
+                "line": [
+                    "BD"
+                ],
+                "total_delays": 85,
+                "time_lost_hours": 8.12,
+                "major_delays": 1,
+                "pct_of_system_delays_originating": 1.77,
+                "top_reason_for_delays (by count)": "Mechanical/Infrastructure: Track switch problem affecting routing",
+                "time_lost_due_to_top_delay_by_count": 0.55,
+                "top_reason_for_delays_by_time": "Patron: Medical emergency involving a patron on the train: transported",
+                "time_lost_due_to_top_delay_by_time": 2.0
+            }
+        },
+        {
+            "DOWNSVIEW PARK STATION": {
+                "year": [
+                    2025
+                ],
+                "line": [
+                    "YU"
+                ],
+                "total_delays": 35,
+                "time_lost_hours": 3.82,
+                "major_delays": 2,
+                "pct_of_system_delays_originating": 0.73,
+                "top_reason_for_delays (by count)": "Mechanical/Vehicle: Issue with the communications system that monitors train doors",
+                "time_lost_due_to_top_delay_by_count": 1.0,
+                "top_reason_for_delays_by_time": "Mechanical/Vehicle: Issue with the communications system that monitors train doors",
+                "time_lost_due_to_top_delay_by_time": 1.0
+            }
+        },
+        {
+            "DUFFERIN STATION": {
+                "year": [
+                    2025
+                ],
+                "line": [
+                    "BD"
+                ],
+                "total_delays": 36,
+                "time_lost_hours": 5.43,
+                "major_delays": 4,
+                "pct_of_system_delays_originating": 0.75,
+                "top_reason_for_delays (by count)": "Patron: Disorderly patron",
+                "time_lost_due_to_top_delay_by_count": 0.97,
+                "top_reason_for_delays_by_time": "Patron: Patron on the track level.",
+                "time_lost_due_to_top_delay_by_time": 1.25
+            }
+        },
+        {
+            "DUNDAS STATION": {
+                "year": [
+                    2025
+                ],
+                "line": [
+                    "YU"
+                ],
+                "total_delays": 77,
+                "time_lost_hours": 8.48,
+                "major_delays": 2,
+                "pct_of_system_delays_originating": 1.6,
+                "top_reason_for_delays (by count)": "Patron: Disorderly patron",
+                "time_lost_due_to_top_delay_by_count": 1.27,
+                "top_reason_for_delays_by_time": "Patron: Disorderly patron",
+                "time_lost_due_to_top_delay_by_time": 1.27
+            }
+        },
+        {
+            "DUNDAS WEST STATION": {
+                "year": [
+                    2025
+                ],
+                "line": [
+                    "BD"
+                ],
+                "total_delays": 50,
+                "time_lost_hours": 5.35,
+                "major_delays": 2,
+                "pct_of_system_delays_originating": 1.04,
+                "top_reason_for_delays (by count)": "Patron: Disorderly patron",
+                "time_lost_due_to_top_delay_by_count": 0.73,
+                "top_reason_for_delays_by_time": "Patron: Disorderly patron",
+                "time_lost_due_to_top_delay_by_time": 0.73
+            }
+        },
+        {
+            "DUPONT STATION": {
+                "year": [
+                    2025
+                ],
+                "line": [
+                    "YU"
+                ],
+                "total_delays": 48,
+                "time_lost_hours": 5.25,
+                "major_delays": 0,
+                "pct_of_system_delays_originating": 1.0,
+                "top_reason_for_delays (by count)": "Patron: Disorderly patron",
+                "time_lost_due_to_top_delay_by_count": 1.45,
+                "top_reason_for_delays_by_time": "Patron: Disorderly patron",
+                "time_lost_due_to_top_delay_by_time": 1.45
+            }
+        },
+        {
+            "EGLINTON STATION": {
+                "year": [
+                    2025
+                ],
+                "line": [
+                    "YU"
+                ],
+                "total_delays": 127,
+                "time_lost_hours": 28.98,
+                "major_delays": 5,
+                "pct_of_system_delays_originating": 2.64,
+                "top_reason_for_delays (by count)": "Patron: Disorderly patron",
+                "time_lost_due_to_top_delay_by_count": 2.55,
+                "top_reason_for_delays_by_time": "Weather: Weather related ",
+                "time_lost_due_to_top_delay_by_time": 13.55
+            }
+        },
+        {
+            "EGLINTON WEST STATION": {
+                "year": [
+                    2025
+                ],
+                "line": [
+                    "YU"
+                ],
+                "total_delays": 50,
+                "time_lost_hours": 6.75,
+                "major_delays": 4,
+                "pct_of_system_delays_originating": 1.04,
+                "top_reason_for_delays (by count)": "Patron: Passenger Assistance Alarm was activated, but no actual issue was found",
+                "time_lost_due_to_top_delay_by_count": 0.53,
+                "top_reason_for_delays_by_time": "Patron: Disorderly patron",
+                "time_lost_due_to_top_delay_by_time": 1.33
+            }
+        },
+        {
+            "FINCH STATION": {
+                "year": [
+                    2025
+                ],
+                "line": [
+                    "YU"
+                ],
+                "total_delays": 160,
+                "time_lost_hours": 14.38,
+                "major_delays": 3,
+                "pct_of_system_delays_originating": 3.33,
+                "top_reason_for_delays (by count)": "Patron: Unsanitary vehicle",
+                "time_lost_due_to_top_delay_by_count": 1.6,
+                "top_reason_for_delays_by_time": "Patron: Disorderly patron",
+                "time_lost_due_to_top_delay_by_time": 1.72
+            }
+        },
+        {
+            "FINCH WEST STATION": {
+                "year": [
+                    2025
+                ],
+                "line": [
+                    "YU"
+                ],
+                "total_delays": 28,
+                "time_lost_hours": 4.45,
+                "major_delays": 1,
+                "pct_of_system_delays_originating": 0.58,
+                "top_reason_for_delays (by count)": "Mechanical/Vehicle: Issue with the communications system that monitors train doors",
+                "time_lost_due_to_top_delay_by_count": 0.8,
+                "top_reason_for_delays_by_time": "Patron: Train in contact with person",
+                "time_lost_due_to_top_delay_by_time": 1.92
+            }
+        },
+        {
+            "GLENCAIRN STATION": {
+                "year": [
+                    2025
+                ],
+                "line": [
+                    "YU"
+                ],
+                "total_delays": 29,
+                "time_lost_hours": 3.28,
+                "major_delays": 1,
+                "pct_of_system_delays_originating": 0.6,
+                "top_reason_for_delays (by count)": "Patron: Disorderly patron",
+                "time_lost_due_to_top_delay_by_count": 1.15,
+                "top_reason_for_delays_by_time": "Patron: Disorderly patron",
+                "time_lost_due_to_top_delay_by_time": 1.15
+            }
+        },
+        {
+            "GREENWOOD STATION": {
+                "year": [
+                    2025
+                ],
+                "line": [
+                    "BD"
+                ],
+                "total_delays": 83,
+                "time_lost_hours": 11.23,
+                "major_delays": 4,
+                "pct_of_system_delays_originating": 1.73,
+                "top_reason_for_delays (by count)": "Mechanical/Infrastructure: Track switch problem affecting routing",
+                "time_lost_due_to_top_delay_by_count": 0.55,
+                "top_reason_for_delays_by_time": "Patron: Train in contact with person",
+                "time_lost_due_to_top_delay_by_time": 2.0
+            }
+        },
+        {
+            "HIGH PARK STATION": {
+                "year": [
+                    2025
+                ],
+                "line": [
+                    "BD"
+                ],
+                "total_delays": 64,
+                "time_lost_hours": 5.82,
+                "major_delays": 0,
+                "pct_of_system_delays_originating": 1.33,
+                "top_reason_for_delays (by count)": "Mechanical/Infrastructure: Track related problem",
+                "time_lost_due_to_top_delay_by_count": 1.48,
+                "top_reason_for_delays_by_time": "Mechanical/Infrastructure: Track related problem",
+                "time_lost_due_to_top_delay_by_time": 1.48
+            }
+        },
+        {
+            "HIGHWAY 407 STATION": {
+                "year": [
+                    2025
+                ],
+                "line": [
+                    "YU"
+                ],
+                "total_delays": 17,
+                "time_lost_hours": 1.93,
+                "major_delays": 1,
+                "pct_of_system_delays_originating": 0.35,
+                "top_reason_for_delays (by count)": "Mechanical/Vehicle: Issue with the communications system that monitors train doors",
+                "time_lost_due_to_top_delay_by_count": 0.62,
+                "top_reason_for_delays_by_time": "Mechanical/Vehicle: Issue with the communications system that monitors train doors",
+                "time_lost_due_to_top_delay_by_time": 0.62
+            }
+        },
+        {
+            "ISLINGTON STATION": {
+                "year": [
+                    2025
+                ],
+                "line": [
+                    "BD"
+                ],
+                "total_delays": 73,
+                "time_lost_hours": 13.0,
+                "major_delays": 8,
+                "pct_of_system_delays_originating": 1.52,
+                "top_reason_for_delays (by count)": "Operational/Process: Violation of signal by operator",
+                "time_lost_due_to_top_delay_by_count": 0.35,
+                "top_reason_for_delays_by_time": "Patron: Train in contact with person",
+                "time_lost_due_to_top_delay_by_time": 3.12
+            }
+        },
+        {
+            "JANE STATION": {
+                "year": [
+                    2025
+                ],
+                "line": [
+                    "BD"
+                ],
+                "total_delays": 46,
+                "time_lost_hours": 5.77,
+                "major_delays": 3,
+                "pct_of_system_delays_originating": 0.96,
+                "top_reason_for_delays (by count)": "Patron: Disorderly patron",
+                "time_lost_due_to_top_delay_by_count": 0.98,
+                "top_reason_for_delays_by_time": "Patron: Disorderly patron",
+                "time_lost_due_to_top_delay_by_time": 0.98
+            }
+        },
+        {
+            "KEELE STATION": {
+                "year": [
+                    2025
+                ],
+                "line": [
+                    "BD"
+                ],
+                "total_delays": 79,
+                "time_lost_hours": 10.67,
+                "major_delays": 3,
+                "pct_of_system_delays_originating": 1.65,
+                "top_reason_for_delays (by count)": "Mechanical/Infrastructure: Track related problem",
+                "time_lost_due_to_top_delay_by_count": 0.98,
+                "top_reason_for_delays_by_time": "Mechanical/Infrastructure: Track switch problem affecting routing",
+                "time_lost_due_to_top_delay_by_time": 1.73
+            }
+        },
+        {
+            "KENNEDY STATION": {
+                "year": [
+                    2025
+                ],
+                "line": [
+                    "BD"
+                ],
+                "total_delays": 186,
+                "time_lost_hours": 22.28,
+                "major_delays": 10,
+                "pct_of_system_delays_originating": 3.87,
+                "top_reason_for_delays (by count)": "Patron: Disorderly patron",
+                "time_lost_due_to_top_delay_by_count": 2.25,
+                "top_reason_for_delays_by_time": "Mechanical/Infrastructure: Problem with the power rail ",
+                "time_lost_due_to_top_delay_by_time": 3.37
+            }
+        },
+        {
+            "KING STATION": {
+                "year": [
+                    2025
+                ],
+                "line": [
+                    "YU"
+                ],
+                "total_delays": 41,
+                "time_lost_hours": 6.48,
+                "major_delays": 4,
+                "pct_of_system_delays_originating": 0.85,
+                "top_reason_for_delays (by count)": "Patron: Medical emergency involving a patron on the train: medical aid refused",
+                "time_lost_due_to_top_delay_by_count": 1.42,
+                "top_reason_for_delays_by_time": "Patron: Medical emergency involving a patron on the train: medical aid refused",
+                "time_lost_due_to_top_delay_by_time": 1.42
+            }
+        },
+        {
+            "KIPLING STATION": {
+                "year": [
+                    2025
+                ],
+                "line": [
+                    "BD"
+                ],
+                "total_delays": 198,
+                "time_lost_hours": 23.02,
+                "major_delays": 11,
+                "pct_of_system_delays_originating": 4.12,
+                "top_reason_for_delays (by count)": "Patron: Disorderly patron",
+                "time_lost_due_to_top_delay_by_count": 1.33,
+                "top_reason_for_delays_by_time": "Mechanical/Infrastructure: Issue with trackside signal or related components",
+                "time_lost_due_to_top_delay_by_time": 2.52
+            }
+        },
+        {
+            "LANSDOWNE STATION": {
+                "year": [
+                    2025
+                ],
+                "line": [
+                    "BD"
+                ],
+                "total_delays": 33,
+                "time_lost_hours": 3.63,
+                "major_delays": 2,
+                "pct_of_system_delays_originating": 0.69,
+                "top_reason_for_delays (by count)": "Patron: Disorderly patron",
+                "time_lost_due_to_top_delay_by_count": 0.6,
+                "top_reason_for_delays_by_time": "Other/Unclear: Unclear security-related incident",
+                "time_lost_due_to_top_delay_by_time": 0.63
+            }
+        },
+        {
+            "LAWRENCE STATION": {
+                "year": [
+                    2025
+                ],
+                "line": [
+                    "YU"
+                ],
+                "total_delays": 110,
+                "time_lost_hours": 20.3,
+                "major_delays": 14,
+                "pct_of_system_delays_originating": 2.29,
+                "top_reason_for_delays (by count)": "Mechanical/Vehicle: Issue with the communications system that monitors train doors",
+                "time_lost_due_to_top_delay_by_count": 3.62,
+                "top_reason_for_delays_by_time": "Patron: Patron on the track level.",
+                "time_lost_due_to_top_delay_by_time": 3.7
+            }
+        },
+        {
+            "LAWRENCE WEST STATION": {
+                "year": [
+                    2025
+                ],
+                "line": [
+                    "YU"
+                ],
+                "total_delays": 56,
+                "time_lost_hours": 8.4,
+                "major_delays": 5,
+                "pct_of_system_delays_originating": 1.17,
+                "top_reason_for_delays (by count)": "Mechanical/Vehicle: Issue with the communications system that monitors train doors",
+                "time_lost_due_to_top_delay_by_count": 1.18,
+                "top_reason_for_delays_by_time": "Other/Unclear: Unclear security-related incident",
+                "time_lost_due_to_top_delay_by_time": 1.6
+            }
+        },
+        {
+            "LESLIE STATION": {
+                "year": [
+                    2025
+                ],
+                "line": [
+                    "SHP"
+                ],
+                "total_delays": 20,
+                "time_lost_hours": 3.32,
+                "major_delays": 1,
+                "pct_of_system_delays_originating": 0.42,
+                "top_reason_for_delays (by count)": "Mechanical/Vehicle: Issue with the communications system that monitors train doors",
+                "time_lost_due_to_top_delay_by_count": 0.25,
+                "top_reason_for_delays_by_time": "Mechanical/Infrastructure: Problem with the power rail ",
+                "time_lost_due_to_top_delay_by_time": 1.63
+            }
+        },
+        {
+            "MAIN STREET STATION": {
+                "year": [
+                    2025
+                ],
+                "line": [
+                    "BD"
+                ],
+                "total_delays": 60,
+                "time_lost_hours": 8.83,
+                "major_delays": 6,
+                "pct_of_system_delays_originating": 1.25,
+                "top_reason_for_delays (by count)": "Patron: Disorderly patron",
+                "time_lost_due_to_top_delay_by_count": 0.52,
+                "top_reason_for_delays_by_time": "Mechanical/Infrastructure: Fire on track level",
+                "time_lost_due_to_top_delay_by_time": 2.17
+            }
+        },
+        {
+            "MUSEUM STATION": {
+                "year": [
+                    2025
+                ],
+                "line": [
+                    "YU"
+                ],
+                "total_delays": 36,
+                "time_lost_hours": 5.68,
+                "major_delays": 5,
+                "pct_of_system_delays_originating": 0.75,
+                "top_reason_for_delays (by count)": "Patron: Passenger Assistance Alarm was activated, but no actual issue was found",
+                "time_lost_due_to_top_delay_by_count": 0.4,
+                "top_reason_for_delays_by_time": "Mechanical/Infrastructure: Fire on track level",
+                "time_lost_due_to_top_delay_by_time": 1.5
+            }
+        },
+        {
+            "NORTH YORK CENTRE STATION": {
+                "year": [
+                    2025
+                ],
+                "line": [
+                    "YU"
+                ],
+                "total_delays": 48,
+                "time_lost_hours": 4.97,
+                "major_delays": 2,
+                "pct_of_system_delays_originating": 1.0,
+                "top_reason_for_delays (by count)": "Mechanical/Vehicle: Issue with the communications system that monitors train doors",
+                "time_lost_due_to_top_delay_by_count": 1.68,
+                "top_reason_for_delays_by_time": "Mechanical/Vehicle: Issue with the communications system that monitors train doors",
+                "time_lost_due_to_top_delay_by_time": 1.68
+            }
+        },
+        {
+            "OLD MILL STATION": {
+                "year": [
+                    2025
+                ],
+                "line": [
+                    "BD"
+                ],
+                "total_delays": 38,
+                "time_lost_hours": 3.67,
+                "major_delays": 1,
+                "pct_of_system_delays_originating": 0.79,
+                "top_reason_for_delays (by count)": "Operational/Process: Violation of signal by operator",
+                "time_lost_due_to_top_delay_by_count": 0.5,
+                "top_reason_for_delays_by_time": "Patron: Medical emergency involving a patron on the train: transported",
+                "time_lost_due_to_top_delay_by_time": 0.73
+            }
+        },
+        {
+            "OSGOODE STATION": {
+                "year": [
+                    2025
+                ],
+                "line": [
+                    "YU"
+                ],
+                "total_delays": 45,
+                "time_lost_hours": 5.15,
+                "major_delays": 3,
+                "pct_of_system_delays_originating": 0.94,
+                "top_reason_for_delays (by count)": "Mechanical/Vehicle: Issue with the communications system that monitors train doors",
+                "time_lost_due_to_top_delay_by_count": 1.12,
+                "top_reason_for_delays_by_time": "Mechanical/Vehicle: Issue with the communications system that monitors train doors",
+                "time_lost_due_to_top_delay_by_time": 1.12
+            }
+        },
+        {
+            "OSSINGTON STATION": {
+                "year": [
+                    2025
+                ],
+                "line": [
+                    "BD"
+                ],
+                "total_delays": 47,
+                "time_lost_hours": 7.75,
+                "major_delays": 5,
+                "pct_of_system_delays_originating": 0.98,
+                "top_reason_for_delays (by count)": "Patron: Disorderly patron",
+                "time_lost_due_to_top_delay_by_count": 0.72,
+                "top_reason_for_delays_by_time": "Mechanical/Infrastructure: Issue with Transportation and Signals on the tracks",
+                "time_lost_due_to_top_delay_by_time": 1.48
+            }
+        },
+        {
+            "PAPE STATION": {
+                "year": [
+                    2025
+                ],
+                "line": [
+                    "BD"
+                ],
+                "total_delays": 56,
+                "time_lost_hours": 7.2,
+                "major_delays": 4,
+                "pct_of_system_delays_originating": 1.17,
+                "top_reason_for_delays (by count)": "Patron: Disorderly patron",
+                "time_lost_due_to_top_delay_by_count": 1.15,
+                "top_reason_for_delays_by_time": "Patron: Medical emergency involving a patron on the train: medical aid refused",
+                "time_lost_due_to_top_delay_by_time": 1.43
+            }
+        },
+        {
+            "PIONEER VILLAGE STATION": {
+                "year": [
+                    2025
+                ],
+                "line": [
+                    "YU"
+                ],
+                "total_delays": 23,
+                "time_lost_hours": 2.97,
+                "major_delays": 2,
+                "pct_of_system_delays_originating": 0.48,
+                "top_reason_for_delays (by count)": "Patron: Disorderly patron",
+                "time_lost_due_to_top_delay_by_count": 0.62,
+                "top_reason_for_delays_by_time": "Patron: Disorderly patron",
+                "time_lost_due_to_top_delay_by_time": 0.62
+            }
+        },
+        {
+            "QUEEN STATION": {
+                "year": [
+                    2025
+                ],
+                "line": [
+                    "YU"
+                ],
+                "total_delays": 58,
+                "time_lost_hours": 7.92,
+                "major_delays": 4,
+                "pct_of_system_delays_originating": 1.21,
+                "top_reason_for_delays (by count)": "Patron: Disorderly patron",
+                "time_lost_due_to_top_delay_by_count": 1.17,
+                "top_reason_for_delays_by_time": "Patron: Patron on the track level.",
+                "time_lost_due_to_top_delay_by_time": 1.38
+            }
+        },
+        {
+            "QUEEN'S PARK STATION": {
+                "year": [
+                    2025
+                ],
+                "line": [
+                    "YU"
+                ],
+                "total_delays": 40,
+                "time_lost_hours": 3.87,
+                "major_delays": 0,
+                "pct_of_system_delays_originating": 0.83,
+                "top_reason_for_delays (by count)": "Patron: Passenger Assistance Alarm was activated, but no actual issue was found",
+                "time_lost_due_to_top_delay_by_count": 0.67,
+                "top_reason_for_delays_by_time": "Patron: Disorderly patron",
+                "time_lost_due_to_top_delay_by_time": 0.82
+            }
+        },
+        {
+            "ROSEDALE STATION": {
+                "year": [
+                    2025
+                ],
+                "line": [
+                    "YU"
+                ],
+                "total_delays": 65,
+                "time_lost_hours": 14.45,
+                "major_delays": 9,
+                "pct_of_system_delays_originating": 1.35,
+                "top_reason_for_delays (by count)": "Patron: Disorderly patron",
+                "time_lost_due_to_top_delay_by_count": 1.57,
+                "top_reason_for_delays_by_time": "Weather: Weather related ",
+                "time_lost_due_to_top_delay_by_time": 4.28
+            }
+        },
+        {
+            "ROYAL YORK STATION": {
+                "year": [
+                    2025
+                ],
+                "line": [
+                    "BD"
+                ],
+                "total_delays": 37,
+                "time_lost_hours": 4.57,
+                "major_delays": 1,
+                "pct_of_system_delays_originating": 0.77,
+                "top_reason_for_delays (by count)": "Mechanical/Vehicle: A reported problem with the train's equipment was investigated but no fault was found",
+                "time_lost_due_to_top_delay_by_count": 0.62,
+                "top_reason_for_delays_by_time": "Mechanical/Vehicle: Air conditioning issue on the train",
+                "time_lost_due_to_top_delay_by_time": 1.25
+            }
+        },
+        {
+            "RUNNYMEDE STATION": {
+                "year": [
+                    2025
+                ],
+                "line": [
+                    "BD"
+                ],
+                "total_delays": 18,
+                "time_lost_hours": 2.72,
+                "major_delays": 2,
+                "pct_of_system_delays_originating": 0.37,
+                "top_reason_for_delays (by count)": "Patron: Disorderly patron",
+                "time_lost_due_to_top_delay_by_count": 0.88,
+                "top_reason_for_delays_by_time": "Patron: Disorderly patron",
+                "time_lost_due_to_top_delay_by_time": 0.88
+            }
+        },
+        {
+            "SHEPPARD WEST STATION": {
+                "year": [
+                    2025
+                ],
+                "line": [
+                    "YU"
+                ],
+                "total_delays": 77,
+                "time_lost_hours": 25.7,
+                "major_delays": 5,
+                "pct_of_system_delays_originating": 1.6,
+                "top_reason_for_delays (by count)": "Patron: Disorderly patron",
+                "time_lost_due_to_top_delay_by_count": 1.87,
+                "top_reason_for_delays_by_time": "Weather: Weather related ",
+                "time_lost_due_to_top_delay_by_time": 15.52
+            }
+        },
+        {
+            "SHEPPARD-YONGE STATION": {
+                "year": [
+                    2025
+                ],
+                "line": [
+                    "YU",
+                    "SHP"
+                ],
+                "total_delays": 138,
+                "time_lost_hours": 19.12,
+                "major_delays": 9,
+                "pct_of_system_delays_originating": 2.87,
+                "top_reason_for_delays (by count)": "Patron: Disorderly patron",
+                "time_lost_due_to_top_delay_by_count": 1.48,
+                "top_reason_for_delays_by_time": "Mechanical/Infrastructure: Problem with the track in an active maintenance or construction area",
+                "time_lost_due_to_top_delay_by_time": 2.9
+            }
+        },
+        {
+            "SHERBOURNE STATION": {
+                "year": [
+                    2025
+                ],
+                "line": [
+                    "BD"
+                ],
+                "total_delays": 36,
+                "time_lost_hours": 4.58,
+                "major_delays": 1,
+                "pct_of_system_delays_originating": 0.75,
+                "top_reason_for_delays (by count)": "Patron: Disorderly patron",
+                "time_lost_due_to_top_delay_by_count": 1.2,
+                "top_reason_for_delays_by_time": "Patron: Disorderly patron",
+                "time_lost_due_to_top_delay_by_time": 1.2
+            }
+        },
+        {
+            "SPADINA STATION": {
+                "year": [
+                    2025
+                ],
+                "line": [
+                    "YU",
+                    "BD"
+                ],
+                "total_delays": 77,
+                "time_lost_hours": 9.55,
+                "major_delays": 5,
+                "pct_of_system_delays_originating": 1.6,
+                "top_reason_for_delays (by count)": "Patron: Disorderly patron",
+                "time_lost_due_to_top_delay_by_count": 1.4,
+                "top_reason_for_delays_by_time": "Patron: Medical emergency involving a patron on the train: transported",
+                "time_lost_due_to_top_delay_by_time": 1.5
+            }
+        },
+        {
+            "ST. ANDREW STATION": {
+                "year": [
+                    2025
+                ],
+                "line": [
+                    "YU"
+                ],
+                "total_delays": 47,
+                "time_lost_hours": 5.98,
+                "major_delays": 2,
+                "pct_of_system_delays_originating": 0.98,
+                "top_reason_for_delays (by count)": "Patron: Disorderly patron",
+                "time_lost_due_to_top_delay_by_count": 1.02,
+                "top_reason_for_delays_by_time": "Mechanical/Vehicle: Issue with the communications system that monitors train doors",
+                "time_lost_due_to_top_delay_by_time": 1.12
+            }
+        },
+        {
+            "ST. CLAIR STATION": {
+                "year": [
+                    2025
+                ],
+                "line": [
+                    "YU"
+                ],
+                "total_delays": 104,
+                "time_lost_hours": 11.35,
+                "major_delays": 2,
+                "pct_of_system_delays_originating": 2.17,
+                "top_reason_for_delays (by count)": "Patron: Disorderly patron",
+                "time_lost_due_to_top_delay_by_count": 1.75,
+                "top_reason_for_delays_by_time": "Patron: Disorderly patron",
+                "time_lost_due_to_top_delay_by_time": 1.75
+            }
+        },
+        {
+            "ST. CLAIR WEST STATION": {
+                "year": [
+                    2025
+                ],
+                "line": [
+                    "YU"
+                ],
+                "total_delays": 69,
+                "time_lost_hours": 8.38,
+                "major_delays": 5,
+                "pct_of_system_delays_originating": 1.44,
+                "top_reason_for_delays (by count)": "Patron: Disorderly patron",
+                "time_lost_due_to_top_delay_by_count": 2.07,
+                "top_reason_for_delays_by_time": "Patron: Disorderly patron",
+                "time_lost_due_to_top_delay_by_time": 2.07
+            }
+        },
+        {
+            "ST. GEORGE STATION": {
+                "year": [
+                    2025
+                ],
+                "line": [
+                    "YU",
+                    "BD"
+                ],
+                "total_delays": 159,
+                "time_lost_hours": 20.43,
+                "major_delays": 8,
+                "pct_of_system_delays_originating": 3.31,
+                "top_reason_for_delays (by count)": "Patron: Disorderly patron",
+                "time_lost_due_to_top_delay_by_count": 2.38,
+                "top_reason_for_delays_by_time": "Patron: Disorderly patron",
+                "time_lost_due_to_top_delay_by_time": 2.38
+            }
+        },
+        {
+            "ST. PATRICK STATION": {
+                "year": [
+                    2025
+                ],
+                "line": [
+                    "YU"
+                ],
+                "total_delays": 36,
+                "time_lost_hours": 5.23,
+                "major_delays": 4,
+                "pct_of_system_delays_originating": 0.75,
+                "top_reason_for_delays (by count)": "Patron: Passenger Assistance Alarm was activated, but no actual issue was found",
+                "time_lost_due_to_top_delay_by_count": 0.9,
+                "top_reason_for_delays_by_time": "Patron: Train in contact with person",
+                "time_lost_due_to_top_delay_by_time": 1.5
+            }
+        },
+        {
+            "SUMMERHILL STATION": {
+                "year": [
+                    2025
+                ],
+                "line": [
+                    "YU"
+                ],
+                "total_delays": 47,
+                "time_lost_hours": 5.8,
+                "major_delays": 2,
+                "pct_of_system_delays_originating": 0.98,
+                "top_reason_for_delays (by count)": "Patron: Disorderly patron",
+                "time_lost_due_to_top_delay_by_count": 1.4,
+                "top_reason_for_delays_by_time": "Patron: Disorderly patron",
+                "time_lost_due_to_top_delay_by_time": 1.4
+            }
+        },
+        {
+            "UNION STATION": {
+                "year": [
+                    2025
+                ],
+                "line": [
+                    "YU"
+                ],
+                "total_delays": 92,
+                "time_lost_hours": 11.63,
+                "major_delays": 4,
+                "pct_of_system_delays_originating": 1.92,
+                "top_reason_for_delays (by count)": "Patron: Passenger Assistance Alarm was activated, but no actual issue was found",
+                "time_lost_due_to_top_delay_by_count": 1.02,
+                "top_reason_for_delays_by_time": "Mechanical/Vehicle: Brake system issue on the train",
+                "time_lost_due_to_top_delay_by_time": 1.92
+            }
+        },
+        {
+            "VAUGHAN METROPOLITAN CENTRE STATION": {
+                "year": [
+                    2025
+                ],
+                "line": [
+                    "YU"
+                ],
+                "total_delays": 88,
+                "time_lost_hours": 8.67,
+                "major_delays": 3,
+                "pct_of_system_delays_originating": 1.83,
+                "top_reason_for_delays (by count)": "Patron: Unsanitary vehicle",
+                "time_lost_due_to_top_delay_by_count": 0.97,
+                "top_reason_for_delays_by_time": "Mechanical/Infrastructure: Track switch problem affecting routing",
+                "time_lost_due_to_top_delay_by_time": 1.67
+            }
+        },
+        {
+            "VICTORIA PARK STATION": {
+                "year": [
+                    2025
+                ],
+                "line": [
+                    "BD"
+                ],
+                "total_delays": 97,
+                "time_lost_hours": 14.92,
+                "major_delays": 9,
+                "pct_of_system_delays_originating": 2.02,
+                "top_reason_for_delays (by count)": "Mechanical/Infrastructure: Fire on track level",
+                "time_lost_due_to_top_delay_by_count": 2.78,
+                "top_reason_for_delays_by_time": "Mechanical/Infrastructure: Fire on track level",
+                "time_lost_due_to_top_delay_by_time": 2.78
+            }
+        },
+        {
+            "WARDEN STATION": {
+                "year": [
+                    2025
+                ],
+                "line": [
+                    "BD"
+                ],
+                "total_delays": 115,
+                "time_lost_hours": 13.83,
+                "major_delays": 7,
+                "pct_of_system_delays_originating": 2.39,
+                "top_reason_for_delays (by count)": "Patron: Disorderly patron",
+                "time_lost_due_to_top_delay_by_count": 1.18,
+                "top_reason_for_delays_by_time": "Patron: Medical emergency involving a patron on the train: medical aid refused",
+                "time_lost_due_to_top_delay_by_time": 2.02
+            }
+        },
+        {
+            "WELLESLEY STATION": {
+                "year": [
+                    2025
+                ],
+                "line": [
+                    "YU"
+                ],
+                "total_delays": 76,
+                "time_lost_hours": 9.65,
+                "major_delays": 2,
+                "pct_of_system_delays_originating": 1.58,
+                "top_reason_for_delays (by count)": "Patron: Passenger Assistance Alarm was activated, but no actual issue was found",
+                "time_lost_due_to_top_delay_by_count": 1.87,
+                "top_reason_for_delays_by_time": "Patron: Train in contact with person",
+                "time_lost_due_to_top_delay_by_time": 2.33
+            }
+        },
+        {
+            "WILSON STATION": {
+                "year": [
+                    2025
+                ],
+                "line": [
+                    "YU"
+                ],
+                "total_delays": 166,
+                "time_lost_hours": 15.18,
+                "major_delays": 4,
+                "pct_of_system_delays_originating": 3.46,
+                "top_reason_for_delays (by count)": "Weather: Weather related ",
+                "time_lost_due_to_top_delay_by_count": 1.18,
+                "top_reason_for_delays_by_time": "Mechanical/Infrastructure: Issue with train detection signalling system",
+                "time_lost_due_to_top_delay_by_time": 1.75
+            }
+        },
+        {
+            "WOODBINE STATION": {
+                "year": [
+                    2025
+                ],
+                "line": [
+                    "BD"
+                ],
+                "total_delays": 47,
+                "time_lost_hours": 5.03,
+                "major_delays": 3,
+                "pct_of_system_delays_originating": 0.98,
+                "top_reason_for_delays (by count)": "Patron: Disorderly patron",
+                "time_lost_due_to_top_delay_by_count": 1.28,
+                "top_reason_for_delays_by_time": "Patron: Disorderly patron",
+                "time_lost_due_to_top_delay_by_time": 1.28
+            }
+        },
+        {
+            "YORK MILLS STATION": {
+                "year": [
+                    2025
+                ],
+                "line": [
+                    "YU"
+                ],
+                "total_delays": 63,
+                "time_lost_hours": 9.67,
+                "major_delays": 7,
+                "pct_of_system_delays_originating": 1.31,
+                "top_reason_for_delays (by count)": "Patron: Disorderly patron",
+                "time_lost_due_to_top_delay_by_count": 2.27,
+                "top_reason_for_delays_by_time": "Patron: Disorderly patron",
+                "time_lost_due_to_top_delay_by_time": 2.27
+            }
+        },
+        {
+            "YORK UNIVERSITY STATION": {
+                "year": [
+                    2025
+                ],
+                "line": [
+                    "YU"
+                ],
+                "total_delays": 21,
+                "time_lost_hours": 2.93,
+                "major_delays": 2,
+                "pct_of_system_delays_originating": 0.44,
+                "top_reason_for_delays (by count)": "Mechanical/Vehicle: Issue with the communications system that monitors train doors",
+                "time_lost_due_to_top_delay_by_count": 0.27,
+                "top_reason_for_delays_by_time": "Patron: Medical emergency involving a patron on the train: transported",
+                "time_lost_due_to_top_delay_by_time": 0.58
+            }
+        },
+        {
+            "YORKDALE STATION": {
+                "year": [
+                    2025
+                ],
+                "line": [
+                    "YU"
+                ],
+                "total_delays": 51,
+                "time_lost_hours": 13.43,
+                "major_delays": 4,
+                "pct_of_system_delays_originating": 1.06,
+                "top_reason_for_delays (by count)": "Mechanical/Vehicle: Issue with the communications system that monitors train doors",
+                "time_lost_due_to_top_delay_by_count": 3.0,
+                "top_reason_for_delays_by_time": "Mechanical/Infrastructure: Problem with the power rail ",
+                "time_lost_due_to_top_delay_by_time": 6.0
+            }
+        }
+    ]
+}

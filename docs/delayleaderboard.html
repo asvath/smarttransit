@@ -6,9 +6,10 @@
   <title>TTC Delay Insights — Delay Leaderboard (2025)</title>
   <style>
     :root{
-      --red:#dc2626; --border:#313131; --muted:#9ca3af; --bg:#0b0b0c;
+      --red:#dc2626; --border:#313131; --muted:#9ca3af; --bg:#0b0b0c; --green:#a3e635;
       --btn:#16171a; --btn-border:#2a2a2f; --btn-hover:#1e2024; --btn-active:#262a30; --focus:#a7b0ff;
     }
+
     *{ box-sizing:border-box }
     body{ margin:0; font-family: Inter, system-ui, Segoe UI, Arial; background:var(--bg); color:#f5f5f6; font-size:18px; line-height:1.55; }
 
@@ -22,19 +23,16 @@
     .btn{ border:1px solid var(--border); background:#121214; color:#f5f5f6; padding:16px 22px; border-radius:12px; cursor:pointer; font-weight:700; font-size:18px; text-decoration:none; display:inline-block; }
     .btn.primary{ background:var(--red); color:#fff; border-color:var(--red); }
 
-    main {
-  max-width:1360px;
-  margin:20px auto;
-  padding:0 22px;
-}
-    .card{ background:#121214; border:1px solid var(--border); border-radius:16px; box-shadow:0 1px 3px rgba(0,0,0,.35); }
-    .content{ padding:18px; }
+    main{ max-width:1360px; margin:20px auto; padding:0 22px; }
+
+    .card{ background:#121214; border:1px solid var(--border); border-radius:16px; box-shadow:0 1px 3px rgba(0,0,0,.35); width:100%; }
+    .content{ padding:28px; }
 
     .header-row{ display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:10px; }
-    h1{ font-size:24px; margin:0; }
-    .sub{ font-size:15px; color:#d1d5db; }
+    h1{ font-size:26px; margin:0; }
+    .sub{ font-size:18px; color:#d1d5db; line-height:1.7; }
 
-    .controls{ display:flex; gap:10px; flex-wrap:wrap; margin:8px 0 14px; align-items:center; }
+    .controls{ display:flex; gap:10px; flex-wrap:wrap; margin:8px 0 16px; align-items:center; }
     input[type="search"]{
       background:#141417; border:1px solid #2a2a2a; color:#e5e7eb; border-radius:10px; padding:10px 12px; font-size:16px;
     }
@@ -66,14 +64,15 @@
     .medal{ font-size:24px; margin:0 6px; }
     .animal{ font-size:24px; margin-left:6px; }
 
-    footer{ padding:24px 18px; text-align:center; color:#9ca3af; }
+    footer{ padding:28px 22px; text-align:center; color:#9ca3af; }
+    footer a{ font-weight:inherit !important; color:inherit !important; text-decoration:none !important; }
 
     @media (max-width: 640px){
       .container{ padding:18px 22px; }
       .btn{ padding:16px 22px; font-size:18px; }
-      .content{ padding:14px; }
+      .content{ padding:18px; }
       h1{ font-size:20px; }
-      .sub{ font-size:14px; }
+      .sub{ font-size:16px; }
       thead th{ font-size:16px; padding:12px 12px; }
       tbody td{ font-size:16px; padding:12px 12px; }
       .rank{ width:96px; font-size:16px; }
@@ -104,7 +103,6 @@
     </div>
   </header>
 
-
   <main>
     <div class="card">
       <div class="content">
@@ -131,8 +129,7 @@
                 <th>Top delay</th>
               </tr>
             </thead>
-            <tbody id="rows">
-            </tbody>
+            <tbody id="rows"></tbody>
           </table>
         </div>
       </div>
@@ -140,93 +137,99 @@
   </main>
 
   <footer>
-  Toronto Open Data •
-  <a href="https://ashaasvathaman.com" style="color:inherit; text-decoration:none;">
-    Asha Asvathaman
-  </a>
-</footer>
+    Toronto Open Data •
+    <a href="https://ashaasvathaman.com">Asha Asvathaman</a>
+  </footer>
 
-<script>
-  const DATA_URL = "./data/leaderboard_stations_stats.json";
-  function hoursToHM(h){
-    if (typeof h !== "number" || !isFinite(h)) return "—";
-    const totalMinutes = Math.round(h * 60);
-    const hrs = Math.floor(totalMinutes / 60);
-    const mins = totalMinutes % 60;
-    const hPart = `${hrs} hr`;
-    const mPart = `${mins} min`;
-    return hrs > 0 ? `${hPart} ${mPart}` : mPart;
-  }
-  function escapeHTML(s){
-    return String(s ?? "").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-  }
-  const rowsEl = document.getElementById('rows');
-  const countLabel = document.getElementById('countLabel');
-  const searchEl = document.getElementById('search');
-  let allRows = [];
-  function normalizeData(json){
-    const list = json.stations_stats || json.station_stats || [];
-    const out = [];
-    list.forEach(entry => {
-      const [name, d] = Object.entries(entry)[0] || [];
-      if(!name || !d) return;
-      const station = String(name).toUpperCase().trim();
-      let codes = [];
-      const rawLine = d.line;
-      if(Array.isArray(rawLine)) codes = rawLine.map(String);
-      else if(typeof rawLine === "string" || typeof rawLine === "number") codes = [String(rawLine)];
-      codes = codes.map(c => String(c).toUpperCase());
-      out.push({
-        station,
-        time_lost_hours: d.time_lost_hours ?? (typeof d.time_lost_minutes === 'number' ? d.time_lost_minutes/60 : 0),
-        total_delays: d.total_delays ?? 0,
-        major_delays: d.major_delays ?? 0,
-        top_reason: d.top_reason_for_delays_by_time || d["top_reason_for_delays (by count)"] || d.top_reason_for_delays || '—',
-        lines: codes
+  <script>
+    const DATA_URL = "./data/leaderboard_stations_stats.json";
+
+    function hoursToHM(h){
+      if (typeof h !== "number" || !isFinite(h)) return "—";
+      const totalMinutes = Math.round(h * 60);
+      const hrs = Math.floor(totalMinutes / 60);
+      const mins = totalMinutes % 60;
+      const hPart = `${hrs} hr`;
+      const mPart = `${mins} min`;
+      return hrs > 0 ? `${hPart} ${mPart}` : mPart;
+    }
+    function escapeHTML(s){
+      return String(s ?? "").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    }
+
+    const rowsEl = document.getElementById('rows');
+    const countLabel = document.getElementById('countLabel');
+    const searchEl = document.getElementById('search');
+    let allRows = [];
+
+    function normalizeData(json){
+      const list = json.stations_stats || json.station_stats || [];
+      const out = [];
+      list.forEach(entry => {
+        const [name, d] = Object.entries(entry)[0] || [];
+        if(!name || !d) return;
+        const station = String(name).toUpperCase().trim();
+        let codes = [];
+        const rawLine = d.line;
+        if(Array.isArray(rawLine)) codes = rawLine.map(String);
+        else if(typeof rawLine === "string" || typeof rawLine === "number") codes = [String(rawLine)];
+        codes = codes.map(c => String(c).toUpperCase());
+        out.push({
+          station,
+          time_lost_hours: d.time_lost_hours ?? (typeof d.time_lost_minutes === 'number' ? d.time_lost_minutes/60 : 0),
+          total_delays: d.total_delays ?? 0,
+          major_delays: d.major_delays ?? 0,
+          top_reason: d.top_reason_for_delays_by_time || d["top_reason_for_delays (by count)"] || d.top_reason_for_delays || '—',
+          lines: codes
+        });
       });
-    });
-    return out;
-  }
-  function applyFilters(){
-    const q = searchEl.value.trim().toUpperCase();
-    let rows = allRows.slice();
-    if(q){ rows = rows.filter(r => r.station.includes(q)); }
-    rows.sort((a,b) => (b.time_lost_hours||0) - (a.time_lost_hours||0));
-    render(rows);
-  }
-  function render(rows){
-    rowsEl.innerHTML = '';
-    rows.forEach((r, idx) => {
-      const rank = idx + 1;
-      const medal = rank===1? '🥇' : rank===2? '🥈' : rank===3? '🥉' : '';
-      const animal = rank===1? '🦥' : rank===2? '🐌' : rank===3? '🐢' : '';
-      const animalTitle = rank===1? 'Sloth' : rank===2? 'Snail' : rank===3? 'Tortoise' : '';
-      const dots = (Array.isArray(r.lines)? r.lines: []).map(code => {
-        const c = String(code || '').toUpperCase();
-        const cls = c === 'YU' ? 'yu' : (c === 'BD' ? 'bd' : (c === 'SHP' ? 'shp' : ''));
-        return cls ? `<span class="dot ${cls}" title="${c}"></span>` : '';
-      }).join('');
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td class="rank">${rank} <span class="medal">${medal}</span>${animal?` <span class="animal" title="${animalTitle}">${animal}</span>`:''}</td>
-        <td class="station">${r.station}</td>
-        <td class="dots-col"><span class="line-dots">${dots}</span></td>
-        <td class="num">${hoursToHM(r.time_lost_hours)}</td>
-        <td class="num">${r.total_delays}</td>
-        <td class="num">${r.major_delays}</td>
-        <td class="reason">${escapeHTML(r.top_reason)}</td>`;
-      rowsEl.appendChild(tr);
-    });
-    countLabel.textContent = `${rows.length} station${rows.length===1?'':'s'}`;
-  }
-  fetch(DATA_URL)
-    .then(r => r.json())
-    .then(js => { allRows = normalizeData(js); applyFilters(); })
-    .catch(err => { rowsEl.innerHTML = `<tr><td colspan="7" class="muted">Failed to load data.</td></tr>`; console.warn(err); });
-  searchEl.addEventListener('input', applyFilters);
-</script>
+      return out;
+    }
+
+    function applyFilters(){
+      const q = searchEl.value.trim().toUpperCase();
+      let rows = allRows.slice();
+      if(q){ rows = rows.filter(r => r.station.includes(q)); }
+      rows.sort((a,b) => (b.time_lost_hours||0) - (a.time_lost_hours||0));
+      render(rows);
+    }
+
+    function render(rows){
+      rowsEl.innerHTML = '';
+      rows.forEach((r, idx) => {
+        const rank = idx + 1;
+        const medal = rank===1? '🥇' : rank===2? '🥈' : rank===3? '🥉' : '';
+        const animal = rank===1? '🦥' : rank===2? '🐌' : rank===3? '🐢' : '';
+        const animalTitle = rank===1? 'Sloth' : rank===2? 'Snail' : rank===3? 'Tortoise' : '';
+        const dots = (Array.isArray(r.lines)? r.lines: []).map(code => {
+          const c = String(code || '').toUpperCase();
+          const cls = c === 'YU' ? 'yu' : (c === 'BD' ? 'bd' : (c === 'SHP' ? 'shp' : ''));
+          return cls ? `<span class="dot ${cls}" title="${c}"></span>` : '';
+        }).join('');
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="rank">${rank} <span class="medal">${medal}</span>${animal?` <span class="animal" title="${animalTitle}">${animal}</span>`:''}</td>
+          <td class="station">${r.station}</td>
+          <td class="dots-col"><span class="line-dots">${dots}</span></td>
+          <td class="num">${hoursToHM(r.time_lost_hours)}</td>
+          <td class="num">${r.total_delays}</td>
+          <td class="num">${r.major_delays}</td>
+          <td class="reason">${escapeHTML(r.top_reason)}</td>`;
+        rowsEl.appendChild(tr);
+      });
+      countLabel.textContent = `${rows.length} station${rows.length===1?'':'s'}`;
+    }
+
+    fetch(DATA_URL)
+      .then(r => r.json())
+      .then(js => { allRows = normalizeData(js); applyFilters(); })
+      .catch(err => { rowsEl.innerHTML = `<tr><td colspan="7" class="muted">Failed to load data.</td></tr>`; console.warn(err); });
+
+    searchEl.addEventListener('input', applyFilters);
+  </script>
 </body>
 </html>
+
 
 
 

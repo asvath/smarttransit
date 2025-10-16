@@ -1,0 +1,112 @@
+{
+    "Code Specific Station Stats": [
+        {
+            "Track Intrusion": {
+                "BLOOR-YONGE STATION": {
+                    "Avg Delay per Incident (hours)": 0.25,
+                    "Avg Count per Year": 28.4,
+                    "Avg Time Lost per Year (hours)": 7.1,
+                    "Year": "2023 - 2025"
+                },
+                "WARDEN STATION": {
+                    "Avg Delay per Incident (hours)": 0.31,
+                    "Avg Count per Year": 17.1,
+                    "Avg Time Lost per Year (hours)": 5.3,
+                    "Year": "2023 - 2025"
+                },
+                "DUNDAS STATION": {
+                    "Avg Delay per Incident (hours)": 0.18,
+                    "Avg Count per Year": 23.4,
+                    "Avg Time Lost per Year (hours)": 4.21,
+                    "Year": "2023 - 2025"
+                },
+                "QUEEN STATION": {
+                    "Avg Delay per Incident (hours)": 0.22,
+                    "Avg Count per Year": 12.6,
+                    "Avg Time Lost per Year (hours)": 2.77,
+                    "Year": "2023 - 2025"
+                },
+                "SHEPPARD-YONGE STATION": {
+                    "Avg Delay per Incident (hours)": 0.2,
+                    "Avg Count per Year": 11.4,
+                    "Avg Time Lost per Year (hours)": 2.28,
+                    "Year": "2023 - 2025"
+                }
+            }
+        },
+        {
+            "Disorderly Patron": {
+                "BLOOR-YONGE STATION": {
+                    "Avg Delay per Incident (hours)": 0.08,
+                    "Avg Count per Year": 86.5,
+                    "Avg Time Lost per Year (hours)": 6.92,
+                    "Year": "2023 - 2025"
+                },
+                "ST. GEORGE STATION": {
+                    "Avg Delay per Incident (hours)": 0.1,
+                    "Avg Count per Year": 51.2,
+                    "Avg Time Lost per Year (hours)": 5.12,
+                    "Year": "2023 - 2025"
+                },
+                "EGLINTON STATION": {
+                    "Avg Delay per Incident (hours)": 0.1,
+                    "Avg Count per Year": 39.8,
+                    "Avg Time Lost per Year (hours)": 3.98,
+                    "Year": "2023 - 2025"
+                },
+                "KIPLING STATION": {
+                    "Avg Delay per Incident (hours)": 0.12,
+                    "Avg Count per Year": 30.3,
+                    "Avg Time Lost per Year (hours)": 3.64,
+                    "Year": "2023 - 2025"
+                },
+                "LAWRENCE STATION": {
+                    "Avg Delay per Incident (hours)": 0.12,
+                    "Avg Count per Year": 29.1,
+                    "Avg Time Lost per Year (hours)": 3.49,
+                    "Year": "2023 - 2025"
+                },
+                "DUNDAS STATION": {
+                    "Avg Delay per Incident (hours)": 0.12,
+                    "Avg Count per Year": 28.4,
+                    "Avg Time Lost per Year (hours)": 3.41,
+                    "Year": "2023 - 2025"
+                },
+                "DAVISVILLE STATION": {
+                    "Avg Delay per Incident (hours)": 0.11,
+                    "Avg Count per Year": 29.7,
+                    "Avg Time Lost per Year (hours)": 3.27,
+                    "Year": "2023 - 2025"
+                }
+            }
+        },
+        {
+            "Fire: Track Level": {
+                "BLOOR-YONGE STATION": {
+                    "Avg Delay per Incident (hours)": 0.96,
+                    "Avg Count per Year": 6.3,
+                    "Avg Time Lost per Year (hours)": 6.05,
+                    "Year": "2023 - 2025"
+                },
+                "VICTORIA PARK STATION": {
+                    "Avg Delay per Incident (hours)": 0.34,
+                    "Avg Count per Year": 9.5,
+                    "Avg Time Lost per Year (hours)": 3.23,
+                    "Year": "2023 - 2025"
+                },
+                "DAVISVILLE STATION": {
+                    "Avg Delay per Incident (hours)": 0.43,
+                    "Avg Count per Year": 5.7,
+                    "Avg Time Lost per Year (hours)": 2.45,
+                    "Year": "2023 - 2025"
+                },
+                "ISLINGTON STATION": {
+                    "Avg Delay per Incident (hours)": 0.46,
+                    "Avg Count per Year": 2.5,
+                    "Avg Time Lost per Year (hours)": 1.15,
+                    "Year": "2023 - 2025"
+                }
+            }
+        }
+    ]
+}
