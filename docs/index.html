@@ -44,7 +44,22 @@
     .buffer-rows{ margin-top:12px; border:1px solid var(--border); border-radius:12px; }
     .buffer-row{ display:flex; justify-content:space-between; padding:15px 18px; font-size:18px; }
     .buffer-row + .buffer-row{ border-top:1px dashed #2a2a2a; }
-    .buffer-note{ color:#cfd3da; font-size:14.5px; margin-top:10px; }
+    .buffer-note{ color:#cfd3da; font-size:16.5px; margin-top:10px; }
+.buffer-header{
+  display:flex;
+  align-items:flex-start;        /* keep controls aligned with title top */
+  justify-content:space-between; /* left block vs right controls */
+  gap:16px;
+}
+
+.buffer-info{
+  display:flex;
+  flex-direction:column;         /* title above note */
+}
+
+.buffer-title{ font-weight:700; font-size:22px; line-height:1.2; }
+.buffer-note{ color:#d1d5db; margin-top:6px; }
+
 
     .hero{ display:grid; grid-template-columns: 8fr 4fr; gap:22px; }
     @media (max-width:1200px){ .hero{ grid-template-columns:1fr; } }
@@ -118,6 +133,8 @@
       .raccoon-left { width: 50px; left: 12px; }
       .welcome-text h2 { font-size: 24px; }
     }
+    main { margin-bottom: 0 !important; }
+.hero.container { margin-bottom: 0 !important; }
   </style>
 
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
@@ -158,7 +175,7 @@
             <h2>Welcome to TTC Delay Insights: <br> Data today, better commutes tomorrow.</h2>
 
             <p class="lead">
-              Use the <strong>Plan your buffer time</strong> tool below to plan your trip and stay ahead of TTC delays. <br>
+              Use the <strong>Plan your buffer time</strong> tool below to help you arrive on time at your destination. <br>
               Explore the <strong>Toronto Subway: Delay Stats</strong> interactive map to see delay stats for each station. <br>
               Want more? Explore the <a href="overview.html"><strong>Overview</strong></a> for in-depth insights and recommendations, <br>
               check the <a href="delayleaderboard.html"><strong>Delay Leaderboard</strong></a> to see which stations have the most time lost this year, <br>
@@ -170,12 +187,16 @@
       </div>
     </div>
 
-    <section class="buffer-card container" aria-label="Plan your buffer time">
-      <div class="buffer-content">
-        <div class="buffer-header">
-          <div class="buffer-title">Plan Your Buffer Time</div>
-          <div class="buffer-controls">
-            <span class="pill" style="display:flex;align-items:center;gap:10px">
+<section class="buffer-card container" aria-label="Plan your buffer time">
+  <div class="buffer-content">
+    <div class="buffer-header">
+      <div class="buffer-info">
+        <div class="buffer-title">Plan Your Buffer Time</div>
+        <div class="buffer-note">Add these minutes to your trip as a buffer. <br> Based on stats over the last 3 years. </div>
+      </div>
+
+      <div class="buffer-controls">
+        <span class="pill" style="display:flex;align-items:center;gap:10px">
               <span class="badge-dot" id="line-dot"></span>
               <select id="line-select" aria-label="Select Line"></select>
             </span>
@@ -183,7 +204,7 @@
           </div>
         </div>
         <div id="buffer-rows" class="buffer-rows" role="table" aria-label="Average extra minutes by time of day"></div>
-        <div class="buffer-note">Based on average delays over the last 3 years. Add these minutes to your trip as a buffer.</div>
+
       </div>
     </section>
 
