@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TTC Delay Insights — Play TTC Delay Dodge</title>
+  <style>
+    :root{
+      --red:#dc2626; --border:#313131; --muted:#9ca3af; --bg:#0b0b0c;
+    }
+
+    html{ overflow-y:scroll; scrollbar-gutter:stable; }
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family:Inter,system-ui,Segoe UI,Arial;
+      background:var(--bg);
+      color:#f5f5f6;
+      font-size:18px;
+      line-height:1.55;
+      overflow-x:hidden;
+    }
+
+    header{
+      position:sticky; top:0; z-index:10;
+      background:#0f0f11; border-bottom:1px solid var(--border);
+    }
+    .container{ max-width:1360px; margin:0 auto; padding:18px 22px; }
+    .brand{ display:flex; align-items:center; gap:12px; }
+    .badge{
+      width:44px; height:44px; border-radius:12px;
+      background:var(--red); color:#fff; display:grid; place-items:center;
+      font-weight:700; font-size:18px;
+    }
+    .muted{ color:var(--muted); }
+    .nav{ display:flex; gap:12px; flex-wrap:wrap; margin-top:8px; }
+    .btn{
+      border:1px solid var(--border); background:#121214; color:#f5f5f6;
+      padding:16px 22px; border-radius:12px; cursor:pointer; font-weight:700;
+      font-size:18px; text-decoration:none; display:inline-block;
+    }
+    .btn.primary{ background:var(--red); color:#fff; border-color:var(--red); }
+
+    main{ max-width:1360px; margin:20px auto; padding:0 22px; }
+
+    /* Match About.html card and content style */
+    .card{ background:#121214; border:1px solid var(--border); border-radius:16px; box-shadow:0 1px 3px rgba(0,0,0,.35); }
+    .content{ padding:28px; }
+
+    .intro{
+      margin-bottom:24px;
+    }
+    .intro h1{
+      font-size:24px;
+      margin:0 0 8px;
+      font-weight:700;
+      color:#fff;
+    }
+    .intro p{
+      font-size:18px;
+      line-height:1.7;
+      color:#d1d5db;
+      margin:0;
+    }
+
+    .frame-wrap{ display:grid; place-items:center; padding:10px; overflow:visible; }
+    .game-frame{
+      width:100%; max-width:1280px; height:800px;
+      border:0; border-radius:16px; background:#0b0b0c;
+      display:block;
+    }
+    @media (max-width:1020px){
+      .game-frame{ height:72vh; min-height:440px; }
+      .content{ padding:18px; }
+      .intro h1{ font-size:20px; }
+      .intro p{ font-size:16px; }
+    }
+
+    footer{
+      padding:28px 22px; text-align:center; color:#9ca3af;
+    }
+    footer a{ color:inherit; text-decoration:none; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container" style="display:flex;align-items:center;justify-content:space-between;">
+      <div class="brand">
+        <div class="badge">TTC</div>
+        <div>
+          <div style="font-weight:700;font-size:20px;">TTC Delay Insights</div>
+          <div class="muted" style="font-size:16px;">Data today, better commutes tomorrow.</div>
+        </div>
+      </div>
+      <div class="nav">
+        <a class="btn" href="index.html">Home</a>
+        <a class="btn" href="overview.html">Overview</a>
+        <a class="btn" href="delayleaderboard.html">Delay Leaderboard</a>
+        <a class="btn primary" href="ttcdelaydodge.html" aria-current="page">Play TTC Delay Dodge</a>
+        <a class="btn" href="about.html">About</a>
+        <a class="btn" href="donate.html">Donate</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="card">
+      <div class="content">
+        <div class="intro">
+          <h1>Play TTC Delay Dodge</h1>
+          <p>Dodge incidents, beat the clock, and set a new high score.</p>
+        </div>
+
+        <div class="frame-wrap">
+          <iframe class="game-frame" src="ttcdelaydodge/build/web/index.html" title="TTC Delay Dodge"></iframe>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    Toronto Open Data •
+    <a href="https://ashaasvathaman.com">Asha Asvathaman</a>
+  </footer>
+</body>
+</html>
+
