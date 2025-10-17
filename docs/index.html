@@ -181,6 +181,75 @@
   /* Extra safety to avoid any stray wide child causing scroll */
   .content, .buffer-rows, .legend { max-width: 100%; overflow-x: hidden; }
 }
+    /* --- Mobile alignment + no-chop fix --- */
+@media (max-width: 860px){
+
+  /* Keep everything inside the viewport */
+  html, body { overflow-x: hidden; }
+
+  /* Make the hero stack, and force children to be allowed to shrink */
+  .hero { display: block; }
+  .hero.container { overflow: visible; }
+
+  /* Ensure cards (Plan Your Buffer, Map, Station Info) align and fit 100% */
+  .hero .card {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 0 14px;
+    box-sizing: border-box;
+  }
+  .hero .card .content {
+    max-width: 100%;
+    box-sizing: border-box;
+    padding-left: 14px;
+    padding-right: 14px;
+    overflow-x: hidden;   /* prevents content from pushing past the edge */
+  }
+
+  /* Critical: let flex/grid children shrink instead of causing overflow */
+  .hero.container > *,
+  .hero .card,
+  .hero .card .content { min-width: 0; }
+
+  /* Map: clamp to container width so it never hangs off-screen */
+  .mapbox, #leaflet-map, .leaflet-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box;
+  }
+
+  /* Media inside Leaflet should never overflow horizontally */
+  .leaflet-container img,
+  .leaflet-container canvas,
+  .leaflet-container svg {
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* Safety net for any stray wide elements */
+  .container,
+  .content,
+  .legend,
+  .buffer-rows {
+    max-width: 100%;
+    overflow-x: hidden;
+    box-sizing: border-box;
+  }
+}
+    @media screen and (orientation: portrait) {
+  .rotate-hint {
+    display: block;
+    text-align: center;
+    font-size: 14px;
+    color: #aaa;
+    margin: 10px 0;
+  }
+}
+@media screen and (orientation: landscape) {
+  .rotate-hint { display: none; }
+}
+
+
 
   </style>
 
