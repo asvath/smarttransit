@@ -165,34 +165,8 @@
       .leaflet-popup-content{ max-height:none !important; overflow:visible !important; margin:10px 14px !important; }
 
       .content, .buffer-rows, .legend { max-width:100%; overflow-x:hidden; box-sizing:border-box; }
-
-      .rotate-hint {
-        display: block;
-        text-align: center;
-        font-size: 15px;
-        color: #e5e7eb;
-        margin: 10px auto;
-        padding: 8px 14px;
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 10px;
-        width: fit-content;
-        font-style: italic;
-        letter-spacing: 0.2px;
-        backdrop-filter: blur(4px);
       }
 
-    /* Hide rotation hint on desktop or landscape */
-    .rotate-hint {
-      display: none;
-    }
-
-    /* Show ONLY on small portrait touch screens */
-    @media (max-width: 860px) and (orientation: portrait) and (hover: none) and (pointer: coarse) {
-      .rotate-hint {
-        display: block;
-      }
-    }
 
     @media (max-width: 720px) {
       body{ font-size:16px; }
@@ -213,6 +187,31 @@
 
     [id]{ scroll-margin-top: 80px; }
     main { margin-bottom: 0 !important; }
+
+        /* Default: hide everywhere */
+    .rotate-hint {
+      display: none;
+    }
+
+    /* Show ONLY on small portrait touch screens */
+    @media (max-width: 860px) and (orientation: portrait) and (hover: none) and (pointer: coarse) {
+      .rotate-hint {
+        display: block;
+        text-align: center;
+        font-size: 15px;
+        color: #e5e7eb;
+        margin: 10px auto;
+        padding: 8px 14px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 10px;
+        width: fit-content;
+        font-style: italic;
+        letter-spacing: 0.2px;
+        backdrop-filter: blur(4px);
+      }
+    }
+
   </style>
 
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
