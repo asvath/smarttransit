@@ -60,6 +60,34 @@ PRESTO_INVULN_MS = 2000
 HIGHSCORE_KEY = "delay_dodge_highscore"
 LEADERBOARD_KEY = "delay_dodge_leaderboard"  # local web fallback
 
+# --- Highscore name ---
+HIGHSCORE_NAME_FILE = "delay_dodge_highscore_name.txt"
+HIGHSCORE_NAME_KEY = "delay_dodge_highscore_name"
+
+def load_highscore_name():
+    try:
+        if WEB:
+            val = window.localStorage.getItem(HIGHSCORE_NAME_KEY)
+            return val or ""
+        else:
+            if os.path.exists(HIGHSCORE_NAME_FILE):
+                with open(HIGHSCORE_NAME_FILE, "r", encoding="utf-8") as f:
+                    return f.read().strip()
+    except Exception:
+        pass
+    return ""
+
+def save_highscore_name(name):
+    try:
+        name = (name or "Player").strip() or "Player"
+        if WEB:
+            window.localStorage.setItem(HIGHSCORE_NAME_KEY, name)
+        else:
+            with open(HIGHSCORE_NAME_FILE, "w", encoding="utf-8") as f:
+                f.write(name)
+    except Exception:
+        pass
+
 
 def lerp(a, b, t): return a + (b - a) * t
 def clamp(v, lo, hi): return max(lo, min(hi, v))
@@ -146,7 +174,6 @@ async def _api_get_top():
         try:
             data = json.loads(txt)
         except Exception:
-            # if API returned HTML or error text, just skip
             js.console.log("Leaderboard JSON parse failed, got:", txt[:200])
             return None
         out = [(d.get("name", "Player"), int(d.get("score", 0))) for d in data]
@@ -395,10 +422,6 @@ class Hazard:
             pygame.draw.ellipse(surf, (60, 60, 70), (cx - 16, cy - 10, 32, 16))
             pygame.draw.circle(surf, (240, 240, 255), (cx - 7, cy - 3), 4)
             pygame.draw.circle(surf, (240, 240, 255), (cx + 7, cy - 3), 4)
-            pygame.draw.circle(surf, (30, 30, 40), (cx - 7, cy - 3), 2)
-            pygame.draw.circle(surf, (30, 30, 40), (cx + 7, cy - 3), 2)
-            pygame.draw.polygon(surf, (120, 120, 120), [(cx - 14, cy - 14), (cx - 5, cy - 18), (cx - 6, cy - 6)])
-            pygame.draw.polygon(surf, (120, 120, 120), [(cx + 14, cy - 14), (cx + 5, cy - 18), (cx + 6, cy - 6)])
             pygame.draw.circle(surf, (30, 30, 40), (cx, cy + 2), 2)
             pygame.draw.circle(surf, (120, 120, 120), (cx + 22, cy + 8), 7)
             pygame.draw.line(surf, (60, 60, 70), (cx + 18, cy + 8), (cx + 26, cy + 8), 3)
@@ -606,6 +629,7 @@ class Game:
         self.flash_timer = 0
 
         self.highscore = load_highscore()
+        self.highscore_name = load_highscore_name()  # load local name sidecar
         self.state = "menu"
         self.player_name = ""
         self.show_legend = True
@@ -625,15 +649,17 @@ class Game:
 
         self.just_got_new_hs = False
 
-        self.global_top_cache = None
+        self.global_top_cache = None  # list[(name, score)] when fetched
         self.global_top_last_ms = 0
         self.fetching_top = False
 
     def reset(self):
         hs = self.highscore
+        hsname = self.highscore_name
         name = self.player_name
         self.__init__()
         self.highscore = hs
+        self.highscore_name = hsname
         self.player_name = name
         self.state = "menu"
         self.show_legend = False
@@ -713,7 +739,7 @@ class Game:
     async def submit_global_score(self, name, score):
         if WEB and GLOBAL_API_URL:
             await _api_post_score(name, score)
-            self.global_top_cache = None
+            self.global_top_cache = None  # force refresh later
 
     def update(self, dt):
         if self.state != "playing" or self.game_over or self.paused:
@@ -793,7 +819,9 @@ class Game:
             new_hs = False
             if score_int > self.highscore:
                 self.highscore = score_int
-                save_highscore(self.highscore)
+                save_highscore(self.highscore)  # keep your existing number-only storage
+                self.highscore_name = self.player_name or "Player"  # store the display name separately
+                save_highscore_name(self.highscore_name)
                 new_hs = True
             if WEB and GLOBAL_API_URL:
                 asyncio.create_task(self.submit_global_score(self.player_name or "Player", score_int))
@@ -812,15 +840,30 @@ class Game:
         bar_h = 76
         hud = pygame.Surface((WIDTH, bar_h), pygame.SRCALPHA)
         draw_rounded_rect(hud, hud.get_rect(), (25, 28, 46, 230), radius=0)
+
+        # Score
         score = max(0, int(self.on_time_seconds))
         score_text = self.font.render(f"Score: {score}", True, COL_TEXT)
         hud.blit(score_text, (pad, 12))
+
+        # Delay
         dm = int(self.delay_seconds)
         delay_col = COL_TEXT if dm == 0 else (255, 155, 165) if dm < 30 else (255, 90, 110)
         dm_text = self.font.render(f"Delay: {dm} min", True, delay_col)
         hud.blit(dm_text, (WIDTH // 2 - dm_text.get_width() // 2, 12))
-        hs = self.font.render(f"High score: {self.highscore}", True, COL_TEXT_DIM)
+
+        # High score with name: prefer GLOBAL if available; else local
+        disp_score, disp_name = self.highscore, getattr(self, "highscore_name", "")
+        if WEB and GLOBAL_API_URL and self.global_top_cache:
+            top_nm, top_sc = self.global_top_cache[0]
+            disp_score, disp_name = int(top_sc), top_nm
+
+        hs_label = f"High score: {disp_score}"
+        if disp_name:
+            hs_label += f" ({disp_name})"
+        hs = self.font.render(hs_label, True, COL_TEXT_DIM)
         hud.blit(hs, (pad, 44))
+
         self.screen.blit(hud, (0, 0))
 
     def draw_legend_tile(self):
@@ -992,7 +1035,7 @@ class Game:
     def handle_events(self):
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
-                pygame.quit();
+                pygame.quit()
                 sys.exit()
 
             if WEB and e.type == pygame.FINGERDOWN:
@@ -1016,7 +1059,7 @@ class Game:
 
             if e.type == pygame.KEYDOWN:
                 if e.key == pygame.K_ESCAPE:
-                    pygame.quit();
+                    pygame.quit()
                     sys.exit()
 
                 if e.key == pygame.K_k and self.state in ("menu", "playing"):
@@ -1077,4 +1120,3 @@ class Game:
 
 if __name__ == "__main__":
     asyncio.run(Game().run())
-
