@@ -1,3 +1,5 @@
+import os
+
 from viz.eda_plots import (plot_total_delay_by_year, plot_delay_category_trend_by_year,
                            plot_delay_description_trend_by_year, plot_line_trends_by_year, plot_station_trend_by_year,
                            plot_rush_hour_trends_by_year,
@@ -6,6 +8,9 @@ from viz.eda_plots import (plot_total_delay_by_year, plot_delay_category_trend_b
 from viz.eda_utils import fig_to_html
 from utils.ttc_loader import TTCLoader
 from config import EXPORTS_PLOTS_DIR
+
+# ensure folder exists
+os.makedirs(EXPORTS_PLOTS_DIR, exist_ok=True)
 
 loader = TTCLoader()
 df = loader.df

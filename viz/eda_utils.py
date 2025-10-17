@@ -148,6 +148,7 @@ def get_top_stations_w_track_intrusions(df, top_n = 5, last_n_years = None):
     return list(consistent_stations)
 
 def fig_to_html(fig:go.Figure, filepath:str, title:str)->None:
+    fig.update_layout(autosize=True, width=None, height=None)
     fig.write_html(
         f"{filepath}/{title}.html",
         include_plotlyjs="cdn",  # loads Plotly from CDN (keeps file small)
