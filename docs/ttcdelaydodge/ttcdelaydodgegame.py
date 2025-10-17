@@ -8,11 +8,8 @@ if WEB:
     from platform import window
     import js
 
-# ---------- Optional global leaderboard API ----------
-# Set this to your server root that exposes:
-#   GET  {GLOBAL_API_URL}/leaderboard  -> [{"name": str, "score": int}, ...]
-#   POST {GLOBAL_API_URL}/leaderboard  with JSON {"name": str, "score": int}
-GLOBAL_API_URL = ""  # e.g. "https://example.com"
+# ---------- Global leaderboard API ----------
+GLOBAL_API_URL = "https://leaderboard-api.ashaasvathaman.workers.dev"
 
 WIDTH, HEIGHT = 960, 600
 FPS = 60
