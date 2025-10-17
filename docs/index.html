@@ -148,6 +148,40 @@
     [id]{ scroll-margin-top: 80px; }
     main { margin-bottom: 0 !important; }
     .hero.container { margin-bottom: 0 !important; }
+    /* --- Mobile-only --- */
+@media (max-width: 860px){
+
+  /* Prevent any sideways scroll caused by the map/controls */
+  html, body { overflow-x: hidden; }
+  .hero { grid-template-columns: 1fr; }
+  .hero .card { width: 100%; max-width: 100%; }
+  .mapbox, #leaflet-map, .leaflet-container { width: 100% !important; }
+  .mapbox { height: 50vh; min-height: 360px; } /* a bit smaller to be safe */
+
+  /* Raccoon + maple leaf: bigger and closer together */
+  .welcome-flex .icon-pair { gap: 4px; } /* tighter spacing */
+  .icon-pair .maple-left,
+  .icon-pair .raccoon-left { width: 96px !important; height: auto; }
+  .icon-pair .raccoon-left { margin-left: -12px; } /* nudge closer/overlap */
+
+  /* Station info panel: keep widths aligned with the map card */
+  .hero .card .content { max-width: 100%; overflow-x: hidden; }
+
+  /* Popup: remove inner scrolling; allow a wider wrapper on phones */
+  .leaflet-popup-content-wrapper {
+    max-width: 340px !important; /* wider so content fits without scroll */
+    border-radius: 12px !important;
+  }
+  .leaflet-popup-content {
+    max-height: none !important;
+    overflow: visible !important;
+    margin: 10px 14px !important;
+  }
+
+  /* Extra safety to avoid any stray wide child causing scroll */
+  .content, .buffer-rows, .legend { max-width: 100%; overflow-x: hidden; }
+}
+
   </style>
 
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
