@@ -147,51 +147,53 @@
 
     [id]{ scroll-margin-top: 80px; }
     main { margin-bottom: 0 !important; }
-    .hero.container { margin-bottom: 0 !important; }
-    /* --- Mobile-only --- */
-@media (max-width: 860px){
-
-  /* Prevent any sideways scroll caused by the map/controls */
-  html, body { overflow-x: hidden; }
-  .hero { grid-template-columns: 1fr; }
-  .hero .card { width: 100%; max-width: 100%; }
-  .mapbox, #leaflet-map, .leaflet-container { width: 100% !important; }
-  .mapbox { height: 50vh; min-height: 360px; } /* a bit smaller to be safe */
-
-  /* Raccoon + maple leaf: bigger and closer together */
-  .welcome-flex .icon-pair { gap: 4px; } /* tighter spacing */
-  .icon-pair .maple-left,
-  .icon-pair .raccoon-left { width: 96px !important; height: auto; }
-  .icon-pair .raccoon-left { margin-left: -12px; } /* nudge closer/overlap */
-
-  /* Station info panel: keep widths aligned with the map card */
-  .hero .card .content { max-width: 100%; overflow-x: hidden; }
-
-  /* Popup: remove inner scrolling; allow a wider wrapper on phones */
-  .leaflet-popup-content-wrapper {
-    max-width: 340px !important; /* wider so content fits without scroll */
-    border-radius: 12px !important;
-  }
-  .leaflet-popup-content {
-    max-height: none !important;
-    overflow: visible !important;
-    margin: 10px 14px !important;
-  }
-
-  /* Extra safety to avoid any stray wide child causing scroll */
-  .content, .buffer-rows, .legend { max-width: 100%; overflow-x: hidden; }
-}
-    /* --- Mobile alignment + no-chop fix --- */
-@media (max-width: 860px){
-
-  /* Keep everything inside the viewport */
+  /* --- Mobile (≤860px): Layout, Icons, Map, Search, Rotation Hint --- */
+@media (max-width: 860px) {
   html, body { overflow-x: hidden; }
 
-  /* Make the hero stack, and force children to be allowed to shrink */
+  header .container { gap: 10px; }
+  .hamburger { display: flex; }
+  .nav {
+    position: absolute;
+    top: 100%; right: 22px; left: 22px;
+    background: #101012; border: 1px solid var(--border);
+    border-radius: 12px; padding: 10px;
+    display: none; flex-direction: column; gap: 8px;
+    z-index: 20; box-shadow: 0 8px 24px rgba(0,0,0,.35);
+  }
+  .nav.is-open { display: flex; }
+  .btn { width: 100%; text-align: center; padding: 12px 14px; font-size: 16px; }
+
+  /* Welcome section */
+  .welcome-flex { flex-direction: column; align-items: center; text-align: center; }
+  .icon-pair {
+    position: relative;
+    display: block;
+    width: 220px;
+    height: 130px;
+    margin: 6px auto 12px;
+    overflow: visible;
+  }
+  .maple-left, .raccoon-left {
+    position: absolute !important;
+    height: auto;
+    opacity: .95;
+    max-width: none;
+  }
+  .maple-left {
+    top: 0; left: 0;
+    width: 130px;
+    z-index: 1;
+  }
+  .raccoon-left {
+    top: 0; left: 70px;
+    width: 145px;
+    z-index: 2;
+  }
+
+  /* Cards and layout */
   .hero { display: block; }
   .hero.container { overflow: visible; }
-
-  /* Ensure cards (Plan Your Buffer, Map, Station Info) align and fit 100% */
   .hero .card {
     width: 100% !important;
     max-width: 100% !important;
@@ -203,40 +205,57 @@
     box-sizing: border-box;
     padding-left: 14px;
     padding-right: 14px;
-    overflow-x: hidden;   /* prevents content from pushing past the edge */
+    overflow-x: hidden;
   }
 
-  /* Critical: let flex/grid children shrink instead of causing overflow */
-  .hero.container > *,
-  .hero .card,
-  .hero .card .content { min-width: 0; }
-
-  /* Map: clamp to container width so it never hangs off-screen */
   .mapbox, #leaflet-map, .leaflet-container {
     width: 100% !important;
     max-width: 100% !important;
+    height: 50vh;
+    min-height: 360px;
     box-sizing: border-box;
   }
 
-  /* Media inside Leaflet should never overflow horizontally */
-  .leaflet-container img,
-  .leaflet-container canvas,
-  .leaflet-container svg {
-    max-width: 100%;
-    height: auto;
+  .buffer-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .buffer-controls { width: 100%; }
+
+  /* Station search: stack input + button */
+  .buffer-controls, .buffer-controls * { min-width: 0; }
+  #station-search {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  #station-go {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    margin-top: 8px;
+  }
+  .station-search-row, .search-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
   }
 
-  /* Safety net for any stray wide elements */
-  .container,
-  .content,
-  .legend,
-  .buffer-rows {
+  /* Popups */
+  .leaflet-popup-content-wrapper {
+    max-width: 340px !important;
+    border-radius: 12px !important;
+  }
+  .leaflet-popup-content {
+    max-height: none !important;
+    overflow: visible !important;
+    margin: 10px 14px !important;
+  }
+
+  .content, .buffer-rows, .legend {
     max-width: 100%;
     overflow-x: hidden;
     box-sizing: border-box;
   }
-}
-    @media screen and (orientation: portrait) {
+
+  /* Rotation hint */
   .rotate-hint {
     display: block;
     text-align: center;
@@ -245,10 +264,11 @@
     margin: 10px 0;
   }
 }
-@media screen and (orientation: landscape) {
+
+/* Hide rotation hint on desktop or landscape */
+@media screen and (orientation: landscape), screen and (min-width: 861px) {
   .rotate-hint { display: none; }
 }
-
 
 
   </style>
@@ -323,6 +343,11 @@
         <div id="buffer-rows" class="buffer-rows" role="table" aria-label="Average extra minutes by time of day"></div>
       </div>
     </section>
+    </section>
+
+<p class="rotate-hint">📱 For the best experience, rotate your phone horizontally.</p>
+
+<div class="hero container">
 
     <div class="hero container">
       <div class="card">
