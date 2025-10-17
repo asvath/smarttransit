@@ -135,31 +135,119 @@
     }
     main { margin-bottom: 0 !important; }
 .hero.container { margin-bottom: 0 !important; }
+    /* --- HAMBURGER + MOBILE NAV --- */
+.hamburger{
+  display:none;
+  width:42px; height:42px;
+  border:1px solid var(--border);
+  background:#121214; border-radius:10px;
+  align-items:center; justify-content:center;
+  gap:5px; flex-direction:column; cursor:pointer;
+}
+.hamburger span{
+  width:22px; height:2px; background:#e8eaee; display:block;
+  transition:transform .2s ease, opacity .2s ease;
+}
+.hamburger.is-open span:nth-child(1){ transform:translateY(7px) rotate(45deg); }
+.hamburger.is-open span:nth-child(2){ opacity:0; }
+.hamburger.is-open span:nth-child(3){ transform:translateY(-7px) rotate(-45deg); }
+
+/* Desktop keeps original nav */
+@media (max-width: 860px){
+  header .container{ gap:10px; }
+  .hamburger{ display:flex; }
+  /* collapse nav into a dropdown panel */
+  .nav{
+    position:absolute; top:100%; right:22px; left:22px;
+    background:#101012; border:1px solid var(--border); border-radius:12px;
+    padding:10px; display:none; flex-direction:column; gap:8px; z-index:20;
+    box-shadow:0 8px 24px rgba(0,0,0,.35);
+  }
+  .nav.is-open{ display:flex; }
+
+  .btn{
+    width:100%; text-align:center;
+    padding:12px 14px; font-size:16px;
+  }
+
+  /* Tweak welcome + map spacing on phones */
+  .welcome-flex{ flex-direction:column; align-items:center; text-align:center; }
+  .icon-pair{ margin:0 auto 10px; width:100px; }
+  .mapbox{ height:60vh; min-height:420px; }
+  main{ padding:0 14px; }
+  .buffer-header{ flex-direction:column; align-items:flex-start; gap:10px; }
+  .buffer-controls{ width:100%; }
+}
+
+/* Prevent sticky header from covering jump targets */
+[id]{ scroll-margin-top: 80px; }
+
   </style>
 
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
+     // Mobile menu toggle
+  (function(){
+    const btn = document.getElementById('menu-toggle');
+    const nav = document.getElementById('site-nav');
+
+    function closeMenu(){
+      btn.classList.remove('is-open');
+      nav.classList.remove('is-open');
+      btn.setAttribute('aria-expanded', 'false');
+    }
+    function openMenu(){
+      btn.classList.add('is-open');
+      nav.classList.add('is-open');
+      btn.setAttribute('aria-expanded', 'true');
+    }
+    btn?.addEventListener('click', () => {
+      const open = nav.classList.toggle('is-open');
+      btn.classList.toggle('is-open', open);
+      btn.setAttribute('aria-expanded', String(open));
+    });
+    // Close on link click (better UX)
+    nav?.addEventListener('click', e => {
+      if(e.target.closest('a')) closeMenu();
+    });
+    // Reset on resize back to desktop
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > 860) {
+        nav.style.display = ''; // let CSS control
+        closeMenu();
+      }
+    });
+  })();
+  </script>
 </head>
 <body>
-  <header>
-    <div class="container" style="display:flex;align-items:center;justify-content:space-between;">
-      <div class="brand">
-        <div class="badge">TTC</div>
-        <div>
-          <div style="font-weight:700;font-size:20px;">TTC Delay Insights</div>
-          <div class="muted" style="font-size:16px;">Data today, better commutes tomorrow.</div>
-        </div>
-      </div>
-      <div class="nav">
-        <a class="btn primary" href="index.html" aria-current="page">Home</a>
-        <a class="btn" href="overview.html">Overview</a>
-        <a class="btn" href="delayleaderboard.html">Delay Leaderboard</a>
-        <a class="btn" href="ttcdelaydodge.html">Play TTC Delay Dodge</a>
-        <a class="btn" href="about.html">About</a>
-        <a class="btn" href="donate.html">Donate</a>
+<header>
+  <div class="container" style="display:flex;align-items:center;justify-content:space-between;position:relative;">
+    <div class="brand">
+      <div class="badge">TTC</div>
+      <div>
+        <div style="font-weight:700;font-size:20px;">TTC Delay Insights</div>
+        <div class="muted" style="font-size:16px;">Data today, better commutes tomorrow.</div>
       </div>
     </div>
-  </header>
+
+    <!-- Hamburger -->
+    <button class="hamburger" id="menu-toggle" aria-label="Open menu" aria-expanded="false" aria-controls="site-nav">
+      <span></span><span></span><span></span>
+    </button>
+
+    <!-- Nav -->
+    <div class="nav" id="site-nav">
+      <a class="btn primary" href="index.html" aria-current="page">Home</a>
+      <a class="btn" href="overview.html">Overview</a>
+      <a class="btn" href="delayleaderboard.html">Delay Leaderboard</a>
+      <a class="btn" href="ttcdelaydodge.html">Play TTC Delay Dodge</a>
+      <a class="btn" href="about.html">About</a>
+      <a class="btn" href="donate.html">Donate</a>
+    </div>
+  </div>
+</header>
+
 
   <main>
 
