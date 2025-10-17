@@ -148,6 +148,20 @@ def get_top_stations_w_track_intrusions(df, top_n = 5, last_n_years = None):
     return list(consistent_stations)
 
 def fig_to_html(fig:go.Figure, filepath:str, title:str)->None:
+    # update x-axis to only fit the data
+    years = []
+    for tr in fig.data:
+        if hasattr(tr, "x") and tr.x is not None:
+            years.extend([int(x) for x in tr.x])
+    if years:
+        xmin, xmax = min(years), max(years)
+        fig.update_xaxes(
+            tickmode="linear",
+            dtick=1,
+            tick0=xmin,
+            range=[xmin - 0.5, xmax + 0.5],
+            tickformat="d"
+        )
     fig.update_layout(autosize=True, width=None, height=None)
     fig.write_html(
         f"{filepath}/{title}.html",
