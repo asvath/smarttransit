@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>TTC Delay Insights — Toronto Subway: Delay Stats</title>
   <style>
     :root{
@@ -36,30 +36,16 @@
 
     .buffer-card{ background:#121214; border:1px solid var(--border); border-radius:16px; margin:16px 0 20px; }
     .buffer-content{ padding:28px; }
-    .buffer-header{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
-    .buffer-title{ font-weight:700; font-size:24px; }
+    .buffer-header{ display:flex; align-items:flex-start; justify-content:space-between; gap:16px; flex-wrap:wrap; }
+    .buffer-info{ display:flex; flex-direction:column; }
+    .buffer-title{ font-weight:700; font-size:22px; line-height:1.2; }
+    .buffer-note{ color:#d1d5db; margin-top:6px; }
     .buffer-controls{ display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
     select, .pill{ background:#141417; border:1px solid #2a2a2a; color:#e5e7eb; border-radius:12px; padding:14px 16px; font-size:18px; min-width:200px; }
     .badge-dot{ width:16px; height:16px; border-radius:999px; display:inline-block; vertical-align:middle; }
     .buffer-rows{ margin-top:12px; border:1px solid var(--border); border-radius:12px; }
     .buffer-row{ display:flex; justify-content:space-between; padding:15px 18px; font-size:18px; }
     .buffer-row + .buffer-row{ border-top:1px dashed #2a2a2a; }
-    .buffer-note{ color:#cfd3da; font-size:16.5px; margin-top:10px; }
-.buffer-header{
-  display:flex;
-  align-items:flex-start;        /* keep controls aligned with title top */
-  justify-content:space-between; /* left block vs right controls */
-  gap:16px;
-}
-
-.buffer-info{
-  display:flex;
-  flex-direction:column;         /* title above note */
-}
-
-.buffer-title{ font-weight:700; font-size:22px; line-height:1.2; }
-.buffer-note{ color:#d1d5db; margin-top:6px; }
-
 
     .hero{ display:grid; grid-template-columns: 8fr 4fr; gap:22px; }
     @media (max-width:1200px){ .hero{ grid-template-columns:1fr; } }
@@ -97,27 +83,10 @@
     .hotspot-icon { width:44px; height:44px; border-radius:999px; display:grid; place-items:center; background:#1a1b1e; border:1px solid #2a2a2a; font-size:24px; }
     .hotspot-emoji { display:inline-block; transform: translateY(2px); }
 
-    .leaflet-popup-close-button{
-      color:#000 !important;
-      font-weight:900 !important;
-      font-size:22px !important;
-      line-height:22px !important;
-      width:28px; height:28px;
-      top:6px; right:6px;
-      opacity:1 !important;
-      text-shadow:none !important;
-    }
-    .leaflet-popup-close-button:hover{ opacity:1; }
-
     .hero.container { margin-top:16px; }
-    .hero .card:first-child .content > div[style*="font-weight:700; font-size:22px;"] {
-      font-size: 24px !important;
-      font-weight: 700 !important;
-      margin-bottom: 10px !important;
-    }
+    .hero .card:first-child .content > div[style*="font-weight:700; font-size:22px;"] { font-size:24px !important; font-weight:700 !important; margin-bottom:10px !important; }
 
-    /* restored welcome / raccoon section */
-    .welcome-flex { display: flex; align-items: flex-start; gap: 14px; }
+    .welcome-flex { display:flex; align-items:flex-start; gap:14px; }
     .icon-pair { position: relative; display: inline-block; width: 220px; height: auto; flex-shrink: 0; margin-top: 4px; }
     .maple-left { position: absolute; top: 0; left: 0; width: 150px; height: auto; opacity: 0.95; z-index: 1; }
     .raccoon-left { position: absolute; top: 0; left: 90px; width: 150px; height: auto; opacity: 0.95; z-index: 2; }
@@ -127,153 +96,90 @@
     .welcome a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
     .welcome a:hover { color: #f87171; }
 
-    @media (max-width: 720px) {
-      .icon-pair { width: 62px; }
-      .maple-left { width: 36px; }
-      .raccoon-left { width: 50px; left: 12px; }
-      .welcome-text h2 { font-size: 24px; }
+    .hamburger{
+      display:none; width:42px; height:42px; border:1px solid var(--border);
+      background:#121214; border-radius:10px; align-items:center; justify-content:center;
+      gap:5px; flex-direction:column; cursor:pointer;
     }
+    .hamburger span{ width:22px; height:2px; background:#e8eaee; display:block; transition:transform .2s ease, opacity .2s ease; }
+    .hamburger.is-open span:nth-child(1){ transform:translateY(7px) rotate(45deg); }
+    .hamburger.is-open span:nth-child(2){ opacity:0; }
+    .hamburger.is-open span:nth-child(3){ transform:translateY(-7px) rotate(-45deg); }
+
+    /* Remove duplicate in-map legend UI */
+    #legend-toggle, #legend-panel{ display:none !important; }
+
+    /* Mobile polish */
+    @media (max-width: 860px){
+      header .container{ gap:10px; }
+      .hamburger{ display:flex; }
+      .nav{
+        position:absolute; top:100%; right:22px; left:22px; background:#101012; border:1px solid var(--border);
+        border-radius:12px; padding:10px; display:none; flex-direction:column; gap:8px; z-index:20; box-shadow:0 8px 24px rgba(0,0,0,.35);
+      }
+      .nav.is-open{ display:flex; }
+      .btn{ width:100%; text-align:center; padding:12px 14px; font-size:16px; }
+      .welcome-flex{ flex-direction:column; align-items:center; text-align:center; }
+      .icon-pair{ position:static; display:flex; align-items:center; justify-content:center; gap:10px; width:auto; height:auto; margin:6px 0 10px; }
+      .maple-left, .raccoon-left{ position:static; width:56px; height:auto; opacity:.95; }
+      .mapbox{ height:60vh; min-height:420px; }
+      main{ padding:0 14px; }
+      .buffer-header{ flex-direction:column; align-items:flex-start; gap:10px; }
+      .buffer-controls{ width:100%; }
+    }
+
+    @media (max-width: 720px){
+      body{ font-size:16px; }
+      .container{ padding:14px 14px; }
+      .welcome .content{ padding:16px; }
+      .welcome-text h2{ font-size:22px; line-height:1.35; }
+      .welcome p.lead{ font-size:16px; line-height:1.6; }
+      select, .pill{ min-width:140px; padding:10px 12px; font-size:15px; }
+      .buffer-row{ font-size:16px; padding:12px 14px; }
+      .legend{ gap:10px; font-size:13px; }
+      .kpi{ padding:12px; font-size:16px; }
+      .kpi > strong{ font-size:18px; }
+      .leaflet-popup-content-wrapper{ max-width:260px !important; border-radius:12px !important; }
+      .leaflet-popup-content{ max-height:44vh; overflow:auto; margin:8px 12px !important; }
+      .leaflet-popup .kpi{ padding:8px; font-size:14px; }
+      .leaflet-popup .kpi > strong{ font-size:15px; }
+    }
+
+    [id]{ scroll-margin-top: 80px; }
     main { margin-bottom: 0 !important; }
-.hero.container { margin-bottom: 0 !important; }
-    /* --- HAMBURGER + MOBILE NAV --- */
-.hamburger{
-  display:none;
-  width:42px; height:42px;
-  border:1px solid var(--border);
-  background:#121214; border-radius:10px;
-  align-items:center; justify-content:center;
-  gap:5px; flex-direction:column; cursor:pointer;
-}
-.hamburger span{
-  width:22px; height:2px; background:#e8eaee; display:block;
-  transition:transform .2s ease, opacity .2s ease;
-}
-.hamburger.is-open span:nth-child(1){ transform:translateY(7px) rotate(45deg); }
-.hamburger.is-open span:nth-child(2){ opacity:0; }
-.hamburger.is-open span:nth-child(3){ transform:translateY(-7px) rotate(-45deg); }
-
-/* Desktop keeps original nav */
-@media (max-width: 860px){
-  header .container{ gap:10px; }
-  .hamburger{ display:flex; }
-  /* collapse nav into a dropdown panel */
-  .nav{
-    position:absolute; top:100%; right:22px; left:22px;
-    background:#101012; border:1px solid var(--border); border-radius:12px;
-    padding:10px; display:none; flex-direction:column; gap:8px; z-index:20;
-    box-shadow:0 8px 24px rgba(0,0,0,.35);
-  }
-  .nav.is-open{ display:flex; }
-
-  .btn{
-    width:100%; text-align:center;
-    padding:12px 14px; font-size:16px;
-  }
-
-  /* Tweak welcome + map spacing on phones */
-  .welcome-flex{ flex-direction:column; align-items:center; text-align:center; }
-  .icon-pair{ margin:0 auto 10px; width:100px; }
-  .mapbox{ height:60vh; min-height:420px; }
-  main{ padding:0 14px; }
-  .buffer-header{ flex-direction:column; align-items:flex-start; gap:10px; }
-  .buffer-controls{ width:100%; }
-}
-
-/* Prevent sticky header from covering jump targets */
-[id]{ scroll-margin-top: 80px; }
-
-    /* ---------- MOBILE POLISH ---------- */
-@media (max-width: 720px){
-  /* Global sizing + gutters */
-  body{ font-size:16px; }
-  .container{ padding:14px 14px; }
-  main{ padding:0 14px; }
-
-  /* Welcome card spacing + typography */
-  .welcome{ margin-bottom:12px; }
-  .welcome .content{ padding:16px; }
-  .welcome-flex{ flex-direction:column; align-items:center; text-align:center; gap:10px; }
-  .welcome-text h2{ font-size:22px; line-height:1.35; }
-  .welcome p.lead{ font-size:16px; line-height:1.6; }
-
-  /* 🎯 Fix the overlapping icons:
-     make them inline (not absolute), shrink on phones */
-  .icon-pair{
-    position: static;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    gap:8px;
-    width:auto; height:auto;
-    margin:2px 0 6px;
-  }
-  .maple-left,
-  .raccoon-left{
-    position: static;      /* <-- key change: no absolute */
-    width:46px; height:auto;
-    opacity:0.95;
-  }
-
-  /* Map/card/layout tweaks */
-  .hero{ display:block; }                       /* single column */
-  .mapbox{ height:58vh; min-height:380px; }     /* less tall on phones */
-  .legend{ gap:10px; font-size:13px; }
-
-  /* Buffer planner controls fit */
-  select, .pill{ min-width:140px; padding:10px 12px; font-size:15px; }
-  .buffer-header{ flex-direction:column; align-items:flex-start; gap:8px; }
-  .buffer-rows{ border-radius:12px; }
-  .buffer-row{ font-size:16px; padding:12px 14px; }
-
-  /* Right panel search block wraps nicely */
-  #station-search{ min-width:0; }
-  .kpi{ padding:12px; font-size:16px; }
-  .kpi > strong{ font-size:18px; }
-}
-
-/* On very narrow screens, just hide the decorative icons */
-@media (max-width: 380px){
-  .icon-pair{ display:none; }
-}
-
-
+    .hero.container { margin-bottom: 0 !important; }
   </style>
 
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
-  </script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
 <body>
-<header>
-  <div class="container" style="display:flex;align-items:center;justify-content:space-between;position:relative;">
-    <div class="brand">
-      <div class="badge">TTC</div>
-      <div>
-        <div style="font-weight:700;font-size:20px;">TTC Delay Insights</div>
-        <div class="muted" style="font-size:16px;">Data today, better commutes tomorrow.</div>
+  <header>
+    <div class="container" style="display:flex;align-items:center;justify-content:space-between;position:relative;">
+      <div class="brand">
+        <div class="badge">TTC</div>
+        <div>
+          <div style="font-weight:700;font-size:20px;">TTC Delay Insights</div>
+          <div class="muted" style="font-size:16px;">Data today, better commutes tomorrow.</div>
+        </div>
+      </div>
+
+      <button class="hamburger" id="menu-toggle" aria-label="Open menu" aria-expanded="false" aria-controls="site-nav">
+        <span></span><span></span><span></span>
+      </button>
+
+      <div class="nav" id="site-nav">
+        <a class="btn primary" href="index.html" aria-current="page">Home</a>
+        <a class="btn" href="overview.html">Overview</a>
+        <a class="btn" href="delayleaderboard.html">Delay Leaderboard</a>
+        <a class="btn" href="ttcdelaydodge.html">Play TTC Delay Dodge</a>
+        <a class="btn" href="about.html">About</a>
+        <a class="btn" href="donate.html">Donate</a>
       </div>
     </div>
-
-    <!-- Hamburger -->
-    <button class="hamburger" id="menu-toggle" aria-label="Open menu" aria-expanded="false" aria-controls="site-nav">
-      <span></span><span></span><span></span>
-    </button>
-
-    <!-- Nav -->
-    <div class="nav" id="site-nav">
-      <a class="btn primary" href="index.html" aria-current="page">Home</a>
-      <a class="btn" href="overview.html">Overview</a>
-      <a class="btn" href="delayleaderboard.html">Delay Leaderboard</a>
-      <a class="btn" href="ttcdelaydodge.html">Play TTC Delay Dodge</a>
-      <a class="btn" href="about.html">About</a>
-      <a class="btn" href="donate.html">Donate</a>
-    </div>
-  </div>
-</header>
-
+  </header>
 
   <main>
-
     <div class="welcome container card" role="region" aria-label="Welcome">
       <div class="content">
         <div class="welcome-flex">
@@ -281,10 +187,8 @@
             <img src="assets/maple.png" alt="Red maple leaf icon representing Canada" class="maple-left">
             <img src="assets/trackintruder.png" alt="Track-intruding raccoon — Toronto’s unofficial mascot" class="raccoon-left">
           </div>
-
           <div class="welcome-text">
             <h2>Welcome to TTC Delay Insights: <br> Data today, better commutes tomorrow.</h2>
-
             <p class="lead">
               Use the <strong>Plan your buffer time</strong> tool below to help you arrive on time at your destination. <br>
               Explore the <strong>Toronto Subway: Delay Stats</strong> interactive map to see delay stats for each station. <br>
@@ -298,16 +202,15 @@
       </div>
     </div>
 
-<section class="buffer-card container" aria-label="Plan your buffer time">
-  <div class="buffer-content">
-    <div class="buffer-header">
-      <div class="buffer-info">
-        <div class="buffer-title">Plan Your Buffer Time</div>
-        <div class="buffer-note">Add these minutes to your trip as a buffer. <br> Based on stats over the last 3 years. </div>
-      </div>
-
-      <div class="buffer-controls">
-        <span class="pill" style="display:flex;align-items:center;gap:10px">
+    <section class="buffer-card container" aria-label="Plan your buffer time">
+      <div class="buffer-content">
+        <div class="buffer-header">
+          <div class="buffer-info">
+            <div class="buffer-title">Plan Your Buffer Time</div>
+            <div class="buffer-note">Add these minutes to your trip as a buffer. <br> Based on stats over the last 3 years. </div>
+          </div>
+          <div class="buffer-controls">
+            <span class="pill" style="display:flex;align-items:center;gap:10px">
               <span class="badge-dot" id="line-dot"></span>
               <select id="line-select" aria-label="Select Line"></select>
             </span>
@@ -315,7 +218,6 @@
           </div>
         </div>
         <div id="buffer-rows" class="buffer-rows" role="table" aria-label="Average extra minutes by time of day"></div>
-
       </div>
     </section>
 
@@ -336,14 +238,6 @@
           </div>
 
           <div class="mapbox">
-            <button id="legend-toggle" class="btn" style="position:absolute;right:12px;top:12px;z-index:500">Legend</button>
-            <div id="legend-panel" class="card" style="position:absolute;right:12px;top:62px;z-index:500;display:none">
-              <div class="content" style="font-size:14px">
-                <div><span class="dot" style="background:#FFD300"></span> Line 1</div>
-                <div><span class="dot" style="background:#00A94F"></span> Line 2</div>
-                <div><span class="dot" style="background:#9C27B0"></span> Line 4</div>
-              </div>
-            </div>
             <div id="leaflet-map"></div>
           </div>
         </div>
@@ -827,12 +721,6 @@
       }).catch(e => { console.error(e); });
     }
 
-    document.getElementById('legend-toggle').onclick = () => {
-      const p = document.getElementById('legend-panel');
-      p.style.display = (p.style.display === 'none' ? 'block' : 'none');
-      setTimeout(()=>map.invalidateSize(), 0);
-    };
-
     window.addEventListener('resize', () => { if (map) map.invalidateSize(); });
 
     function goToSearchedStation(){
@@ -861,35 +749,26 @@
     }
 
     document.getElementById('station-go').addEventListener('click', goToSearchedStation);
-    document.getElementById('station-search').addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') goToSearchedStation();
-    });
+    document.getElementById('station-search').addEventListener('keydown', (e) => { if (e.key === 'Enter') goToSearchedStation(); });
+
+    (function(){
+      const btn = document.getElementById('menu-toggle');
+      const nav = document.getElementById('site-nav');
+      if(!btn || !nav) return;
+      const closeMenu = () => {
+        btn.classList.remove('is-open');
+        nav.classList.remove('is-open');
+        btn.setAttribute('aria-expanded','false');
+      };
+      btn.addEventListener('click', () => {
+        const open = nav.classList.toggle('is-open');
+        btn.classList.toggle('is-open', open);
+        btn.setAttribute('aria-expanded', String(open));
+      });
+      nav.addEventListener('click', e => { if(e.target.closest('a')) closeMenu(); });
+      window.addEventListener('resize', () => { if (window.innerWidth > 860) closeMenu(); });
+    })();
   </script>
-<script>
-  (function(){
-    const btn = document.getElementById('menu-toggle');
-    const nav = document.getElementById('site-nav');
-    if(!btn || !nav) return;
-
-    const closeMenu = () => {
-      btn.classList.remove('is-open');
-      nav.classList.remove('is-open');
-      btn.setAttribute('aria-expanded','false');
-    };
-    btn.addEventListener('click', () => {
-      const open = nav.classList.toggle('is-open');
-      btn.classList.toggle('is-open', open);
-      btn.setAttribute('aria-expanded', String(open));
-    });
-    nav.addEventListener('click', e => {
-      if(e.target.closest('a')) closeMenu();
-    });
-    window.addEventListener('resize', () => {
-      if (window.innerWidth > 860) closeMenu();
-    });
-  })();
-</script>
-
 </body>
 </html>
 
