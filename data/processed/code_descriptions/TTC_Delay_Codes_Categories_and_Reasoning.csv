@@ -1,0 +1,141 @@
+_id,CODE,DESCRIPTION,CATEGORY,REASONING,PUBLIC EXPLANATION
+1,EUAC,AIR CONDITIONING,Mechanical/Vehicle,Air conditioning system that cools the train.,Air conditioning issue on the train
+2,EUAL,ALTERNATING CURRENT,Mechanical/Vehicle,"Electrical system/converter that powers the train's motors, lights, and onboard equipment.","Issue with electrical system/converter that powers the train's motors, lights, and onboard equipment."
+3,EUATC,ATC RC&S EQUIPMENT,Mechanical/Infrastructure,"Automatic Train Control- Rail Control & Signalling system that manages train spacing, speed, and safety using trackside lights/signals etc.",Automatic train control (ATC) / signals equipment issue
+4,EUBK,BRAKES,Mechanical/Vehicle,Brake system.,Brake system issue on the train
+5,EUBO,BODY,Mechanical/Vehicle,The physical frame of subway car.,Issue with the train body or shell
+6,EUCA,COMPRESSED AIR,Mechanical/Vehicle,"Air-powered system that operates brakes, doors, and other equipment on the train.",Issue with compressed air system that operates brakes/doors
+7,EUCC,CAM CONTROL,Mechanical/Vehicle,Older type of train motor control that uses mechanical cams to adjust power.,Older train control equipment issue
+8,EUCD,RC&S CONSEQUENTIAL DELAY (SECOND DELAY SAME FAULT  NO INTERVENTION),Operational/Process,Staffing or procedural issue: no intervention.,Rail Control & Signalling system issue:  2nd delay from an earlier issue with the same root cause. (No staff intervention).
+9,EUCH,CHOPPER CONTROL,Mechanical/Vehicle,Electronic system that controls how much power goes to the train's motors for smooth acceleration.,Power control equipment issue on the train
+10,EUCO,COUPLERS,Mechanical/Vehicle,Connectors that join train cars and allow electrical systems to pass between them.,Connectors between train cars not working properly
+11,EUDO,DOOR PROBLEMS RE:FAULTY EQUIPMENT,Mechanical/Vehicle,Mechanism that opens and closes passenger doors.,Train door issue
+12,EUECD,ECD/LINE MECHANIC RELATED,Operational/Process,Emergency Crossover Device inspection by staff.,Safety equipment (emergency crossover) issue
+13,EUHV,HIGH VOLTAGE,Mechanical/Vehicle,High-voltage circuits used by traction motors and major onboard equipment,Electrical issue powering traction motors and major onboard equipment on train
+14,EULT,LIGHTING SYSTEMS,Mechanical/Vehicle,Interior and exterior lights on the train.,Lighting issue on the train
+15,EULV,LOW VOLTAGE,Mechanical/Vehicle,"Low-voltage circuits that operate door controls, HVAC fans etc.","Electrical issue powering door controls, HVAC fans etc, on the train"
+16,EUME,RC&S MAINTENANCE ERROR (HUMAN ERROR - NO EQUIP.FAULT),Operational/Process,Problem caused by a mistake during maintenance or repair.,Maintenance error affecting service
+17,EUNEA,NO EQUIPMENT AVAILABLE,Other/Unclear,Cause is too vague or lacks enough detail to determine.,Unclear cause
+18,EUNT,EQUIPMENT  NO TROUBLE FOUND,Mechanical/Vehicle,A reported problem with the train's equipment was investigated but no fault was found,A reported problem with the train's equipment was investigated but no fault was found
+19,EUO,RC&S OTHER,Mechanical/Infrastructure,"Other issue within the Rail Control & Signalling systems, which manage train movement and safety using trackside equipment.",Other issue within the Rail Control & Signalling systems
+20,EUOE,"RC&S OPERATOR ERROR (SIGNAL VIOLATION, PLATFORM OVERSHOOT, ETC)",Operational/Process,Staffing or procedural issue.,Operational error 
+21,EUOPO,OPTO (RC&S) NON-TRAIN DOOR MONITORING,Mechanical/Infrastructure,Rail Control & Signalling monitoring equipment for non-train door.,Rail Control & Signalling monitoring equipment issue for non-train door.
+22,EUPI,T-1 PROPULSION SYSTEM,Mechanical/Vehicle,The electric motors and control systems on a T1 subway train that provide power to move it.,Issue with electric motors and control systems on a T1 subway train
+23,EUSC,SPEED CONTROL EQUIPMENT,Mechanical/Infrastructure,Equipment that enforces safe train speeds along a section of track.,Issue with speed control equipment that enforces safe train speeds 
+24,EUTL,TRAINLINE SYSTEM,Mechanical/Vehicle,"The electrical wiring and control circuits that run the length of the train and connect all cars, allowing commands and signals to be shared.",Issue with electrical wiring that links all cars of the train
+25,EUTM,TRACTION MOTORS,Mechanical/Vehicle,Electric motors and control systems that move the train.,Issue with train's motors and controls
+26,EUTR,TRUCKS,Mechanical/Vehicle,Wheel assemblies and axles that guide and support the train on the tracks.,Issue with train's wheel assemblies and axles 
+27,EUTRD,TORONTO ROCKET CAB DOORS,Mechanical/Vehicle,Mechanism that opens and closes passenger doors.,Issue with the mechanism that operates passenger doors
+28,EUVA,WARNING/ALARM SYSTEM/PASSENGER SECURITY SYSTEM,Patron,"Passenger-operated emergency or security systems, such as alarm handles or intercoms, used to request help or report an incident.",Passenger pulled the alarm or called for help
+29,EUVE,WORK VEHICLE,Mechanical/Vehicle,A non-passenger TTC rail vehicle.,A non-passenger TTC rail vehicle issue
+30,EUYRD,YARD/CARHOUSE RELATED PROBLEMS,Mechanical/Infrastructure,TTC’s maintenance and storage facilities.,Maintenance or storage facility issue
+31,MUATC,ATC PROJECT,Mechanical/Infrastructure,"Automatic Train Control system that manages train spacing, speed, and safety using trackside equipment.",Issue with Automatic Train Control system
+32,MUCL,DIVISIONAL CLERK RELATED,Operational/Process,Administrative issue handled by a divisional clerk.,Administrative issue 
+33,MUCP,CLOSURES - PLANNED,Planned Work,Service reduced or stopped for scheduled maintenance or construction work.,Service reduced or stopped for planned maintenance
+34,MUCSA,NO COLLECTOR AVAILABLE- E.S.A. RELATED,Operational/Process,No collector was available.,No collector staff available due to adminstrative scheduling issue
+35,MUCU,CLOSURES - UNPLANNED,Unplanned Work,Services stopped for unplanned work/issue.,Service reduced or stopped due to an unplanned issue
+36,MUD,DOOR PROBLEMS  PASSENGER RELATED,Patron,Patrons keeping doors open etc.,Train door issue caused by patron
+37,MUDD,DOOR PROBLEMS  DEBRIS RELATED,Mechanical/Vehicle,Passenger door mechanism blocked by foreign material. (Could be caused by Patron).,Train door issue caused by debris
+38,MUEC,ENGINEEERING & CONSTRUCTION RELATED,Planned Work,Service reduced or stopped for scheduled maintenance or construction work.,Service reduced or stopped for scheduled maintenance or construction work.
+39,MUESA,NO OPERATOR/CREW AVAILABLE  E.S.A. RELATED,Operational/Process,Train could not operate because no operator was available.,Train could not operate because no operator was available.
+40,MUFM,FORCE MAJEURE  DELAY OVER 90 MIN. RE: WEATHER OR MAJOR EVENT,Weather,"Weather conditions or external disruptions like city-wide power failures, events.",Weather related or major events
+41,MUFS,FIRE/SMOKE PLAN B  SOURCE EXTERNAL TO TTC,Other/External,Fire outside TTC property disrupted service.,Fire outside TTC property
+42,MUGD,MISCELLANEOUS GENERAL SUBWAY LINE DELAYS -,Other/Unclear,Cause is too vague or lacks enough detail to determine.,Unclear cause
+43,MUI,INJURED/ILL CUSTOMER ON TRAIN  TRANSPORTED,Patron,Medical emergency involving a customer or member of the public.,Medical emergency involving a patron on the train: transported
+44,MUIE,INJURED EMPLOYEES,Operational/Process,Medical emergency involving a staff.,Medical emergency involving a staff.
+45,MUIR,INJURED/ILL CUSTOMER ON TRAIN  MEDICAL AID REFUSED,Patron,Medical emergency involving a customer or member of the public.,Medical emergency involving a patron on the train: medical aid refused
+46,MUIRS,INJURED/ILL CUSTOMER IN STATION  MEDICAL AID REFUSED,Patron,Medical emergency involving a customer or member of the public.,Medical emergency involving a patron in the station: medical aid refused
+47,MUIS,INJURED/ILL CUSTOMER IN STATION - TRANSPORTED,Patron,Medical emergency involving a customer or member of the public.,Medical emergency involving a patron in the station: transported
+48,MULD,LABOUR DISPUTE RELATED  SUBWAY,Other/Internal,Service disruption due to labour dispute or work refusal.,Service disruption due to labour dispute or work refusal.
+49,MUNCA,NO COLLECTOR AVAILABLE  NON ESA RELATED,Operational/Process,Station service affected because no collector was available.,No collector staff was available: non-adminstrative related
+50,MUNOA,NO OPERATOR AVAILABLE  NON ESA RELATED,Operational/Process,Train could not operate because no operator was available.,No operator staff was available: : non-adminstrative related
+51,MUO,MISCELLANEOUS OTHER,Other/Unclear,Cause is too vague or lacks enough detail to determine.,Unclear cause
+52,MUODC,OVERHEAD DOOR CONTACTED,Mechanical/Infrastructure,Train or work vehicle strikes an overhead door.,Train or work vehicle struck an overhead door
+53,MUPAA,PAA  NO TROUBLE FOUND,Patron,"Passenger Assistance Alarm was activated, but no actual issue was found.","Passenger Assistance Alarm was activated, but no actual issue was found"
+54,MUPF,EXTERNAL POWER FAILURE,Other/External,External utility power outage disrupted service.,External utility power outage
+55,MUPLA,FIRE/SMOKE PLAN A,Mechanical/Vehicle,Fire inside train.,Fire inside the train
+56,MUPLB,FIRE/SMOKE PLAN B  SOURCE TTC (TRACK LEVEL),Mechanical/Infrastructure,Fire on track level.,Fire on track level
+57,MUPLC,FIRE SMOKE PLAN C,Other/Internal,Fire inside TTC property.,Fire inside TTC property
+58,MUPR1,PRIORITY ONE  TRAIN IN CONTACT WITH PERSON,Patron,"Train in contact with person, e.g suicide, pushed off the platform etc.",Train in contact with person
+59,MUSAN,UNSANITARY VEHICLE,Patron,"Train car that is too dirty or contaminated for service, highly likely caused by patron.",Unsanitary vehicle
+60,MUSC,SI SPEED CONTROL,Mechanical/Infrastructure,Signal Interlocking Speed Control that enforces safe train speeds along a section of track.,Issue with system that mangages train speed and routes
+61,MUTD,TRAINING DEPT. RELATED DELAYS,Operational/Process,Staff Training.,Staff Training.
+62,MUTO,MISCELLANEOUS TRANSPORTATION OTHER (EMPLOYEE NON-CHARGEABLE),Operational/Process,Train operations issue with employee found non-chargeable,Issue with train operations
+63,MUWEA,WEATHER REPORTS / RELATED PROBLEMS,Weather,Weather conditions.,Weather related 
+64,MUWR,WORK REFUSAL,Other/Internal,Service disruption due to labour dispute or work refusal.,Service disruption due to labour dispute or work refusal
+65,PUATC,ATC SIGNALS OTHER,Mechanical/Infrastructure,Trackside signalling equipment that controls train movements and ensures safe operation.,Issue with ATC signalling system (miscellaneous)
+66,PUCBI,CENTRAL LOGIC CONTROLLER FAILURE,Mechanical/Infrastructure,CLC decides if a train can move,Issue with Central Logic Controller (controls train signals)
+67,PUCSC,SIGNAL CONTROL,Mechanical/Infrastructure,Trackside signalling equipment that controls train movements and ensures safe operation.,Issue with trackside train control system
+68,PUCSS,CENTRAL OFFICE SIGNALLING SYSTEM (CSS),Mechanical/Infrastructure,"Interfaces with trackside signals, interlockings, and train control systems.",Issue with central signalling system
+69,PUDCS,DATA COMMUNICATIONS SYSTEM FAILURE,Mechanical/Infrastructure,"Communications network, cables, switches, routers, wireless nodes.",Issue with data communication system between trains and control centre
+70,PUEME,ELECTRICAL  MAINTENANCE ERROR,Operational/Process,Problem caused by a mistake during maintenance or repair.,Electrical maintenance error
+71,PUEO,ELECTRICAL  OTHER,Other/Unclear,Cause is too vague or lacks enough detail to determine.,Unclear electrical issue
+72,PUEWZ,ELECTRICAL  WORK ZONE PROBLEMS,Mechanical/Infrastructure,Not train related.,Electrical problem in a work zone
+73,PUMEL,ANY ESCL. OR ELEV. INCIDENT  TRANSPORTED OR MEDICAL AID DECLINED,Patron,Medical emergency involving  a patron.,Escalator/Elevator incident involving patron
+74,PUMO,PLANT MAINTENANCE  OTHER,Mechanical/Infrastructure,Maintenance of facilities.,Maintenance of facilities.
+75,PUMST,ANY STAIRWAY INCIDENT  TRANSPORTED OR MEDICAL AID DECLINED,Patron,Medical emergency involving a patron.,Stairway incident involving patron
+76,PUOPO,OPTO (COMMUNICATIONS) TRAIN DOOR MONITORING,Mechanical/Vehicle,Onboard communication and monitoring system used by the operator to supervise and control train doors.,Issue with the communications system that monitors train doors
+77,PUSAC,SIGNALS AXLE COUNTER BLOCK FAILURE,Mechanical/Infrastructure,Detect train presence by counting wheel axles entering and leaving a defined section.,Issue with train detection signalling system
+78,PUSBE,BEACON FAILURE,Mechanical/Infrastructure,Trackside device that sends information to the train for location and speed control.,Issue with device that tracks train speed and location
+79,PUSCA,SCADA RELATED PROBLEMS,Mechanical/Infrastructure,"Supervisory Control and Data Acquisition system to monitor traction power, ventilation systems etc.",Issue with the  central system that monitors and controls power and equipment
+80,PUSCR,SUBWAY CAR RADIO FAULT,Mechanical/Vehicle,Radio in subway car issue.,Issue with radio in subway car 
+81,PUSEA,EMERGENCY ALARM STATIONS,Patron,Emergency alarm activated in station.,Emergency alarm activated in station
+82,PUSI,SIGNAL OR RELATED COMPONENTS FAILURE,Mechanical/Infrastructure,Failure of trackside signalling equipment.,Issue with trackside signal or related components
+83,PUSIO,SMART IO FAILURE,Mechanical/Infrastructure,Failure of Smart Input/Output module: signalling system.,Issue with the electronic system that controls train signals
+84,PUSIS,SIGNALS TRACK WEATHER RELATED ISSUES,Weather,Weather conditions.,Trackside signal issues due to weather
+85,PUSLC,SIGNALS LINE CONTROLLER FAILURE,Mechanical/Infrastructure,Failure of signalling control equipment that manages train movements along a line or section of track.,Issue with the signalling system that manages entire subway line
+86,PUSNT,SIGNAL PROBLEM  NO TROUBLE FOUND,Mechanical/Infrastructure,Reported signalling issue. No fault found.,"Reported signals issue, no problem found after inspection"
+87,PUSO,SIGNALS  OTHER,Mechanical/Infrastructure,Unspecified issue involving the signalling system,Unspecified issue involving the signalling system
+88,PUSRA,SUBWAY RADIO SYSTEM PROBLEMS,Mechanical/Infrastructure,The fixed radio network used for train communication and operations.,Issue with radio network used for train communication and operations
+89,PUSSW,TRACK SWITCH FAILURE  S/E/C RELATED PROBLEM,Mechanical/Infrastructure,Failure of track switch.,Track switch problem affecting routing
+90,PUSTC,SIGNALS - TRACK CIRCUIT PROBLEMS,Mechanical/Infrastructure,Trackside signalling issue.,Trackside signalling issue.
+91,PUSTP,TRACTION POWER OR RELATED COMPONENTS FAILURE,Mechanical/Vehicle,Failure in the fixed electrical network that delivers power to train.,Issue with the train's power supply system
+92,PUSTS,SIGNALS  TRAIN STOPS,Mechanical/Infrastructure,Fault in the trackside safety device that automatically applies a train's brakes if it passes a red signal.,Issue with trackside safety device that stops trains at red signals
+93,PUSWZ,WORK ZONE PROBLEMS  SIGNALS,Mechanical/Infrastructure,Signalling issue where maintenance or construction work is taking place.,Signalling issue where maintenance or construction work is taking place.
+94,PUSZC,SIGNALS ZONE CONTROLLER FAILURE,Mechanical/Infrastructure,Failure of the signalling control equipment that manages train movements within a specific section of the network.,Signals equipment failure affecting train movement
+95,PUTO,T&S OTHER,Mechanical/Infrastructure,Cause is too vague or lacks enough detail to determine: Involves Transportation and Signals.,Issue with Transportation and Signals on the tracks
+96,PUTCD,T&S CONTRACTOR PROBLEMS,Other/External,Non-TTC contractor working on Transportation & Signals systems.,Issue with non-TTC contractor working on Transportation & Signals systems
+97,PUTD,DEBRIS AT TRACK LEVEL - CONTROLLABLE,Patron,Most likely caused by passenger actions.,Debris at track level (controllable)
+98,PUTDN,DEBRIS AT TRACK LEVEL  NON-CONTROLLABLE,Other/External,Could not be removed swiftly.,Debris at track level (non-controllable)
+99,PUTIJ,INSULATED JOINT RELATED PROBLEM,Mechanical/Infrastructure,Failure in detection of train: track occupied or not.,Issue with track eqiupment that detects trains
+100,PUTIS,ICE/SNOW RELATED PROBLEM,Weather,Weather conditions.,Ice/Snow related problems
+101,PUTNT,T&S RELATED PROBLEM  NO TROUBLE FOUND,Mechanical/Infrastructure,"A Transportation & Signals issue was reported, but inspection found no fault or problem.","Transportation & Signals issue reported, but inspection found no fault or problem"
+102,PUTOE,"T&S OPERATOR RELATED PROBLEM (VIOLATIONS, OVERSHOOTS, ETC.)",Operational/Process,Error made by operator.,Transportation & Signals error made by operator
+103,PUTR,RAIL RELATED PROBLEM,Mechanical/Infrastructure,Railed related problem.,Track related problem
+104,PUTS,STRUCTURE RELATED PROBLEM,Mechanical/Infrastructure,Structure related problem.,Subway structure related problem
+105,PUTSC,SIGNALSCONTROL PROBLEMTRACK,Mechanical/Infrastructure,Track signals problem.,Track signals problem
+106,PUTSM,TRACK SWITCH FAILURE  T&S RELATED PROBLEM,Mechanical/Infrastructure,Issue with track switch which guides trains between tracks.,Track switch problem affecting routing
+107,PUTTC,TRACK CIRCUIT PROBLEMS RE:DEFECTIVE BOLTS/BONDING,Mechanical/Infrastructure,Faulty bolts.,Issue with track electrical connections that help detect trains
+108,PUTTP,TRACTION POWER RAIL RELATED PROBLEMS,Mechanical/Infrastructure,Problem with the power rail that supplies electricity.,Problem with the power rail 
+109,PUTWZ,WORK ZONES PROBLEMS  TRACK,Mechanical/Infrastructure,Problem with the track in an active maintenance or construction area.,Problem with the track in an active maintenance or construction area
+110,SUAE,ASSAULT / EMPLOYEE INVOLVED,Other/Internal,A physical assault involving a TTC employee.,Physical assault involving a TTC employee
+111,SUAP,ASSUALT / PATRON INVOLVED,Patron,Public safety or security incident.,Physical assault involving patron
+112,SUBT,BOMB THREAT,Patron,Threat involving explosives that disrupted service.,Bomb threat
+113,SUCOL,COLLECTOR BOOTH HOLD-UP ALARM ACTIVATED,Patron,"Security alarm in a fare collector booth was triggered, usually due to a robbery or threat.",Security alarm in a fare collector booth was activated
+114,SUDP,DISORDERLY PATRON,Patron,Public safety or security incident.,Disorderly patron
+115,SUEAS,EAS ACTIVATED  NO TROUBLE FOUND,Patron,"An emergency alarm station was triggered, most likely by a passenger, but no actual emergency or fault was found after inspection.","Emergency alarm activated in station, no issue found"
+116,SUG,GRAFFITI / SCRATCHITI,Patron,Vandalism.,Vandalism
+117,SUO,SECURITY OTHER,Other/Unclear,"Unspecified security-related incident; not enough detail to determine whether it was caused by a passenger, staff.",Unclear security-related incident
+118,SUPOL,HELD BY POLICE  NON TTC RELATED,Other/External,Delay caused by police activity unrelated to TTC operations.,Police investigation (not TTC related)
+119,SUROB,ROBBERY,Patron,Robbery.,Robbery
+120,SUSA,ASSAULT / SEXUAL,Patron,Sexual Assault.,Sexual Assault
+121,SUSP,SUSPICIOUS PACKAGE,Patron,Suspicious Package.,Suspicious Package
+122,SUUT,UNAUTHORIZED AT TRACK LEVEL,Patron,Patron on the track level.,Patron on the track level.
+123,TUATC,ATC OPERATOR RELATED,Operational/Process,"Operator issue with Automatic Train Control system that manages train spacing, speed etc.",Operator issue with Automatic Train Control system
+124,TUCC,TRANSIT CONTROL RELATED  TOWER CONTROLLER ERROR,Operational/Process,Error made by control room or tower staff.,Issue in control tower operations
+125,TUDOE,DOORS OPEN IN ERROR,Mechanical/Vehicle,Door problems.,Train door open in error
+126,TUKEY,TWO DRUM SWITCH KEYS IN TRAIN,Operational/Process,Two train control keys left in control cabs of the train (one at each end).,Two train control keys detected in the train
+127,TUML,MAINLINE STORAGE,Operational/Process,Train stored on the mainline tracks instead of in a yard.,Train stored on the mainline tracks instead of in a yard
+128,TUMVS,OPERATOR VIOLATED SIGNAL,Operational/Process,Violation of signal by operator.,Violation of signal by operator
+129,TUNCA,NO COLLECTOR AVAILABLE,Operational/Process,No collector was available.,No collector was available
+130,TUNIP,OPERATOR NOT IN POSTION,Operational/Process,Operator not in position.,Operator not in position
+131,TUNOA,NO OPERATOR AVAILABLE,Operational/Process,No operator was available.,No operator was available
+132,TUO,TRANSPORTATION OTHER,Other/Unclear,Cause is too vague or lacks enough detail to determine.,Unclear transportation related issue
+133,TUOPO,OPTO OPERATOR RELATED,Operational/Process,Operator-related issue during One Person Train Operation.,Operator-related issue during One Person Train Operation
+134,TUOS,OPERATOR OVERSHOT PLATFORM,Operational/Process,Operator overshot platform passing proper stopping point.,Operator overshot platform
+135,TUS,UNABLE TO MAINTAIN SCHEDULE,Operational/Process,Could not keep to the scheduled timetable; cause not specified in the report,Unable to maintain schedule
+136,TUSC,OPERATOR OVERSPEED,Operational/Process,Operator drove the train faster than allowed.,Operator oversped train
+137,TUSET,CONTROLS IMPROPERLY BLOWN DOWN,Operational/Process,Staff error in releasing air pressure (blowing down) from the train's control systems when securing or shutting it down.,Train not properly shut down by staff (air pressure release) when securing or shutting it down.
+138,TUST,STORM TRAINS,Weather,"Storm trains run during severe weather to keep tracks and equipment clear, which can slow or distrupt normal service.",Storm trains clearing snow/ice from tracks and equipment
+139,TUSUP,SUPERVISORY ERROR,Operational/Process,Error by supervisory staff.,Error by supervisory staff
+140,TUUR,UNAUTHORIZED TRAIN REVERSAL BY OPERATOR,Operational/Process,Unauthorized train reversal by operator.,Unauthorized train reversal by operator
