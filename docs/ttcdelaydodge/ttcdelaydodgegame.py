@@ -140,12 +140,20 @@ async def _api_get_top():
         return None
     try:
         resp = await js.fetch(f"{GLOBAL_API_URL}/leaderboard")
+        if not resp.ok:
+            return None
         txt = await resp.text()
-        data = json.loads(txt)
+        try:
+            data = json.loads(txt)
+        except Exception:
+            # if API returned HTML or error text, just skip
+            js.console.log("Leaderboard JSON parse failed, got:", txt[:200])
+            return None
         out = [(d.get("name", "Player"), int(d.get("score", 0))) for d in data]
         out.sort(key=lambda x: x[1], reverse=True)
         return out
-    except Exception:
+    except Exception as e:
+        js.console.log("Leaderboard fetch failed:", str(e))
         return None
 
 
@@ -154,14 +162,20 @@ async def _api_post_score(name, score):
         return False
     try:
         body = json.dumps({"name": (name or "Player").strip() or "Player", "score": int(score)})
-        await js.fetch(f"{GLOBAL_API_URL}/leaderboard", {
+        resp = await js.fetch(f"{GLOBAL_API_URL}/leaderboard", {
             "method": "POST",
             "headers": {"Content-Type": "application/json"},
             "body": body
         })
+        if not resp.ok:
+            txt = await resp.text()
+            js.console.log("Leaderboard POST failed:", txt[:200])
+            return False
         return True
-    except Exception:
+    except Exception as e:
+        js.console.log("Leaderboard post error:", str(e))
         return False
+
 
 
 def append_leaderboard_local(name, score):
