@@ -627,6 +627,7 @@ class Game:
 
         self.global_top_cache = None
         self.global_top_last_ms = 0
+        self.fetching_top = False
 
     def reset(self):
         hs = self.highscore
@@ -690,15 +691,24 @@ class Game:
         self.on_time_seconds += 10.0
         self.announcements.append(Announcement("+10 Jamaican Patty!", ttl=1600))
 
-    async def maybe_refresh_global_top(self):
+    async def maybe_refresh_global_top(self, force=False):
         if not (WEB and GLOBAL_API_URL):
             return
+        if self.fetching_top:
+            return
+
         now = pygame.time.get_ticks()
-        if self.global_top_cache is None or now - self.global_top_last_ms > 8000:
+        if not force and self.global_top_cache is not None and (now - self.global_top_last_ms) <= 8000:
+            return
+
+        self.fetching_top = True
+        try:
             top = await _api_get_top()
             if top is not None:
                 self.global_top_cache = top[:20]
                 self.global_top_last_ms = now
+        finally:
+            self.fetching_top = False
 
     async def submit_global_score(self, name, score):
         if WEB and GLOBAL_API_URL:
@@ -1058,7 +1068,8 @@ class Game:
             self.handle_events()
             self.update(dt)
             if WEB and GLOBAL_API_URL and self.state == "name":
-                await self.maybe_refresh_global_top()
+                if self.global_top_cache is None and not self.fetching_top:
+                    asyncio.create_task(self.maybe_refresh_global_top(force=True))
             self.draw()
             pygame.display.flip()
             await asyncio.sleep(0)
