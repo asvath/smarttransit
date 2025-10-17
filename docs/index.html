@@ -270,6 +270,25 @@
   .rotate-hint { display: none; }
 }
 
+/* Mobile: make map + station cards visually wider (no scroll) */
+@media (max-width: 860px){
+  /* Reduce side padding only for map and station cards */
+  .hero .card .content {
+    padding-left: 6px;
+    padding-right: 6px;
+  }
+
+  /* Ensure container itself doesn’t add extra horizontal padding */
+  .hero.container {
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  /* Just in case there’s a grid gap limiting space */
+  .hero {
+    gap: 0;
+  }
+}
 
   </style>
 
