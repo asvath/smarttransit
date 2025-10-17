@@ -183,8 +183,15 @@
       }
 
     /* Hide rotation hint on desktop or landscape */
-    @media screen and (orientation: landscape), screen and (min-width: 861px) {
-      .rotate-hint { display: none; }
+    .rotate-hint {
+      display: none;
+    }
+
+    /* Show ONLY on small portrait touch screens */
+    @media (max-width: 860px) and (orientation: portrait) and (hover: none) and (pointer: coarse) {
+      .rotate-hint {
+        display: block;
+      }
     }
 
     @media (max-width: 720px) {
@@ -818,6 +825,7 @@
       if (e.key === 'Enter') goToSearchedStation();
     });
 
+
     /* Mobile menu JS */
     (function(){
       const btn = document.getElementById('menu-toggle');
@@ -839,6 +847,13 @@
   </script>
 </body>
 </html>
+
+
+
+
+
+
+
 
 
 
