@@ -166,8 +166,21 @@
 
       .content, .buffer-rows, .legend { max-width:100%; overflow-x:hidden; box-sizing:border-box; }
 
-      .rotate-hint { display:block; text-align:center; font-size:16px; color:#aaa; margin:10px 0; }
-    }
+      .rotate-hint {
+        display: block;
+        text-align: center;
+        font-size: 15px;
+        color: #e5e7eb;
+        margin: 10px auto;
+        padding: 8px 14px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 10px;
+        width: fit-content;
+        font-style: italic;
+        letter-spacing: 0.2px;
+        backdrop-filter: blur(4px);
+      }
 
     /* Hide rotation hint on desktop or landscape */
     @media screen and (orientation: landscape), screen and (min-width: 861px) {
@@ -238,7 +251,8 @@
           <div class="welcome-text">
             <h2>Welcome to TTC Delay Insights: <br> Data today, better commutes tomorrow.</h2>
 
-            <p class="rotate-hint">📱 For the best experience, rotate your phone horizontally.</p>
+            <p class="rotate-hint"><em>For the best experience, rotate your phone horizontally.</em></p>
+
 
             <p class="lead">
               Use the <strong>Plan your buffer time</strong> tool below to plan your trip and stay ahead of TTC delays. <br>
