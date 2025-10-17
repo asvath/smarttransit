@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>TTC Delay Insights — Toronto Subway: Delay Stats</title>
   <style>
     :root{
@@ -36,16 +36,15 @@
 
     .buffer-card{ background:#121214; border:1px solid var(--border); border-radius:16px; margin:16px 0 20px; }
     .buffer-content{ padding:28px; }
-    .buffer-header{ display:flex; align-items:flex-start; justify-content:space-between; gap:16px; flex-wrap:wrap; }
-    .buffer-info{ display:flex; flex-direction:column; }
-    .buffer-title{ font-weight:700; font-size:22px; line-height:1.2; }
-    .buffer-note{ color:#d1d5db; margin-top:6px; }
+    .buffer-header{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+    .buffer-title{ font-weight:700; font-size:24px; }
     .buffer-controls{ display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
     select, .pill{ background:#141417; border:1px solid #2a2a2a; color:#e5e7eb; border-radius:12px; padding:14px 16px; font-size:18px; min-width:200px; }
     .badge-dot{ width:16px; height:16px; border-radius:999px; display:inline-block; vertical-align:middle; }
     .buffer-rows{ margin-top:12px; border:1px solid var(--border); border-radius:12px; }
     .buffer-row{ display:flex; justify-content:space-between; padding:15px 18px; font-size:18px; }
     .buffer-row + .buffer-row{ border-top:1px dashed #2a2a2a; }
+    .buffer-note{ color:#cfd3da; font-size:14.5px; margin-top:10px; }
 
     .hero{ display:grid; grid-template-columns: 8fr 4fr; gap:22px; }
     @media (max-width:1200px){ .hero{ grid-template-columns:1fr; } }
@@ -83,10 +82,27 @@
     .hotspot-icon { width:44px; height:44px; border-radius:999px; display:grid; place-items:center; background:#1a1b1e; border:1px solid #2a2a2a; font-size:24px; }
     .hotspot-emoji { display:inline-block; transform: translateY(2px); }
 
-    .hero.container { margin-top:16px; }
-    .hero .card:first-child .content > div[style*="font-weight:700; font-size:22px;"] { font-size:24px !important; font-weight:700 !important; margin-bottom:10px !important; }
+    .leaflet-popup-close-button{
+      color:#000 !important;
+      font-weight:900 !important;
+      font-size:22px !important;
+      line-height:22px !important;
+      width:28px; height:28px;
+      top:6px; right:6px;
+      opacity:1 !important;
+      text-shadow:none !important;
+    }
+    .leaflet-popup-close-button:hover{ opacity:1; }
 
-    .welcome-flex { display:flex; align-items:flex-start; gap:14px; }
+    .hero.container { margin-top:16px; }
+    .hero .card:first-child .content > div[style*="font-weight:700; font-size:22px;"] {
+      font-size: 24px !important;
+      font-weight: 700 !important;
+      margin-bottom: 10px !important;
+    }
+
+    /*  welcome / raccoon section */
+    .welcome-flex { display: flex; align-items: flex-start; gap: 14px; }
     .icon-pair { position: relative; display: inline-block; width: 220px; height: auto; flex-shrink: 0; margin-top: 4px; }
     .maple-left { position: absolute; top: 0; left: 0; width: 150px; height: auto; opacity: 0.95; z-index: 1; }
     .raccoon-left { position: absolute; top: 0; left: 90px; width: 150px; height: auto; opacity: 0.95; z-index: 2; }
@@ -96,6 +112,7 @@
     .welcome a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
     .welcome a:hover { color: #f87171; }
 
+    /* ===== Mobile parts ===== */
     .hamburger{
       display:none; width:42px; height:42px; border:1px solid var(--border);
       background:#121214; border-radius:10px; align-items:center; justify-content:center;
@@ -106,11 +123,9 @@
     .hamburger.is-open span:nth-child(2){ opacity:0; }
     .hamburger.is-open span:nth-child(3){ transform:translateY(-7px) rotate(-45deg); }
 
-    /* Remove duplicate in-map legend UI */
-    #legend-toggle, #legend-panel{ display:none !important; }
-
-    /* Mobile polish */
+    /* Mobile polish ≤860px */
     @media (max-width: 860px){
+      html, body { overflow-x: hidden; }
       header .container{ gap:10px; }
       .hamburger{ display:flex; }
       .nav{
@@ -119,16 +134,47 @@
       }
       .nav.is-open{ display:flex; }
       .btn{ width:100%; text-align:center; padding:12px 14px; font-size:16px; }
+
       .welcome-flex{ flex-direction:column; align-items:center; text-align:center; }
-      .icon-pair{ position:static; display:flex; align-items:center; justify-content:center; gap:10px; width:auto; height:auto; margin:6px 0 10px; }
-      .maple-left, .raccoon-left{ position:static; width:56px; height:auto; opacity:.95; }
-      .mapbox{ height:60vh; min-height:420px; }
-      main{ padding:0 14px; }
+      .icon-pair{ position:relative; display:block; width:220px; height:130px; margin:6px auto 12px; overflow:visible; }
+      .maple-left, .raccoon-left{ position:absolute !important; height:auto; opacity:.95; max-width:none; }
+      .maple-left{ top:0; left:0; width:130px; z-index:1; }
+      .raccoon-left{ top:0; left:70px; width:145px; z-index:2; }
+
+      .hero { display:block; gap:0; }
+      .hero.container { overflow:visible; padding-left:0; padding-right:0; }
+      .hero .card { width:100% !important; max-width:100% !important; margin:0 0 14px; }
+      .hero .card .content { max-width:100%; box-sizing:border-box; padding-left:6px; padding-right:6px; overflow-x:hidden; }
+
+      .mapbox, #leaflet-map, .leaflet-container {
+        width:100% !important; max-width:100% !important; height:50vh; min-height:360px; box-sizing:border-box;
+      }
+
       .buffer-header{ flex-direction:column; align-items:flex-start; gap:10px; }
       .buffer-controls{ width:100%; }
+
+      /* Hide in-map legend UI on mobile only */
+      #legend-toggle, #legend-panel{ display:none !important; }
+
+      /* Station search stacking safety */
+      .buffer-controls, .buffer-controls * { min-width:0; }
+      #station-search { display:block; width:100%; box-sizing:border-box; }
+      #station-go { display:block; width:100%; box-sizing:border-box; margin-top:8px; }
+
+      .leaflet-popup-content-wrapper{ max-width:340px !important; border-radius:12px !important; }
+      .leaflet-popup-content{ max-height:none !important; overflow:visible !important; margin:10px 14px !important; }
+
+      .content, .buffer-rows, .legend { max-width:100%; overflow-x:hidden; box-sizing:border-box; }
+
+      .rotate-hint { display:block; text-align:center; font-size:16px; color:#aaa; margin:10px 0; }
     }
 
-    @media (max-width: 720px){
+    /* Hide rotation hint on desktop or landscape */
+    @media screen and (orientation: landscape), screen and (min-width: 861px) {
+      .rotate-hint { display: none; }
+    }
+
+    @media (max-width: 720px) {
       body{ font-size:16px; }
       .container{ padding:14px 14px; }
       .welcome .content{ padding:16px; }
@@ -147,149 +193,6 @@
 
     [id]{ scroll-margin-top: 80px; }
     main { margin-bottom: 0 !important; }
-  /* --- Mobile (≤860px): Layout, Icons, Map, Search, Rotation Hint --- */
-@media (max-width: 860px) {
-  html, body { overflow-x: hidden; }
-
-  header .container { gap: 10px; }
-  .hamburger { display: flex; }
-  .nav {
-    position: absolute;
-    top: 100%; right: 22px; left: 22px;
-    background: #101012; border: 1px solid var(--border);
-    border-radius: 12px; padding: 10px;
-    display: none; flex-direction: column; gap: 8px;
-    z-index: 20; box-shadow: 0 8px 24px rgba(0,0,0,.35);
-  }
-  .nav.is-open { display: flex; }
-  .btn { width: 100%; text-align: center; padding: 12px 14px; font-size: 16px; }
-
-  /* Welcome section */
-  .welcome-flex { flex-direction: column; align-items: center; text-align: center; }
-  .icon-pair {
-    position: relative;
-    display: block;
-    width: 220px;
-    height: 130px;
-    margin: 6px auto 12px;
-    overflow: visible;
-  }
-  .maple-left, .raccoon-left {
-    position: absolute !important;
-    height: auto;
-    opacity: .95;
-    max-width: none;
-  }
-  .maple-left {
-    top: 0; left: 0;
-    width: 130px;
-    z-index: 1;
-  }
-  .raccoon-left {
-    top: 0; left: 70px;
-    width: 145px;
-    z-index: 2;
-  }
-
-  /* Cards and layout */
-  .hero { display: block; }
-  .hero.container { overflow: visible; }
-  .hero .card {
-    width: 100% !important;
-    max-width: 100% !important;
-    margin: 0 0 14px;
-    box-sizing: border-box;
-  }
-  .hero .card .content {
-    max-width: 100%;
-    box-sizing: border-box;
-    padding-left: 14px;
-    padding-right: 14px;
-    overflow-x: hidden;
-  }
-
-  .mapbox, #leaflet-map, .leaflet-container {
-    width: 100% !important;
-    max-width: 100% !important;
-    height: 50vh;
-    min-height: 360px;
-    box-sizing: border-box;
-  }
-
-  .buffer-header { flex-direction: column; align-items: flex-start; gap: 10px; }
-  .buffer-controls { width: 100%; }
-
-  /* Station search: stack input + button */
-  .buffer-controls, .buffer-controls * { min-width: 0; }
-  #station-search {
-    display: block;
-    width: 100%;
-    box-sizing: border-box;
-  }
-  #station-go {
-    display: block;
-    width: 100%;
-    box-sizing: border-box;
-    margin-top: 8px;
-  }
-  .station-search-row, .search-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-
-  /* Popups */
-  .leaflet-popup-content-wrapper {
-    max-width: 340px !important;
-    border-radius: 12px !important;
-  }
-  .leaflet-popup-content {
-    max-height: none !important;
-    overflow: visible !important;
-    margin: 10px 14px !important;
-  }
-
-  .content, .buffer-rows, .legend {
-    max-width: 100%;
-    overflow-x: hidden;
-    box-sizing: border-box;
-  }
-
-  /* Rotation hint */
-  .rotate-hint {
-    display: block;
-    text-align: center;
-    font-size: 14px;
-    color: #aaa;
-    margin: 10px 0;
-  }
-}
-
-/* Hide rotation hint on desktop or landscape */
-@media screen and (orientation: landscape), screen and (min-width: 861px) {
-  .rotate-hint { display: none; }
-}
-
-/* Mobile: make map + station cards visually wider (no scroll) */
-@media (max-width: 860px){
-  /* Reduce side padding only for map and station cards */
-  .hero .card .content {
-    padding-left: 6px;
-    padding-right: 6px;
-  }
-
-  /* Ensure container itself doesn’t add extra horizontal padding */
-  .hero.container {
-    padding-left: 0;
-    padding-right: 0;
-  }
-
-  /* Just in case there’s a grid gap limiting space */
-  .hero {
-    gap: 0;
-  }
-}
-
   </style>
 
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
@@ -306,6 +209,7 @@
         </div>
       </div>
 
+      <!-- Mobile hamburger (hidden on desktop via CSS) -->
       <button class="hamburger" id="menu-toggle" aria-label="Open menu" aria-expanded="false" aria-controls="site-nav">
         <span></span><span></span><span></span>
       </button>
@@ -322,6 +226,7 @@
   </header>
 
   <main>
+
     <div class="welcome container card" role="region" aria-label="Welcome">
       <div class="content">
         <div class="welcome-flex">
@@ -329,10 +234,14 @@
             <img src="assets/maple.png" alt="Red maple leaf icon representing Canada" class="maple-left">
             <img src="assets/trackintruder.png" alt="Track-intruding raccoon — Toronto’s unofficial mascot" class="raccoon-left">
           </div>
+
           <div class="welcome-text">
             <h2>Welcome to TTC Delay Insights: <br> Data today, better commutes tomorrow.</h2>
+
+            <p class="rotate-hint">📱 For the best experience, rotate your phone horizontally.</p>
+
             <p class="lead">
-              Use the <strong>Plan your buffer time</strong> tool below to help you arrive on time at your destination. <br>
+              Use the <strong>Plan your buffer time</strong> tool below to plan your trip and stay ahead of TTC delays. <br>
               Explore the <strong>Toronto Subway: Delay Stats</strong> interactive map to see delay stats for each station. <br>
               Want more? Explore the <a href="overview.html"><strong>Overview</strong></a> for in-depth insights and recommendations, <br>
               check the <a href="delayleaderboard.html"><strong>Delay Leaderboard</strong></a> to see which stations have the most time lost this year, <br>
@@ -347,10 +256,7 @@
     <section class="buffer-card container" aria-label="Plan your buffer time">
       <div class="buffer-content">
         <div class="buffer-header">
-          <div class="buffer-info">
-            <div class="buffer-title">Plan Your Buffer Time</div>
-            <div class="buffer-note">Add these minutes to your trip as a buffer. <br> Based on stats over the last 3 years. </div>
-          </div>
+          <div class="buffer-title">Plan Your Buffer Time</div>
           <div class="buffer-controls">
             <span class="pill" style="display:flex;align-items:center;gap:10px">
               <span class="badge-dot" id="line-dot"></span>
@@ -360,13 +266,10 @@
           </div>
         </div>
         <div id="buffer-rows" class="buffer-rows" role="table" aria-label="Average extra minutes by time of day"></div>
+        <div class="buffer-note">Based on average delays over the last 3 years. Add these minutes to your trip as a buffer.</div>
       </div>
     </section>
-    </section>
 
-<p class="rotate-hint">📱 For the best experience, rotate your phone horizontally.</p>
-
-<div class="hero container">
 
     <div class="hero container">
       <div class="card">
@@ -641,8 +544,8 @@
         stats?.fallback_reason ?? "—";
 
       const topTimeHours =
-        (typeof stats?.time_lost_due_to_top_delay_by_time === "number" ? stats.time_lost_due_to_top_delay_by_time
-          : (typeof stats?.fallback_reason_time === "number" ? stats.fallback_reason_time : undefined));
+        (typeof stats?.time_lost_due_to_top_delay_by_time === "number") ? stats.time_lost_due_to_top_delay_by_time
+          : (typeof stats?.fallback_reason_time === "number") ? stats.fallback_reason_time : undefined;
 
       document.getElementById("st-delays").textContent     = (typeof totalDelays === "number") ? totalDelays : "—";
       document.getElementById("st-time-total").textContent = hoursToHM(totalTimeH);
@@ -868,6 +771,7 @@
       }).catch(e => { console.error(e); });
     }
 
+
     window.addEventListener('resize', () => { if (map) map.invalidateSize(); });
 
     function goToSearchedStation(){
@@ -896,8 +800,11 @@
     }
 
     document.getElementById('station-go').addEventListener('click', goToSearchedStation);
-    document.getElementById('station-search').addEventListener('keydown', (e) => { if (e.key === 'Enter') goToSearchedStation(); });
+    document.getElementById('station-search').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') goToSearchedStation();
+    });
 
+    /* Mobile menu JS */
     (function(){
       const btn = document.getElementById('menu-toggle');
       const nav = document.getElementById('site-nav');
@@ -918,5 +825,6 @@
   </script>
 </body>
 </html>
+
 
 
