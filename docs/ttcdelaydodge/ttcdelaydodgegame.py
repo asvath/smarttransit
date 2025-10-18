@@ -424,6 +424,8 @@ class Hazard:
             pygame.draw.ellipse(surf, (60, 60, 70), (cx - 16, cy - 10, 32, 16))
             pygame.draw.circle(surf, (240, 240, 255), (cx - 7, cy - 3), 4)
             pygame.draw.circle(surf, (240, 240, 255), (cx + 7, cy - 3), 4)
+            pygame.draw.circle(surf, (30, 30, 40), (cx - 7, cy - 3), 1)
+            pygame.draw.circle(surf, (30, 30, 40), (cx + 7, cy - 3), 1)
             pygame.draw.circle(surf, (30, 30, 40), (cx, cy + 2), 2)
             pygame.draw.circle(surf, (120, 120, 120), (cx + 22, cy + 8), 7)
             pygame.draw.line(surf, (60, 60, 70), (cx + 18, cy + 8), (cx + 26, cy + 8), 3)
