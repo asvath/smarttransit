@@ -64,6 +64,7 @@ LEADERBOARD_KEY = "delay_dodge_leaderboard"  # local web fallback
 HIGHSCORE_NAME_FILE = "delay_dodge_highscore_name.txt"
 HIGHSCORE_NAME_KEY = "delay_dodge_highscore_name"
 
+
 def load_highscore_name():
     try:
         if WEB:
@@ -76,6 +77,7 @@ def load_highscore_name():
     except Exception:
         pass
     return ""
+
 
 def save_highscore_name(name):
     try:
@@ -1028,6 +1030,7 @@ class Game:
         elif self.state == "menu":
             self.draw_menu()
         self.draw_overlay()
+
         if self.state == "playing":
             sig = self.font_small.render("Asha Asvathaman", True, COL_TEXT_DIM)
             self.screen.blit(sig, (WIDTH - 12 - sig.get_width(), HEIGHT - 12 - sig.get_height()))
@@ -1038,12 +1041,42 @@ class Game:
                 pygame.quit()
                 sys.exit()
 
+            # Top/bottom half movement: touch
             if WEB and e.type == pygame.FINGERDOWN:
                 if e.y < 0.5:
                     self.train.target_y -= TRAIN_SPEED_Y * 10
                 else:
                     self.train.target_y += TRAIN_SPEED_Y * 10
 
+            # --- MOBILE: tap to close legend, enter game, submit name+start, restart ---
+            if WEB and hasattr(pygame, "FINGERUP") and e.type == pygame.FINGERUP:
+                if self.state in ("menu", "name"):
+                    # If legend is visible, any tap closes it; else proceed
+                    if self.show_legend:
+                        self.show_legend = False
+                        if self.state == "menu":
+                            self.legend_mandatory = False
+                            self.legend_shown_once = True
+                    else:
+                        if self.state == "menu":
+                            if self.player_name.strip():
+                                if self.sounds: self.sounds["start"].play()
+                                self.state = "playing"
+                                self.legend_mandatory = False
+                            else:
+                                if self.sounds: self.sounds["menu"].play()
+                                self.state = "name"
+                        elif self.state == "name":
+                            if self.sounds: self.sounds["start"].play()
+                            if not self.player_name.strip():
+                                self.player_name = "Player"
+                            self.state = "playing"
+                            self.legend_mandatory = False
+                elif self.state == "gameover":
+                    if self.sounds: self.sounds["menu"].play()
+                    self.reset()
+
+            # Mouse: click X to close legend OR top/bottom to move (desktop unchanged)
             if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
                 if self.show_legend and self.legend_close_rect and self.legend_close_rect.collidepoint(e.pos):
                     self.show_legend = False
@@ -1057,6 +1090,7 @@ class Game:
                     else:
                         self.train.target_y += TRAIN_SPEED_Y * 10
 
+            # Keyboard (unchanged)
             if e.type == pygame.KEYDOWN:
                 if e.key == pygame.K_ESCAPE:
                     pygame.quit()
@@ -1120,3 +1154,6 @@ class Game:
 
 if __name__ == "__main__":
     asyncio.run(Game().run())
+
+
+
