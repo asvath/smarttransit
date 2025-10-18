@@ -2,6 +2,12 @@ import math, random, sys, os, array, json, asyncio
 
 import pygame
 
+import json as _json
+try:
+    import urllib.request as _url
+except Exception:
+    _url = None
+
 # ---------- Platform detection (desktop vs web) ----------
 WEB = sys.platform in ("wasi", "emscripten")
 if WEB:
@@ -166,44 +172,56 @@ def _write_leaderboard_desktop(rows):
 
 
 async def _api_get_top():
-    if not (WEB and GLOBAL_API_URL):
-        return None
-    try:
-        resp = await js.fetch(f"{GLOBAL_API_URL}/leaderboard")
-        if not resp.ok:
-            return None
-        txt = await resp.text()
+    # Web: use js.fetch
+    if WEB and GLOBAL_API_URL:
         try:
-            data = json.loads(txt)
-        except Exception:
-            js.console.log("Leaderboard JSON parse failed, got:", txt[:200])
+            resp = await js.fetch(f"{GLOBAL_API_URL}/leaderboard")
+            if not resp.ok:
+                return None
+            return sorted([(d.get("name","Player"), int(d.get("score",0)))
+                           for d in await resp.json()], key=lambda x: x[1], reverse=True)
+        except Exception as e:
+            js.console.log("Leaderboard fetch failed:", str(e))
             return None
-        out = [(d.get("name", "Player"), int(d.get("score", 0))) for d in data]
-        out.sort(key=lambda x: x[1], reverse=True)
-        return out
-    except Exception as e:
-        js.console.log("Leaderboard fetch failed:", str(e))
-        return None
+    # Desktop: use urllib
+    if (not WEB) and GLOBAL_API_URL and _url:
+        try:
+            with _url.urlopen(f"{GLOBAL_API_URL}/leaderboard", timeout=5) as r:
+                data = _json.loads(r.read().decode("utf-8"))
+                return sorted([(d.get("name","Player"), int(d.get("score",0)))
+                               for d in data], key=lambda x: x[1], reverse=True)
+        except Exception:
+            return None
+    return None
 
 
 async def _api_post_score(name, score):
-    if not (WEB and GLOBAL_API_URL):
-        return False
-    try:
-        body = json.dumps({"name": (name or "Player").strip() or "Player", "score": int(score)})
-        resp = await js.fetch(f"{GLOBAL_API_URL}/leaderboard", {
-            "method": "POST",
-            "headers": {"Content-Type": "application/json"},
-            "body": body
-        })
-        if not resp.ok:
-            txt = await resp.text()
-            js.console.log("Leaderboard POST failed:", txt[:200])
+    # Web: js.fetch
+    if WEB and GLOBAL_API_URL:
+        try:
+            resp = await js.fetch(f"{GLOBAL_API_URL}/leaderboard", {
+                "method": "POST",
+                "headers": {"Content-Type": "application/json"},
+                "body": _json.dumps({"name": (name or "Player").strip() or "Player", "score": int(score)})
+            })
+            return bool(resp and resp.ok)
+        except Exception as e:
+            js.console.log("Leaderboard post error:", str(e))
             return False
-        return True
-    except Exception as e:
-        js.console.log("Leaderboard post error:", str(e))
-        return False
+    # Desktop: urllib
+    if (not WEB) and GLOBAL_API_URL and _url:
+        try:
+            req = _url.Request(
+                f"{GLOBAL_API_URL}/leaderboard",
+                data=_json.dumps({"name": (name or "Player").strip() or "Player", "score": int(score)}).encode("utf-8"),
+                headers={"Content-Type": "application/json"},
+                method="POST",
+            )
+            with _url.urlopen(req, timeout=5) as r:
+                return 200 <= r.status < 300
+        except Exception:
+            return False
+    return False
 
 
 
@@ -761,9 +779,8 @@ class Game:
             self.fetching_top = False
 
     async def submit_global_score(self, name, score):
-        if WEB and GLOBAL_API_URL:
-            await _api_post_score(name, score)
-            self.global_top_cache is None  # force refresh later (no-op if unchanged)
+        ok = await _api_post_score(name, score)
+        self.global_top_cache = None
 
     def update(self, dt):
         if self.state != "playing" or self.game_over or self.paused:
@@ -847,7 +864,7 @@ class Game:
                 self.highscore_name = self.player_name or "Player"  # store the display name separately
                 save_highscore_name(self.highscore_name)
                 new_hs = True  # FIX: ensure we mark new high score
-            if WEB and GLOBAL_API_URL:
+            if GLOBAL_API_URL:
                 asyncio.create_task(self.submit_global_score(self.player_name or "Player", score_int))
             else:
                 append_leaderboard_local(self.player_name, score_int)
@@ -1196,7 +1213,7 @@ class Game:
             dt = self.clock.tick(FPS)
             self.handle_events()
             self.update(dt)
-            if WEB and GLOBAL_API_URL and self.state == "name":
+            if GLOBAL_API_URL and self.state == "name":
                 if self.global_top_cache is None and not self.fetching_top:
                     asyncio.create_task(self.maybe_refresh_global_top(force=True))
             self.draw()
