@@ -1207,9 +1207,10 @@ class Game:
             dt = self.clock.tick(FPS)
             self.handle_events()
             self.update(dt)
-            if GLOBAL_API_URL and self.state == "name":
+            if GLOBAL_API_URL and (self.state in ("menu", "name", "gameover")):
                 if self.global_top_cache is None and not self.fetching_top:
                     asyncio.create_task(self.maybe_refresh_global_top(force=True))
+
             self.draw()
             pygame.display.flip()
             await asyncio.sleep(0)
