@@ -121,6 +121,19 @@
         backdrop-filter: blur(4px);
       }
     }
+    /* --- Move Plotly legends below on mobile --- */
+    @media (max-width: 860px) {
+      .js-plotly-plot .legend {
+        position: relative !important;
+        top: auto !important;
+        bottom: -40px !important;
+        transform: none !important;
+        display: flex !important;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+    }
+
   </style>
 </head>
 <body>
@@ -350,6 +363,18 @@
 
       }, 200);
     });
+
+      // Swap interactive HTML charts for static PNGs on mobile
+  if (window.innerWidth <= 860) {
+    document.querySelectorAll("iframe.chartframe").forEach(frame => {
+      const src = frame.getAttribute("src");
+      if (src && src.endsWith(".html")) {
+        frame.outerHTML = `<img src="${src.replace(".html", ".png")}"
+          alt="${frame.title || ''}" class="chartframe" loading="lazy">`;
+      }
+    });
+  }
+
 </script>
 </body>
 </html>
