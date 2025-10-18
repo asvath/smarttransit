@@ -37,7 +37,7 @@
       background:#141417; border:1px solid #2a2a2a; color:#e5e7eb; border-radius:10px; padding:10px 12px; font-size:16px;
     }
 
-    .table-wrap{ overflow:auto; border:1px solid var(--border); border-radius:12px; }
+    .table-wrap{ overflow-x:auto; border:1px solid var(--border); border-radius:12px; }
     table{ width:100%; border-collapse:separate; border-spacing:0; min-width:860px; }
     thead th{
       position:sticky; top:0; background:#111113; border-bottom:1px solid var(--border);
@@ -67,9 +67,39 @@
     footer{ padding:28px 22px; text-align:center; color:#9ca3af; }
     footer a{ font-weight:inherit !important; color:inherit !important; text-decoration:none !important; }
 
+    /* ====== Mobile hamburger ====== */
+    .hamburger{
+      display:none; width:42px; height:42px; border:1px solid var(--border);
+      background:#121214; border-radius:10px; align-items:center; justify-content:center;
+      gap:5px; flex-direction:column; cursor:pointer;
+    }
+    .hamburger span{ width:22px; height:2px; background:#e8eaee; display:block; transition:transform .2s ease, opacity .2s ease; }
+    .hamburger.is-open span:nth-child(1){ transform:translateY(7px) rotate(45deg); }
+    .hamburger.is-open span:nth-child(2){ opacity:0; }
+    .hamburger.is-open span:nth-child(3){ transform:translateY(-7px) rotate(-45deg); }
+
+    @media (max-width: 860px){
+      html, body { overflow-x:hidden; }
+      header .container{ gap:10px; }
+      .hamburger{ display:flex; }
+
+      .nav{
+        position:absolute; top:100%; right:22px; left:22px; background:#101012; border:1px solid var(--border);
+        border-radius:12px; padding:10px; display:none; flex-direction:column; gap:8px; z-index:20; box-shadow:0 8px 24px rgba(0,0,0,.35);
+      }
+      .nav.is-open{ display:flex; }
+      .btn{ width:100%; text-align:center; padding:12px 14px; font-size:16px; }
+
+      /* Keep table scrollable instead of scaling */
+      .table-wrap{
+        overflow-x:auto;
+        -webkit-overflow-scrolling:touch;
+      }
+      table{ min-width:860px; }
+    }
+
     @media (max-width: 640px){
       .container{ padding:18px 22px; }
-      .btn{ padding:16px 22px; font-size:18px; }
       .content{ padding:18px; }
       h1{ font-size:20px; }
       .sub{ font-size:16px; }
@@ -78,21 +108,28 @@
       .rank{ width:96px; font-size:16px; }
       .dots-col{ width:72px; }
       .reason{ font-size:18px; }
-      .table-wrap{ border-radius:10px; -webkit-overflow-scrolling: touch; }
     }
   </style>
 </head>
 <body>
   <header>
-    <div class="container" style="display:flex;align-items:center;justify-content:space-between;">
+    <div class="container" style="display:flex;align-items:center;justify-content:space-between;position:relative;">
       <div class="brand">
         <div class="badge">TTC</div>
         <div>
-          <div style="font-weight:700;font-size:20px;">TTC Delay Insights</div>
+          <a href="index.html" style="font-weight:700;font-size:20px;color:inherit;text-decoration:none;">
+            TTC Delay Insights
+          </a>
           <div class="muted" style="font-size:16px;">Data today, better commutes tomorrow.</div>
         </div>
+
       </div>
-      <div class="nav">
+
+      <button class="hamburger" id="menu-toggle" aria-label="Open menu" aria-expanded="false" aria-controls="site-nav">
+        <span></span><span></span><span></span>
+      </button>
+
+      <div class="nav" id="site-nav">
         <a class="btn" href="index.html">Home</a>
         <a class="btn" href="overview.html">Overview</a>
         <a class="btn primary" href="delayleaderboard.html" aria-current="page">Delay Leaderboard</a>
@@ -226,9 +263,32 @@
       .catch(err => { rowsEl.innerHTML = `<tr><td colspan="7" class="muted">Failed to load data.</td></tr>`; console.warn(err); });
 
     searchEl.addEventListener('input', applyFilters);
+
+    /* Mobile menu JS (same behavior as about.html) */
+    (function(){
+      const btn = document.getElementById('menu-toggle');
+      const nav = document.getElementById('site-nav');
+      if(!btn || !nav) return;
+      const closeMenu = () => {
+        btn.classList.remove('is-open');
+        nav.classList.remove('is-open');
+        btn.setAttribute('aria-expanded','false');
+      };
+      btn.addEventListener('click', () => {
+        const open = nav.classList.toggle('is-open');
+        btn.classList.toggle('is-open', open);
+        btn.setAttribute('aria-expanded', String(open));
+      });
+      nav.addEventListener('click', e => { if(e.target.closest('a')) closeMenu(); });
+      window.addEventListener('resize', () => { if (window.innerWidth > 860) closeMenu(); });
+    })();
   </script>
 </body>
 </html>
+
+
+
+
 
 
 
