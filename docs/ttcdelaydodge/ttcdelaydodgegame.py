@@ -148,20 +148,33 @@ async def _api_get_top():
     url = f"{GLOBAL_API_URL}/leaderboard"
     try:
         if WEB:
-            resp = await js.fetch(url)
+            # Force CORS and avoid any cached opaque responses
+            resp = await js.fetch(
+                url,
+                {"method": "GET", "mode": "cors", "cache": "no-store"}
+            )
             if not resp.ok:
+                # Surface why it failed (shows in browser devtools)
+                txt = await resp.text()
+                js.console.error("Leaderboard GET failed:", resp.status, txt)
                 return None
             data = await resp.json()
         else:
             with _url.urlopen(url, timeout=5) as r:
                 data = _json.loads(r.read().decode("utf-8"))
+
+        # Your worker returns [{name, score, ts}], the ts is harmless.
         return sorted(
             [(d.get("name", "Player"), int(d.get("score", 0))) for d in data],
             key=lambda x: x[1],
             reverse=True,
         )
-    except Exception:
+    except Exception as e:
+        # Visible error for browser and desktop
+        try: js.console.error("Leaderboard GET exception:", str(e))
+        except Exception: pass
         return None
+
 
 
 async def _api_post_score(name, score):
@@ -851,21 +864,25 @@ class Game:
             self.state = "gameover"
             self.announcements.append(Announcement("Service suspended due to delays.", ttl=2600))
             score_int = int(self.on_time_seconds)
-            new_hs = False
-            if score_int > self.highscore:
-                self.highscore = score_int
-                save_highscore(self.highscore)  # keep your existing number-only storage
-                self.highscore_name = self.player_name or "Player"  # store the display name separately
-                save_highscore_name(self.highscore_name)
-                new_hs = True  # FIX: ensure we mark new high score
+
+            # Always submit (so the board stays current even if you didn't hit #1)
             if GLOBAL_API_URL:
                 asyncio.create_task(self.submit_global_score(self.player_name or "Player", score_int))
             else:
                 append_leaderboard_local(self.player_name, score_int)
-            if new_hs:
+
+            # Compare against the cached global top to decide the banner/sound
+            global_best = 0
+            if self.global_top_cache:
+                _, global_best = self.global_top_cache[0]  # (name, score)
+
+            if score_int > global_best:  # if ties should count as a record
                 self.just_got_new_hs = True
                 if self.sounds and "celebrate" in self.sounds:
                     self.sounds["celebrate"].play()
+
+            # Refresh for the next screen
+            asyncio.create_task(self.maybe_refresh_global_top(force=True))
         if self.flash_timer > 0: self.flash_timer -= dt
         for a in self.announcements: a.update(dt)
         self.announcements = [a for a in self.announcements if a.ttl > 0]
