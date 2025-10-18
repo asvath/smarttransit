@@ -655,6 +655,24 @@ class Game:
         self.global_top_last_ms = 0
         self.fetching_top = False
 
+    # ---- MOBILE-ONLY helper: prompt for a name using the browser ----
+    def mobile_prompt_name(self):
+        if not WEB:
+            return False
+        try:
+            default = self.player_name or self.highscore_name or "Player"
+            nm = window.prompt("Enter your name:", default)
+            if nm is None:
+                return False
+            nm = (nm or "").strip()[:18]
+            if nm:
+                self.player_name = nm
+                save_highscore_name(nm)
+                return True
+        except Exception:
+            pass
+        return False
+
     def reset(self):
         hs = self.highscore
         hsname = self.highscore_name
@@ -1041,14 +1059,14 @@ class Game:
                 pygame.quit()
                 sys.exit()
 
-            # Top/bottom half movement: touch
+            # Top/bottom half movement: touch (MOBILE-ONLY tap to move up/down)
             if WEB and e.type == pygame.FINGERDOWN:
                 if e.y < 0.5:
                     self.train.target_y -= TRAIN_SPEED_Y * 10
                 else:
                     self.train.target_y += TRAIN_SPEED_Y * 10
 
-            # --- MOBILE: tap to close legend, enter game, submit name+start, restart ---
+            # --- MOBILE: tap to close legend, enter game, prompt name, start, restart ---
             if WEB and hasattr(pygame, "FINGERUP") and e.type == pygame.FINGERUP:
                 if self.state in ("menu", "name"):
                     # If legend is visible, any tap closes it; else proceed
@@ -1059,16 +1077,23 @@ class Game:
                             self.legend_shown_once = True
                     else:
                         if self.state == "menu":
-                            if self.player_name.strip():
+                            # If no name yet, prompt for it on mobile
+                            if not (self.player_name or "").strip():
+                                self.mobile_prompt_name()
+                            if (self.player_name or "").strip():
                                 if self.sounds: self.sounds["start"].play()
                                 self.state = "playing"
                                 self.legend_mandatory = False
                             else:
                                 if self.sounds: self.sounds["menu"].play()
                                 self.state = "name"
+
                         elif self.state == "name":
+                            # Prompt for name and start
+                            if not (self.player_name or "").strip():
+                                self.mobile_prompt_name()
                             if self.sounds: self.sounds["start"].play()
-                            if not self.player_name.strip():
+                            if not (self.player_name or "").strip():
                                 self.player_name = "Player"
                             self.state = "playing"
                             self.legend_mandatory = False
@@ -1154,6 +1179,7 @@ class Game:
 
 if __name__ == "__main__":
     asyncio.run(Game().run())
+
 
 
 
