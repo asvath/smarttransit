@@ -503,6 +503,7 @@ class Bonus:
     def draw(self, surf):
         r = self.rect
         cup = pygame.Rect(r.x + 3, r.y + 6, r.w - 6, r.h - 10)
+        # FIX: use surf as first arg; rect as second — no get_rect() on pygame.Rect
         draw_rounded_rect(surf, cup, (245, 245, 252), radius=6)
         pygame.draw.rect(surf, (185, 190, 210), (cup.x, cup.bottom - 6, cup.w, 6), border_radius=3)
         pygame.draw.rect(surf, (90, 95, 120), (r.x + 2, r.y + 2, r.w - 4, 7), border_radius=3)
@@ -654,6 +655,12 @@ class Game:
         self.global_top_cache = None  # list[(name, score)] when fetched
         self.global_top_last_ms = 0
         self.fetching_top = False
+
+        # --- MOBILE TAP DETECTION (tap+lift to start/restart) ---
+        # Use normalized finger coords (0..1); 0.02 ~ ~12px on 600px height.
+        self.touch_down = None  # (finger_id, x_norm, y_norm, t_ms)
+        self.TAP_MAX_DIST_NORM = 0.02
+        self.TAP_MAX_MS = 350
 
     # --- MOBILE-ONLY: prompt for name using browser prompt on the name screen ---
     def mobile_prompt_name(self):
@@ -837,7 +844,7 @@ class Game:
                 save_highscore(self.highscore)  # keep your existing number-only storage
                 self.highscore_name = self.player_name or "Player"  # store the display name separately
                 save_highscore_name(self.highscore_name)
-                new_hs = True
+                new_hs = True  # FIX: ensure we mark new high score
             if WEB and GLOBAL_API_URL:
                 asyncio.create_task(self.submit_global_score(self.player_name or "Player", score_int))
             else:
@@ -972,6 +979,12 @@ class Game:
         sub = self.font.render("Press Enter to start   •   K to toggle legend", True, COL_TEXT_DIM)
         below = TRACK_BOTTOM + 24
         self.screen.blit(sub, sub.get_rect(center=(center[0], below)))
+
+        # --- MOBILE MENU INSTRUCTION ---
+        if WEB:
+            mobile_sub = self.font.render("Mobile: Tap to start • Drag to move the train", True, COL_TEXT_DIM)
+            self.screen.blit(mobile_sub, mobile_sub.get_rect(center=(center[0], below + 32)))
+
         sig = self.font_small.render("Asha Asvathaman", True, COL_TEXT_DIM)
         self.screen.blit(sig, (WIDTH - 12 - sig.get_width(), HEIGHT - 12 - sig.get_height()))
         if (self.state == "menu" and (self.legend_mandatory or self.show_legend)):
@@ -992,6 +1005,11 @@ class Game:
             sub = self.font.render("Press R to restart", True, COL_TEXT_DIM)
             self.screen.blit(msg, msg.get_rect(center=(center[0], center[1] - 14)))
             self.screen.blit(sub, sub.get_rect(center=(center[0], center[1] + 24)))
+
+            # --- MOBILE GAME OVER INSTRUCTION ---
+            if WEB:
+                mobile_sub = self.font.render("Mobile: Tap to restart", True, COL_TEXT_DIM)
+                self.screen.blit(mobile_sub, mobile_sub.get_rect(center=(center[0], center[1] + 52)))
 
             if self.just_got_new_hs:
                 t = pygame.time.get_ticks()
@@ -1058,10 +1076,30 @@ class Game:
             if WEB and e.type in (pygame.FINGERDOWN, pygame.FINGERMOTION):
                 self.train.target_y = TRACK_TOP + e.y * (TRACK_BOTTOM - TRACK_TOP)
 
+            # --- MOBILE: record touch down for tap detection ---
+            if WEB and hasattr(pygame, "FINGERDOWN") and e.type == pygame.FINGERDOWN:
+                self.touch_down = (getattr(e, "finger_id", 0), e.x, e.y, pygame.time.get_ticks())
+
             # --- MOBILE: tap to close legend, enter game, submit name+start, restart ---
             if WEB and hasattr(pygame, "FINGERUP") and e.type == pygame.FINGERUP:
+                is_tap = False
+                if self.touch_down is not None:
+                    fid0, x0, y0, t0 = self.touch_down
+                    dt = pygame.time.get_ticks() - t0
+                    dx = e.x - x0
+                    dy = e.y - y0
+                    dist = math.hypot(dx, dy)
+                    if dist <= self.TAP_MAX_DIST_NORM and dt <= self.TAP_MAX_MS:
+                        is_tap = True
+                # Reset touch_down regardless
+                self.touch_down = None
+
+                if not is_tap:
+                    # Drag/swipe: ignore any state changes
+                    continue
+
                 if self.state in ("menu", "name"):
-                    # If legend is visible, any tap closes it; else proceed
+                    # If legend is visible, a tap closes it; else proceed
                     if self.show_legend:
                         self.show_legend = False
                         if self.state == "menu":
@@ -1166,6 +1204,8 @@ class Game:
 
 if __name__ == "__main__":
     asyncio.run(Game().run())
+
+
 
 
 
