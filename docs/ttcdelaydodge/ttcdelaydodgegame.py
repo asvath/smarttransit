@@ -655,23 +655,18 @@ class Game:
         self.global_top_last_ms = 0
         self.fetching_top = False
 
-    # ---- MOBILE-ONLY helper: prompt for a name using the browser ----
+    # --- MOBILE-ONLY: prompt for name using browser prompt on the name screen ---
     def mobile_prompt_name(self):
         if not WEB:
-            return False
+            return
         try:
             default = self.player_name or self.highscore_name or "Player"
             nm = window.prompt("Enter your name:", default)
-            if nm is None:
-                return False
-            nm = (nm or "").strip()[:18]
             if nm:
-                self.player_name = nm
-                save_highscore_name(nm)
-                return True
+                self.player_name = nm.strip()[:18]
+                save_highscore_name(self.player_name)
         except Exception:
             pass
-        return False
 
     def reset(self):
         hs = self.highscore
@@ -759,7 +754,7 @@ class Game:
     async def submit_global_score(self, name, score):
         if WEB and GLOBAL_API_URL:
             await _api_post_score(name, score)
-            self.global_top_cache = None  # force refresh later
+            self.global_top_cache is None  # force refresh later (no-op if unchanged)
 
     def update(self, dt):
         if self.state != "playing" or self.game_over or self.paused:
@@ -1059,14 +1054,11 @@ class Game:
                 pygame.quit()
                 sys.exit()
 
-            # Top/bottom half movement: touch (MOBILE-ONLY tap to move up/down)
-            if WEB and e.type == pygame.FINGERDOWN:
-                if e.y < 0.5:
-                    self.train.target_y -= TRAIN_SPEED_Y * 10
-                else:
-                    self.train.target_y += TRAIN_SPEED_Y * 10
+            # --- MOBILE: smooth vertical control (tap or drag anywhere on screen) ---
+            if WEB and e.type in (pygame.FINGERDOWN, pygame.FINGERMOTION):
+                self.train.target_y = TRACK_TOP + e.y * (TRACK_BOTTOM - TRACK_TOP)
 
-            # --- MOBILE: tap to close legend, enter game, prompt name, start, restart ---
+            # --- MOBILE: tap to close legend, enter game, submit name+start, restart ---
             if WEB and hasattr(pygame, "FINGERUP") and e.type == pygame.FINGERUP:
                 if self.state in ("menu", "name"):
                     # If legend is visible, any tap closes it; else proceed
@@ -1077,23 +1069,18 @@ class Game:
                             self.legend_shown_once = True
                     else:
                         if self.state == "menu":
-                            # If no name yet, prompt for it on mobile
-                            if not (self.player_name or "").strip():
-                                self.mobile_prompt_name()
-                            if (self.player_name or "").strip():
+                            if self.player_name.strip():
                                 if self.sounds: self.sounds["start"].play()
                                 self.state = "playing"
                                 self.legend_mandatory = False
                             else:
                                 if self.sounds: self.sounds["menu"].play()
                                 self.state = "name"
-
                         elif self.state == "name":
-                            # Prompt for name and start
-                            if not (self.player_name or "").strip():
-                                self.mobile_prompt_name()
+                            # --- MOBILE-ONLY: browser prompt for name before starting ---
+                            self.mobile_prompt_name()
                             if self.sounds: self.sounds["start"].play()
-                            if not (self.player_name or "").strip():
+                            if not self.player_name.strip():
                                 self.player_name = "Player"
                             self.state = "playing"
                             self.legend_mandatory = False
