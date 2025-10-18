@@ -679,9 +679,20 @@ class Game:
 
         self.just_got_new_hs = False
 
-        self.global_top_cache = None  # list[(name, score)] when fetched
+        self.global_top_cache = []
         self.global_top_last_ms = 0
         self.fetching_top = False
+
+        if GLOBAL_API_URL and WEB:
+            try:
+                top = asyncio.get_event_loop().run_until_complete(_api_get_top())
+                if top:
+                    self.global_top_cache = top[:20]
+                    top_nm, top_sc = self.global_top_cache[0]
+                    self.highscore = int(top_sc)
+                    self.highscore_name = top_nm
+            except Exception:
+                pass
 
         # --- MOBILE TAP DETECTION (tap+lift to start/restart) ---
         # Use normalized finger coords (0..1); 0.02 ~ ~12px on 600px height.
@@ -880,6 +891,11 @@ class Game:
                 self.just_got_new_hs = True
                 if self.sounds and "celebrate" in self.sounds:
                     self.sounds["celebrate"].play()
+
+            self.highscore = score_int
+            self.highscore_name = self.player_name or "Player"
+            save_highscore(self.highscore)
+            save_highscore_name(self.highscore_name)
 
             # Refresh for the next screen
             asyncio.create_task(self.maybe_refresh_global_top(force=True))
