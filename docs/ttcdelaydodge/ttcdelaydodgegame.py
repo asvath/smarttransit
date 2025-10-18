@@ -143,18 +143,66 @@ def save_highscore(score):
 
 
 # ---------- Leaderboard (global via API if configured, else local fallback) ----------
+async def _api_get_top():
+    """Return top leaderboard entries."""
+    url = f"{GLOBAL_API_URL}/leaderboard"
+    try:
+        if WEB:
+            resp = await js.fetch(url)
+            if not resp.ok:
+                return None
+            data = await resp.json()
+        else:
+            with _url.urlopen(url, timeout=5) as r:
+                data = _json.loads(r.read().decode("utf-8"))
+        return sorted(
+            [(d.get("name", "Player"), int(d.get("score", 0))) for d in data],
+            key=lambda x: x[1],
+            reverse=True,
+        )
+    except Exception:
+        return None
+
+
+async def _api_post_score(name, score):
+    """Submit one score."""
+    url = f"{GLOBAL_API_URL}/leaderboard"
+    payload = {"name": (name or "Player").strip() or "Player", "score": int(score)}
+    try:
+        if WEB:
+            resp = await js.fetch(
+                url,
+                {
+                    "method": "POST",
+                    "headers": js.Object.fromEntries([["Content-Type", "application/json"]]),
+                    "body": _json.dumps(payload),
+                },
+            )
+            return bool(resp and resp.ok)
+        else:
+            data = _json.dumps(payload).encode("utf-8")
+            req = _url.Request(url, data=data, headers={"Content-Type": "application/json"}, method="POST")
+            with _url.urlopen(req, timeout=5) as r:
+                return 200 <= r.status < 300
+    except Exception:
+        return False
+
+# --- Minimal desktop fallback for local leaderboard (CSV file) ---
 def _read_leaderboard_desktop():
     rows = []
     try:
         if os.path.exists(LEADERBOARD_FILE):
             with open(LEADERBOARD_FILE, "r", encoding="utf-8") as f:
                 for line in f:
-                    parts = line.strip().rsplit(",", 1)
-                    if len(parts) == 2:
-                        nm, sc = parts[0], parts[1]
+                    line = line.strip()
+                    if not line:
+                        continue
+                    # name,score
+                    if "," in line:
+                        name, score_s = line.split(",", 1)
                         try:
-                            rows.append((nm, int(sc)))
-                        except:
+                            rows.append((name, int(float(score_s))))
+                        except Exception:
                             pass
     except Exception:
         pass
@@ -162,67 +210,13 @@ def _read_leaderboard_desktop():
 
 
 def _write_leaderboard_desktop(rows):
+    # rows: list[(name, score)]
     try:
         with open(LEADERBOARD_FILE, "w", encoding="utf-8") as f:
-            for nm, sc in rows:
-                safe = nm.replace(",", " ")
-                f.write(f"{safe},{int(sc)}\n")
+            for name, score in rows:
+                f.write(f"{name},{int(score)}\n")
     except Exception:
         pass
-
-
-async def _api_get_top():
-    # Web: use js.fetch
-    if WEB and GLOBAL_API_URL:
-        try:
-            resp = await js.fetch(f"{GLOBAL_API_URL}/leaderboard")
-            if not resp.ok:
-                return None
-            return sorted([(d.get("name","Player"), int(d.get("score",0)))
-                           for d in await resp.json()], key=lambda x: x[1], reverse=True)
-        except Exception as e:
-            js.console.log("Leaderboard fetch failed:", str(e))
-            return None
-    # Desktop: use urllib
-    if (not WEB) and GLOBAL_API_URL and _url:
-        try:
-            with _url.urlopen(f"{GLOBAL_API_URL}/leaderboard", timeout=5) as r:
-                data = _json.loads(r.read().decode("utf-8"))
-                return sorted([(d.get("name","Player"), int(d.get("score",0)))
-                               for d in data], key=lambda x: x[1], reverse=True)
-        except Exception:
-            return None
-    return None
-
-
-async def _api_post_score(name, score):
-    # Web: js.fetch
-    if WEB and GLOBAL_API_URL:
-        try:
-            resp = await js.fetch(f"{GLOBAL_API_URL}/leaderboard", {
-                "method": "POST",
-                "headers": {"Content-Type": "application/json"},
-                "body": _json.dumps({"name": (name or "Player").strip() or "Player", "score": int(score)})
-            })
-            return bool(resp and resp.ok)
-        except Exception as e:
-            js.console.log("Leaderboard post error:", str(e))
-            return False
-    # Desktop: urllib
-    if (not WEB) and GLOBAL_API_URL and _url:
-        try:
-            req = _url.Request(
-                f"{GLOBAL_API_URL}/leaderboard",
-                data=_json.dumps({"name": (name or "Player").strip() or "Player", "score": int(score)}).encode("utf-8"),
-                headers={"Content-Type": "application/json"},
-                method="POST",
-            )
-            with _url.urlopen(req, timeout=5) as r:
-                return 200 <= r.status < 300
-        except Exception:
-            return False
-    return False
-
 
 
 def append_leaderboard_local(name, score):
@@ -760,7 +754,7 @@ class Game:
         self.announcements.append(Announcement("+10 Jamaican Patty!", ttl=1600))
 
     async def maybe_refresh_global_top(self, force=False):
-        if not (WEB and GLOBAL_API_URL):
+        if not GLOBAL_API_URL:
             return
         if self.fetching_top:
             return
@@ -895,7 +889,7 @@ class Game:
 
         # High score with name: prefer GLOBAL if available; else local
         disp_score, disp_name = self.highscore, getattr(self, "highscore_name", "")
-        if WEB and GLOBAL_API_URL and self.global_top_cache:
+        if GLOBAL_API_URL and self.global_top_cache:
             top_nm, top_sc = self.global_top_cache[0]
             disp_score, disp_name = int(top_sc), top_nm
 
@@ -957,7 +951,7 @@ class Game:
         self.screen.blit(box, (center[0] - box_w // 2, center[1] - 46))
 
         top = []
-        if WEB and GLOBAL_API_URL and self.global_top_cache is not None:
+        if GLOBAL_API_URL and self.global_top_cache is not None:
             top = self.global_top_cache[:5]
             header = "Global Top Scores"
         else:
