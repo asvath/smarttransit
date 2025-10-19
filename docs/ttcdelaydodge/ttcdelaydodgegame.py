@@ -159,8 +159,9 @@ async def _api_get_top():
                 return None
 
             # Properly convert JS object to Python dict/list
-            data_js = await resp.json()
-            data = json.loads(json.dumps(data_js.to_py()))
+            data = await resp.json()
+            if hasattr(data, "to_py"):  # older runtimes
+                data = data.to_py()
 
         else:
             with _url.urlopen(url, timeout=5) as r:
@@ -182,10 +183,7 @@ async def _api_get_top():
         return None
 
 
-
-
 async def _api_post_score(name, score):
-    """Submit one score."""
     url = f"{GLOBAL_API_URL}/leaderboard"
     payload = {"name": (name or "Player").strip() or "Player", "score": int(score)}
     try:
@@ -194,7 +192,7 @@ async def _api_post_score(name, score):
                 url,
                 {
                     "method": "POST",
-                    "headers": js.Object.fromEntries([["Content-Type", "application/json"]]),
+                    "headers": {"Content-Type": "application/json"},
                     "body": _json.dumps(payload),
                 },
             )
@@ -206,6 +204,8 @@ async def _api_post_score(name, score):
                 return 200 <= r.status < 300
     except Exception:
         return False
+
+
 
 # --- Minimal desktop fallback for local leaderboard (CSV file) ---
 def _read_leaderboard_desktop():
