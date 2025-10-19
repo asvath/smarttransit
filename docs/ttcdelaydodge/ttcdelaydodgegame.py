@@ -679,7 +679,7 @@ class Game:
 
         self.just_got_new_hs = False
 
-        self.global_top_cache = 123
+        self.global_top_cache = None
         self.global_top_last_ms = 0
         self.fetching_top = False
 
