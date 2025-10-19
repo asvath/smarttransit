@@ -160,7 +160,7 @@ async def _api_get_top():
 
             # Properly convert JS object to Python dict/list
             data_js = await resp.json()
-            data = data_js.to_py()
+            data = json.loads(json.dumps(data_js.to_py()))
 
         else:
             with _url.urlopen(url, timeout=5) as r:
