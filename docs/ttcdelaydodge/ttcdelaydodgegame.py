@@ -154,11 +154,14 @@ async def _api_get_top():
                 {"method": "GET", "mode": "cors", "cache": "no-store"}
             )
             if not resp.ok:
-                # Surface why it failed (shows in browser devtools)
                 txt = await resp.text()
                 js.console.error("Leaderboard GET failed:", resp.status, txt)
                 return None
-            data = await resp.json()
+
+            # Properly convert JS object to Python dict/list
+            data_js = await resp.json()
+            data = data_js.to_py()
+
         else:
             with _url.urlopen(url, timeout=5) as r:
                 data = _json.loads(r.read().decode("utf-8"))
@@ -169,11 +172,15 @@ async def _api_get_top():
             key=lambda x: x[1],
             reverse=True,
         )
+
     except Exception as e:
         # Visible error for browser and desktop
-        try: js.console.error("Leaderboard GET exception:", str(e))
-        except Exception: pass
+        try:
+            js.console.error("Leaderboard GET exception:", str(e))
+        except Exception:
+            print("Leaderboard GET exception:", e)
         return None
+
 
 
 
