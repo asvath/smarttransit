@@ -679,20 +679,9 @@ class Game:
 
         self.just_got_new_hs = False
 
-        self.global_top_cache = []
+        self.global_top_cache = None
         self.global_top_last_ms = 0
         self.fetching_top = False
-
-        if GLOBAL_API_URL and WEB:
-            try:
-                top = asyncio.get_event_loop().run_until_complete(_api_get_top())
-                if top:
-                    self.global_top_cache = top[:20]
-                    top_nm, top_sc = self.global_top_cache[0]
-                    self.highscore = int(top_sc)
-                    self.highscore_name = top_nm
-            except Exception:
-                pass
 
         # --- MOBILE TAP DETECTION (tap+lift to start/restart) ---
         # Use normalized finger coords (0..1); 0.02 ~ ~12px on 600px height.
@@ -778,21 +767,25 @@ class Game:
         self.announcements.append(Announcement("+10 Jamaican Patty!", ttl=1600))
 
     async def maybe_refresh_global_top(self, force=False):
-        if not GLOBAL_API_URL:
+        now = pygame.time.get_ticks()
+        if not force and (now - self.global_top_last_ms) < 5000:
             return
         if self.fetching_top:
             return
 
-        now = pygame.time.get_ticks()
-        if not force and self.global_top_cache is not None and (now - self.global_top_last_ms) <= 8000:
-            return
-
         self.fetching_top = True
         try:
-            top = await _api_get_top()
+            top = await _api_get_top()  # <-- await, no run_until_complete
             if top is not None:
                 self.global_top_cache = top[:20]
                 self.global_top_last_ms = now
+                if self.global_top_cache:  # mirror #1 into fallback for HUD
+                    top_nm, top_sc = self.global_top_cache[0]
+                    self.highscore = int(top_sc)
+                    self.highscore_name = top_nm
+            else:
+                # keep None so the run loop can retry
+                self.global_top_cache = None
         finally:
             self.fetching_top = False
 
