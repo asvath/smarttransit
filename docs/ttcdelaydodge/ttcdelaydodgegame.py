@@ -1229,6 +1229,13 @@ class Game:
                         self.reset()
 
     async def run(self):
+        if GLOBAL_API_URL:
+            try:
+                print("Fetching global leaderboard...")
+                await self.maybe_refresh_global_top(force=True)
+                print("Global leaderboard fetched!")
+            except Exception as e:
+                print("Initial leaderboard fetch failed:", e)
         while True:
             dt = self.clock.tick(FPS)
             self.handle_events()
