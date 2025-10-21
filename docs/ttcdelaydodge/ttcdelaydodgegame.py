@@ -188,7 +188,6 @@ async def _api_get_top():
             except Exception as e:
                 js.console.error("LB GET json() failed:", str(e))
                 return None
-
         else:
             import json as _pyjson
             with _url.urlopen(url, timeout=5) as r:
