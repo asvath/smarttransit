@@ -153,7 +153,17 @@ async def _api_get_top():
     url = f"{GLOBAL_API_URL}/leaderboard"
     try:
         if WEB:
-            opts = to_js({"method": "GET", "mode": "cors", "cache": "no-store"})
+            # --- cache-bust + real JS options object ---
+            import time as _t
+            url = f"{url}?ts={int(_t.time()*1000)}"
+
+            opts = _js_obj({
+                "method": "GET",
+                "mode": "cors",
+                "cache": "no-store",
+                "credentials": "omit"
+            })
+
             resp = await js.fetch(url, opts)
             if not resp.ok:
                 txt = await resp.text()
@@ -171,13 +181,13 @@ async def _api_get_top():
             reverse=True,
         )
         return top[:20]
-
     except Exception as e:
         if WEB:
             js.console.error("Leaderboard GET exception:", str(e))
         else:
             print("Leaderboard GET exception:", e)
         return None
+
 
 
 async def _api_post_score(name, score):
