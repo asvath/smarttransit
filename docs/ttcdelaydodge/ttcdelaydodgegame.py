@@ -648,9 +648,11 @@ class Announcement:
 
 class Game:
     def __init__(self):
+        print("Initializing Game object...")
         pygame.init()
         pygame.display.set_caption("TTC Delay Dodge")
         self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
+        print(f"Screen created: {self.screen.get_size()}")
         self.clock = pygame.time.Clock()
         self.font = pygame.font.SysFont("Inter,Helvetica,Arial", 22)
         self.font_small = pygame.font.SysFont("Inter,Helvetica,Arial", 18)
@@ -1283,7 +1285,17 @@ class Game:
 
 
 if __name__ == "__main__":
-    asyncio.run(Game().run())
+    print("=== STARTING TTC DELAY DODGE ===")
+    print(f"Platform: {sys.platform}")
+    print(f"WEB mode: {WEB}")
+    try:
+        game = Game()
+        print("Game object created successfully")
+        asyncio.run(game.run())
+    except Exception as e:
+        print(f"FATAL ERROR: {e}")
+        import traceback
+        traceback.print_exc()
 
 
 
