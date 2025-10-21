@@ -150,45 +150,52 @@ def _js_obj(py_dict):
 
 async def _api_get_top():
     """Return top leaderboard entries (safe for both desktop & web)."""
-    url = f"{GLOBAL_API_URL}/leaderboard"
+    base = (GLOBAL_API_URL or "").rstrip("/")  # avoid //leaderboard
+    url = f"{base}/leaderboard"
     try:
         if WEB:
-            # --- cache-bust + real JS options object ---
             import time as _t
-            url = f"{url}?ts={int(_t.time()*1000)}"
+            fetch_url = f"{url}?ts={int(_t.time()*1000)}"  # cache-bust
 
             opts = _js_obj({
                 "method": "GET",
                 "mode": "cors",
                 "cache": "no-store",
-                "credentials": "omit"
+                "credentials": "omit",
             })
 
-            resp = await js.fetch(url, opts)
-            if not resp.ok:
-                txt = await resp.text()
-                js.console.error("Leaderboard GET failed:", resp.status, txt)
+            js.console.log("LB GET url:", fetch_url)
+            js.console.log("LB GET opts:", opts)
+
+            resp = await js.fetch(fetch_url, opts)
+            js.console.log("LB GET status:", getattr(resp, "status", None))
+
+            if not resp or not getattr(resp, "ok", False):
+                txt = await resp.text().catch(lambda *_: "")
+                js.console.error("Leaderboard GET failed:", getattr(resp, "status", None), txt)
                 return None
 
             data = await resp.json()
-        else:
-            with _url.urlopen(url, timeout=5) as r:
-                data = json.loads(r.read().decode("utf-8"))
 
-        top = sorted(
-            [(d.get("name", "Player"), int(d.get("score", 0))) for d in data],
-            key=lambda x: x[1],
-            reverse=True,
-        )
-        return top[:20]
+        else:
+            import json as _pyjson
+            with _url.urlopen(url, timeout=5) as r:
+                data = _pyjson.loads(r.read().decode("utf-8"))
+
+        # Normalize + sort
+        items = [
+            (d.get("name", "Player"), int(d.get("score", 0)))
+            for d in (data or [])
+        ]
+        items.sort(key=lambda x: x[1], reverse=True)
+        return items[:20]
+
     except Exception as e:
         if WEB:
             js.console.error("Leaderboard GET exception:", str(e))
         else:
             print("Leaderboard GET exception:", e)
         return None
-
-
 
 async def _api_post_score(name, score):
     """Submit a score to the global leaderboard."""
