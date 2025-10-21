@@ -15,7 +15,7 @@ if WEB:
     import js
 
 # ---------- Global leaderboard API ----------
-GLOBAL_API_URL = "https://leaderboard-api.ashaasvathaman.workers.dev"
+GLOBAL_API_URL = "https://ttcdelayinsights.ca/api"
 
 WIDTH, HEIGHT = 960, 600
 FPS = 60
