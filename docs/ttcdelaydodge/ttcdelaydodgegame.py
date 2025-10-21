@@ -155,7 +155,7 @@ async def _api_get_top():
     try:
         if WEB:
             import time as _t
-            fetch_url = f"{url}?ts={int(_t.time()*1000)}"  # cache-bust
+            fetch_url = f"{url}?ts={int(_t.time() * 1000)}"  # cache-bust
 
             opts = _js_obj({
                 "method": "GET",
@@ -167,15 +167,27 @@ async def _api_get_top():
             js.console.log("LB GET url:", fetch_url)
             js.console.log("LB GET opts:", opts)
 
-            resp = await js.fetch(fetch_url, opts)
-            js.console.log("LB GET status:", getattr(resp, "status", None))
+            try:
+                resp = await js.fetch(fetch_url, opts)
+                js.console.log("LB GET status:", getattr(resp, "status", None))
+            except Exception as e:
+                js.console.error("LB GET fetch threw:", str(e))
+                return None
 
             if not resp or not getattr(resp, "ok", False):
-                txt = await resp.text().catch(lambda *_: "")
+                txt = ""
+                try:
+                    txt = await resp.text()
+                except Exception:
+                    pass
                 js.console.error("Leaderboard GET failed:", getattr(resp, "status", None), txt)
                 return None
 
-            data = await resp.json()
+            try:
+                data = await resp.json()
+            except Exception as e:
+                js.console.error("LB GET json() failed:", str(e))
+                return None
 
         else:
             import json as _pyjson
@@ -196,6 +208,7 @@ async def _api_get_top():
         else:
             print("Leaderboard GET exception:", e)
         return None
+
 
 async def _api_post_score(name, score):
     """Submit a score to the global leaderboard."""
