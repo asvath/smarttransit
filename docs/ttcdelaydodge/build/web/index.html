@@ -242,7 +242,7 @@ config = {
     archive : "ttcdelaydodge",
     gui_debug : 3,
     cdn : "https://pygame-web.github.io/archives/0.9/",
-    autorun : 1,
+    autorun : 0,
     PYBUILD : "3.12"
 }
 
@@ -390,17 +390,21 @@ height="1px"
 
             <div id="info" class="trinfo"></div>
 
-<iframe id="iframe" class="framed" name="iframe"
-        width="470px" height="90%"
-        allowtransparency="true"
-        style="z-index:10;background:#FFFFFF;"
-        frameborder="1"
-        sandbox="allow-same-origin allow-top-navigation allow-scripts allow-pointer-lock"
-        allow="autoplay; fullscreen"
-        src="https://pygame-web.github.io/archives/0.9/empty.html"
-        scrolling="yes">
-</iframe>
-
+            <iframe id="iframe" class="framed" name="iframe"
+width="470px" height="90%"
+allowtransparency="true"
+style="z-index: 10;"
+style="background: #FFFFFF;"
+frameborder="1"
+                allowfullscreen="true"
+                webkitallowfullscreen="true"
+                msallowfullscreen="true"
+                mozallowfullscreen="true"
+                sandbox="allow-same-origin allow-top-navigation allow-scripts allow-pointer-lock"
+                allow="autoplay; fullscreen *; geolocation; microphone; camera; midi; monetization; xr-spatial-tracking; gamepad; gyroscope; accelerometer; xr; cross-origin-isolated"
+                src="https://pygame-web.github.io/archives/0.9/empty.html"
+                scrolling="yes">
+            </iframe>
         </div>
 
     </div>
@@ -480,36 +484,6 @@ height="1px"
     }
 
     </script>
-<div id="tap-to-start"
-     style="position:fixed;inset:0;display:grid;place-items:center;
-            background:#0b0e17;color:#e6ebff;font:16px/1.4 system-ui;z-index:9999;">
-  Tap to start
-</div>
-<script>
-  function unlockAudio() {
-    // Try to satisfy autoplay policies on all engines
-    try {
-      // WebAudio resume
-      if (window.AudioContext || window.webkitAudioContext) {
-        const AC = window.AudioContext || window.webkitAudioContext;
-        const ctx = new AC();
-        if (ctx.state === "suspended") ctx.resume();
-      }
-      // Fallback: play a muted audio once
-      const a = document.createElement("audio");
-      a.muted = true; a.src = ""; // empty is fine; ensures a.play() call
-      a.play().catch(()=>{});
-    } catch(e) {}
-    // Remove overlay
-    const el = document.getElementById('tap-to-start');
-    if (el) el.remove();
-    window.removeEventListener('pointerdown', unlockAudio);
-  }
-  window.addEventListener('pointerdown', unlockAudio, { once:true });
-</script>
-<script>
-  // Also unlock if the user clicks the game canvas directly
-  document.getElementById('canvas')?.addEventListener('pointerdown', unlockAudio, { once:true });
-</script>
+
 </body>
 </html>

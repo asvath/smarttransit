@@ -149,11 +149,11 @@ def _js_obj(py_dict):
 
 
 async def _api_get_top():
-    """Return top leaderboard entries."""
+    """Return top leaderboard entries (safe for both desktop & web)."""
     url = f"{GLOBAL_API_URL}/leaderboard"
     try:
         if WEB:
-            opts = _js_obj({"method": "GET", "mode": "cors", "cache": "no-store"})
+            opts = to_js({"method": "GET", "mode": "cors", "cache": "no-store"})
             resp = await js.fetch(url, opts)
             if not resp.ok:
                 txt = await resp.text()
@@ -161,58 +161,55 @@ async def _api_get_top():
                 return None
 
             data = await resp.json()
-            if hasattr(data, "to_py"):
-                data = data.to_py()
-
-            # Optional: handle dict-wrapped payloads
-            if isinstance(data, dict):
-                for k in ("result", "data", "items"):
-                    if k in data and isinstance(data[k], list):
-                        data = data[k]
-                        break
         else:
-            import urllib.request as _url
             with _url.urlopen(url, timeout=5) as r:
-                data = _json.loads(r.read().decode("utf-8"))
+                data = json.loads(r.read().decode("utf-8"))
 
-        return sorted(
+        top = sorted(
             [(d.get("name", "Player"), int(d.get("score", 0))) for d in data],
             key=lambda x: x[1],
             reverse=True,
         )
+        return top[:20]
 
     except Exception as e:
-        try:
+        if WEB:
             js.console.error("Leaderboard GET exception:", str(e))
-        except Exception:
+        else:
             print("Leaderboard GET exception:", e)
         return None
 
 
 async def _api_post_score(name, score):
-    """Submit one score. Returns True on 2xx, else False."""
+    """Submit a score to the global leaderboard."""
     url = f"{GLOBAL_API_URL}/leaderboard"
     payload = {"name": (name or "Player").strip() or "Player", "score": int(score)}
     try:
         if WEB:
-            opts = _js_obj({
-                "method": "POST",
-                "headers": {"Content-Type": "application/json"},
-                "body": _json.dumps(payload),
-            })
+            js.window.tempPostBody = json.dumps(payload)
+            fetch_code = """
+            (function() {
+                return {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: window.tempPostBody
+                };
+            })()
+            """
+            opts = js.eval(fetch_code)
             resp = await js.fetch(url, opts)
+            del js.window.tempPostBody
             return bool(resp and resp.ok)
         else:
-            import urllib.request as _url
-            data = _json.dumps(payload).encode("utf-8")
+            data = json.dumps(payload).encode("utf-8")
             req = _url.Request(url, data=data, headers={"Content-Type": "application/json"}, method="POST")
             with _url.urlopen(req, timeout=5) as r:
-                return 200 <= getattr(r, "status", 0) < 300
+                return 200 <= r.status < 300
     except Exception as e:
-        try:
-            js.console.error("Leaderboard POST exception:", str(e))
-        except Exception:
-            print("Leaderboard POST exception:", e)
+        if WEB:
+            js.console.error("POST score exception:", str(e))
+        else:
+            print("POST score exception:", e)
         return False
 
 
@@ -793,7 +790,7 @@ class Game:
 
         self.fetching_top = True
         try:
-            top = await _api_get_top()  # <-- await, no run_until_complete
+            top = await _api_get_top()  # await, no run_until_complete
             if top is not None:
                 self.global_top_cache = top[:20]
                 self.global_top_last_ms = now
