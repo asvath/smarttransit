@@ -143,31 +143,38 @@ def save_highscore(score):
 
 
 # ---------- Leaderboard (global via API if configured, else local fallback) ----------
+def _js_obj(py_dict):
+    """Convert a Python dict into a real JavaScript object."""
+    return window.JSON.parse(_json.dumps(py_dict))
+
+
 async def _api_get_top():
     """Return top leaderboard entries."""
     url = f"{GLOBAL_API_URL}/leaderboard"
     try:
         if WEB:
-            # Force CORS and avoid any cached opaque responses
-            resp = await js.fetch(
-                url,
-                {"method": "GET", "mode": "cors", "cache": "no-store"}
-            )
+            opts = _js_obj({"method": "GET", "mode": "cors", "cache": "no-store"})
+            resp = await js.fetch(url, opts)
             if not resp.ok:
                 txt = await resp.text()
                 js.console.error("Leaderboard GET failed:", resp.status, txt)
                 return None
 
-            # Properly convert JS object to Python dict/list
             data = await resp.json()
-            if hasattr(data, "to_py"):  # older runtimes
+            if hasattr(data, "to_py"):
                 data = data.to_py()
 
+            # Optional: handle dict-wrapped payloads
+            if isinstance(data, dict):
+                for k in ("result", "data", "items"):
+                    if k in data and isinstance(data[k], list):
+                        data = data[k]
+                        break
         else:
+            import urllib.request as _url
             with _url.urlopen(url, timeout=5) as r:
                 data = _json.loads(r.read().decode("utf-8"))
 
-        # Your worker returns [{name, score, ts}], the ts is harmless.
         return sorted(
             [(d.get("name", "Player"), int(d.get("score", 0))) for d in data],
             key=lambda x: x[1],
@@ -175,7 +182,6 @@ async def _api_get_top():
         )
 
     except Exception as e:
-        # Visible error for browser and desktop
         try:
             js.console.error("Leaderboard GET exception:", str(e))
         except Exception:
@@ -184,27 +190,30 @@ async def _api_get_top():
 
 
 async def _api_post_score(name, score):
+    """Submit one score. Returns True on 2xx, else False."""
     url = f"{GLOBAL_API_URL}/leaderboard"
     payload = {"name": (name or "Player").strip() or "Player", "score": int(score)}
     try:
         if WEB:
-            resp = await js.fetch(
-                url,
-                {
-                    "method": "POST",
-                    "headers": {"Content-Type": "application/json"},
-                    "body": _json.dumps(payload),
-                },
-            )
+            opts = _js_obj({
+                "method": "POST",
+                "headers": {"Content-Type": "application/json"},
+                "body": _json.dumps(payload),
+            })
+            resp = await js.fetch(url, opts)
             return bool(resp and resp.ok)
         else:
+            import urllib.request as _url
             data = _json.dumps(payload).encode("utf-8")
             req = _url.Request(url, data=data, headers={"Content-Type": "application/json"}, method="POST")
             with _url.urlopen(req, timeout=5) as r:
-                return 200 <= r.status < 300
-    except Exception:
+                return 200 <= getattr(r, "status", 0) < 300
+    except Exception as e:
+        try:
+            js.console.error("Leaderboard POST exception:", str(e))
+        except Exception:
+            print("Leaderboard POST exception:", e)
         return False
-
 
 
 # --- Minimal desktop fallback for local leaderboard (CSV file) ---
