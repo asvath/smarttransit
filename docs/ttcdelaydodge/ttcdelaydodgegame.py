@@ -15,6 +15,7 @@ if WEB:
     import js
 
 # ---------- Global leaderboard API ----------
+# for new build
 GLOBAL_API_URL = "https://ttcdelayinsights.ca/api"
 
 WIDTH, HEIGHT = 960, 600
