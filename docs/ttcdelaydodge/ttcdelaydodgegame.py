@@ -1094,32 +1094,38 @@ class Game:
             self.screen.blit(sig, (WIDTH - 12 - sig.get_width(), HEIGHT - 12 - sig.get_height()))
 
     def draw(self):
-        self.tunnel.draw(self.screen)
-        if self.flash_timer > 0:
-            alpha = int(120 * (self.flash_timer / 140))
-            flash = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
-            flash.fill((*COL_RED, alpha))
-            self.screen.blit(flash, (0, 0))
-        if self.state == "playing":
-            for h in self.hazards: h.draw(self.screen)
-            for b in self.boosts:  b.draw(self.screen)
-            for bn in self.bonuses: bn.draw(self.screen)
-            for pt in self.patties: pt.draw(self.screen)
-            for st in self.stations: st.draw(self.screen)
-        self.train.draw(self.screen)
-        self.draw_hud()
-        y = 16
-        for a in self.announcements[-2:]:
-            a.draw(self.screen, self.font, y=y); y += 46
-        if self.state == "name":
-            self.draw_name_entry()
-        elif self.state == "menu":
-            self.draw_menu()
-        self.draw_overlay()
+        try:
+            self.tunnel.draw(self.screen)
+            if self.flash_timer > 0:
+                alpha = int(120 * (self.flash_timer / 140))
+                flash = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+                flash.fill((*COL_RED, alpha))
+                self.screen.blit(flash, (0, 0))
+            if self.state == "playing":
+                for h in self.hazards: h.draw(self.screen)
+                for b in self.boosts:  b.draw(self.screen)
+                for bn in self.bonuses: bn.draw(self.screen)
+                for pt in self.patties: pt.draw(self.screen)
+                for st in self.stations: st.draw(self.screen)
+            self.train.draw(self.screen)
+            self.draw_hud()
+            y = 16
+            for a in self.announcements[-2:]:
+                a.draw(self.screen, self.font, y=y);
+                y += 46
+            if self.state == "name":
+                self.draw_name_entry()
+            elif self.state == "menu":
+                self.draw_menu()
+            self.draw_overlay()
 
-        if self.state == "playing":
-            sig = self.font_small.render("Asha Asvathaman", True, COL_TEXT_DIM)
-            self.screen.blit(sig, (WIDTH - 12 - sig.get_width(), HEIGHT - 12 - sig.get_height()))
+            if self.state == "playing":
+                sig = self.font_small.render("Asha Asvathaman", True, COL_TEXT_DIM)
+                self.screen.blit(sig, (WIDTH - 12 - sig.get_width(), HEIGHT - 12 - sig.get_height()))
+        except Exception as e:
+            print(f"Draw error: {e}")
+            import traceback
+            traceback.print_exc()
 
     def handle_events(self):
         for e in pygame.event.get():
@@ -1245,6 +1251,10 @@ class Game:
                         self.reset()
 
     async def run(self):
+        print("Game starting...")
+        print(f"Screen size: {self.screen.get_size()}")
+        print(f"Initial state: {self.state}")
+
         if GLOBAL_API_URL:
             try:
                 print("Fetching global leaderboard...")
@@ -1252,8 +1262,15 @@ class Game:
                 print("Global leaderboard fetched!")
             except Exception as e:
                 print("Initial leaderboard fetch failed:", e)
+
+        frame_count = 0
         while True:
             dt = self.clock.tick(FPS)
+
+            if frame_count < 5:
+                print(f"Frame {frame_count}: dt={dt}, state={self.state}")
+            frame_count += 1
+
             self.handle_events()
             self.update(dt)
             if GLOBAL_API_URL and (self.state in ("menu", "name", "gameover")):
