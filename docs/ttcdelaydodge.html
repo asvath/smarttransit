@@ -81,6 +81,11 @@
     }
     footer a{ color:inherit; text-decoration:none; }
   </style>
+
+  <!-- NEW: force autorun without touching the inner index.html -->
+  <script>
+    window.pygbag_config = { autorun: 1 };
+  </script>
 </head>
 <body>
   <header>
@@ -113,7 +118,11 @@
         </div>
 
         <div class="frame-wrap">
-          <iframe class="game-frame" src="ttcdelaydodge/build/web/index.html" title="TTC Delay Dodge"></iframe>
+          <!-- CHANGED: added allow="autoplay; fullscreen" -->
+          <iframe class="game-frame"
+                  src="ttcdelaydodge/build/web/index.html"
+                  title="TTC Delay Dodge"
+                  allow="autoplay; fullscreen"></iframe>
         </div>
       </div>
     </div>
@@ -125,4 +134,5 @@
   </footer>
 </body>
 </html>
+
 
