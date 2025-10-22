@@ -159,27 +159,66 @@ async def _api_get_top():
             js.console.log("[LB] Starting fetch from:", url)
 
             # cache-bust so nothing stale sticks
-            url = f"{url}?ts={int(_t.time() * 1000)}"
+            url_with_ts = f"{url}?ts={int(_t.time() * 1000)}"
 
-            js.console.log("[LB] Awaiting fetch...")
-            # Use asyncio timeout instead of Promise.race
-            resp = await asyncio.wait_for(js.fetch(url), timeout=10.0)
-            js.console.log("[LB] Fetch completed, status:", getattr(resp, "status", "unknown"))
+            js.console.log("[LB] Setting up fetch via eval...")
+            # Store URL in a global so JavaScript can access it
+            js.window.leaderboard_url = url_with_ts
 
-            status = getattr(resp, "status", None)
-            if not resp or not getattr(resp, "ok", False):
-                # Try to log body for debugging
-                try:
-                    body = await resp.text()
-                    js.console.error("[LB] GET failed:", status, body)
-                except Exception:
-                    js.console.error("[LB] GET failed:", status)
-                return None  # Return None to indicate failure, not empty list
+            # Use JavaScript directly to fetch and store result
+            fetch_code = """
+            (async function() {
+                try {
+                    const response = await fetch(window.leaderboard_url);
+                    if (!response.ok) {
+                        window.leaderboard_result = {error: true, status: response.status};
+                        return;
+                    }
+                    const data = await response.json();
+                    window.leaderboard_result = {error: false, data: data};
+                } catch (e) {
+                    window.leaderboard_result = {error: true, message: e.toString()};
+                }
+            })()
+            """
+            js.eval(fetch_code)
 
-            js.console.log("[LB] Parsing JSON...")
-            data = await resp.json()  # expects list of dicts [{name, score, ts}, ...]
-            js.console.log("[LB] Got data, type:", type(data), "length:",
-                           len(data) if hasattr(data, '__len__') else 'N/A')
+            # Poll for result
+            js.console.log("[LB] Polling for result...")
+            max_wait = 100  # 10 seconds (100 * 100ms)
+            for i in range(max_wait):
+                await asyncio.sleep(0.1)
+                result = getattr(js.window, 'leaderboard_result', None)
+                if result:
+                    js.console.log("[LB] Got result after", i * 100, "ms")
+                    # Clean up
+                    js.eval("delete window.leaderboard_result; delete window.leaderboard_url;")
+
+                    if result.error:
+                        js.console.error("[LB] Fetch error:",
+                                         getattr(result, 'status', None) or getattr(result, 'message', 'unknown'))
+                        return None
+
+                    # Convert JavaScript array to Python list
+                    data = result.data
+                    js.console.log("[LB] Got data, converting to Python...")
+
+                    # Convert JS array to Python list manually
+                    py_data = []
+                    for i in range(len(data)):
+                        item = data[i]
+                        py_data.append({
+                            'name': str(item.name if hasattr(item, 'name') else 'Player'),
+                            'score': int(item.score if hasattr(item, 'score') else 0)
+                        })
+
+                    js.console.log("[LB] Converted", len(py_data), "entries")
+                    data = py_data
+                    break
+            else:
+                js.console.error("[LB] Timeout waiting for fetch result")
+                js.eval("delete window.leaderboard_result; delete window.leaderboard_url;")
+                return None
         else:
             # Desktop path
             with _url.urlopen(url, timeout=5) as r:
