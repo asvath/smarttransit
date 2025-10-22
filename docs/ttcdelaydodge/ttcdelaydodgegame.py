@@ -161,13 +161,9 @@ async def _api_get_top():
             # cache-bust so nothing stale sticks
             url = f"{url}?ts={int(_t.time() * 1000)}"
 
-            # Add timeout wrapper
-            fetch_promise = js.fetch(url)
-            timeout_promise = js.Promise.new(
-                lambda resolve, reject: js.setTimeout(lambda: reject(js.Error.new("Timeout")), 10000))
-
-            js.console.log("[LB] Awaiting fetch with timeout...")
-            resp = await js.Promise.race([fetch_promise, timeout_promise])
+            js.console.log("[LB] Awaiting fetch...")
+            # Use asyncio timeout instead of Promise.race
+            resp = await asyncio.wait_for(js.fetch(url), timeout=10.0)
             js.console.log("[LB] Fetch completed, status:", getattr(resp, "status", "unknown"))
 
             status = getattr(resp, "status", None)
@@ -182,7 +178,8 @@ async def _api_get_top():
 
             js.console.log("[LB] Parsing JSON...")
             data = await resp.json()  # expects list of dicts [{name, score, ts}, ...]
-            js.console.log("[LB] Got data:", data)
+            js.console.log("[LB] Got data, type:", type(data), "length:",
+                           len(data) if hasattr(data, '__len__') else 'N/A')
         else:
             # Desktop path
             with _url.urlopen(url, timeout=5) as r:
@@ -198,6 +195,12 @@ async def _api_get_top():
             js.console.log("[LB] Parsed and sorted, returning", len(top), "entries")
         return top[:20]  # Returns empty list if no scores, but that's valid data
 
+    except asyncio.TimeoutError:
+        try:
+            js.console.error("[LB] Fetch timed out after 10 seconds")
+        except Exception:
+            print("[LB] Fetch timed out")
+        return None
     except Exception as e:
         # Visible in both environments
         try:
@@ -207,7 +210,6 @@ async def _api_get_top():
         except Exception:
             print("[LB] GET exception:", e)
         return None  # Return None on exception to trigger fallback
-
 
 
 
