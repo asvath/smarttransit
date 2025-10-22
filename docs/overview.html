@@ -1,6 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+   <script>
+  // Open like a first visit after reload (esp. on mobile)
+  (function () {
+    if ('scrollRestoration' in history) {
+      history.scrollRestoration = 'manual';
+    }
+    window.addEventListener('pageshow', function (e) {
+      const nav = performance.getEntriesByType('navigation')[0];
+      const isReload = (nav && nav.type === 'reload') || e.persisted; // iOS bfcache
+      if (isReload) {
+        // Top of page + clean URL = looks like a brand-new visit
+        window.scrollTo(0, 0);
+        if (location.hash) history.replaceState(null, '', location.pathname);
+        // If you ever store UI state, clear it here:
+        // localStorage.removeItem('activeTab');
+      }
+    }, { once: true });
+  })();
+</script>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>TTC Delay Insights — Overview</title>
