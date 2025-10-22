@@ -187,6 +187,27 @@
     Toronto Open Data •
     <a href="https://ashaasvathaman.com">Asha Asvathaman</a>
   </footer>
+
+  <!-- Mobile menu JS -->
+  <script>
+    (function(){
+      const btn = document.getElementById('menu-toggle');
+      const nav = document.getElementById('site-nav');
+      if(!btn || !nav) return;
+      const closeMenu = () => {
+        btn.classList.remove('is-open');
+        nav.classList.remove('is-open');
+        btn.setAttribute('aria-expanded','false');
+      };
+      btn.addEventListener('click', () => {
+        const open = nav.classList.toggle('is-open');
+        btn.classList.toggle('is-open', open);
+        btn.setAttribute('aria-expanded', String(open));
+      });
+      nav.addEventListener('click', e => { if(e.target.closest('a')) closeMenu(); });
+      window.addEventListener('resize', () => { if (window.innerWidth > 860) closeMenu(); });
+    })();
+  </script>
 </body>
 </html>
 
