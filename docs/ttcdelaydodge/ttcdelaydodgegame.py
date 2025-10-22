@@ -274,23 +274,47 @@ async def _api_post_score(name, score):
             js.window.leaderboard_post_url = url_with_ts
             js.window.leaderboard_post_body = payload
 
-            # Use native fetch in JS for stability in Pyodide/emscripten
-            fetch_code = """
+            # Safari-safe write: try sendBeacon; if not, use fetch with keepalive
+            send_code = """
             (async function() {
                 try {
+                    // 1) Try navigator.sendBeacon (most reliable on Safari/iOS for background-safe POSTs)
+                    try {
+                        if (navigator && typeof navigator.sendBeacon === 'function') {
+                            const blob = new Blob([window.leaderboard_post_body], { type: 'application/json' });
+                            const ok = navigator.sendBeacon(window.leaderboard_post_url, blob);
+                            if (ok) {
+                                window.leaderboard_post_result = { ok: true, via: 'beacon' };
+                                return;
+                            }
+                        }
+                    } catch (e) {
+                        console.warn('[LB JS] beacon failed, falling back:', e);
+                    }
+
+                    // 2) Fallback: fetch with keepalive (survives some lifecycle pauses)
                     const resp = await fetch(window.leaderboard_post_url, {
                         method: 'POST',
-                        headers: {'Content-Type': 'application/json'},
-                        body: window.leaderboard_post_body
+                        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                        body: window.leaderboard_post_body,
+                        keepalive: true,
+                        cache: 'no-store',
+                        mode: 'same-origin',
+                        credentials: 'omit'
                     });
-                    window.leaderboard_post_result = { ok: !!(resp && resp.ok), status: resp ? resp.status : 0 };
+
+                    window.leaderboard_post_result = { 
+                        ok: !!(resp && resp.ok), 
+                        status: resp ? resp.status : 0,
+                        via: 'fetch'
+                    };
                 } catch (e) {
                     console.error('[LB JS] POST exception:', e);
                     window.leaderboard_post_result = { ok: false, message: String(e) };
                 }
             })()
             """
-            js.eval(fetch_code)
+            js.eval(send_code)
 
             # Poll for result (max ~10s)
             for _ in range(100):
@@ -298,14 +322,21 @@ async def _api_post_score(name, score):
                 result = getattr(js.window, "leaderboard_post_result", None)
                 if result is not None:
                     ok = bool(getattr(result, "ok", False))
+                    try:
+                        js.console.log("[LB] POST result via:",
+                                       getattr(result, "via", None),
+                                       "ok:", ok,
+                                       "info:", getattr(result, "status", None) or getattr(result, "message", None))
+                    except Exception:
+                        pass
                     # Cleanup temp globals
                     js.eval("delete window.leaderboard_post_url; delete window.leaderboard_post_body; delete window.leaderboard_post_result;")
-                    if not ok:
-                        js.console.error("[LB] POST failed:", getattr(result, "status", None) or getattr(result, "message", None))
                     return ok
 
-            js.console.error("[LB] POST timeout")
-            js.eval("delete window.leaderboard_post_url; delete window.leaderboard_post_body; delete window.leaderboard_post_result;")
+            try:
+                js.console.error("[LB] POST timeout")
+            finally:
+                js.eval("delete window.leaderboard_post_url; delete window.leaderboard_post_body; delete window.leaderboard_post_result;")
             return False
 
         else:
@@ -326,7 +357,6 @@ async def _api_post_score(name, score):
         except Exception:
             pass
         return False
-
 
 # --- Minimal desktop fallback for local leaderboard (CSV file) ---
 def _read_leaderboard_desktop():
