@@ -180,22 +180,31 @@ def _js_obj(py_dict):
 
 
 async def _api_get_top():
-    base = (GLOBAL_API_URL or "").rstrip("/")
+    """Return top leaderboard entries (safe for both desktop & web)."""
+    base = (GLOBAL_API_URL or "").rstrip("/")  # avoid //leaderboard
     url = f"{base}/leaderboard"
     try:
         if WEB:
-            import time as _t
-            fetch_url = f"{url}?ts={int(_t.time() * 1000)}"
+            import time as _t, json as _pyjson
+            fetch_url = f"{url}?ts={int(_t.time() * 1000)}"  # cache-bust
 
-            if _pyfetch is not None:
-                resp = await _pyfetch(
-                    fetch_url, method="GET", mode="cors", cache="no-store", credentials="omit"
-                )
-            else:
-                # Directly await the JS Promise; don't pass it to asyncio helpers.
-                resp = await js.fetch(fetch_url, {
-                    "method": "GET", "mode": "cors", "cache": "no-store", "credentials": "omit"
-                })
+            # Build a true JS options object (NOT a Python dict)
+            opts = _js_obj({
+                "method": "GET",
+                "mode": "cors",
+                "cache": "no-store",
+                "credentials": "omit",
+            })
+
+            # Log only strings (avoid marshalling JS/Py objects into each other)
+            js.console.log(f"LB GET url: {fetch_url}")
+
+            try:
+                resp = await js.fetch(fetch_url, opts)
+                js.console.log(f"LB GET status: {getattr(resp, 'status', None)}")
+            except Exception as e:
+                js.console.error(f"LB GET fetch threw: {str(e)}")
+                return None
 
             if not resp or not getattr(resp, "ok", False):
                 txt = ""
@@ -203,64 +212,84 @@ async def _api_get_top():
                     txt = await resp.text()
                 except Exception:
                     pass
-                if hasattr(js, "console"):
-                    js.console.error("Leaderboard GET failed:", getattr(resp, "status", None), txt)
+                js.console.error(f"Leaderboard GET failed: {getattr(resp, 'status', None)} {txt}")
                 return None
 
-            data = await resp.json()
+            try:
+                data = await resp.json()  # JS object/array in Pyodide
+                # Convert to pure Python if it's a JSProxy
+                try:
+                    data = data.to_py()
+                except Exception:
+                    # Fallback: if still not a list, try JSON round-trip
+                    try:
+                        data = _pyjson.loads(js.JSON.stringify(data))
+                    except Exception:
+                        pass
+            except Exception as e:
+                js.console.error(f"LB GET json() failed: {str(e)}")
+                return None
         else:
-            import json as _pyjson, urllib.request as _url
+            import json as _pyjson
             with _url.urlopen(url, timeout=5) as r:
                 data = _pyjson.loads(r.read().decode("utf-8"))
 
-        items = [(d.get("name", "Player"), int(d.get("score", 0))) for d in (data or [])]
+        # Normalize + sort (now 'data' is guaranteed Python)
+        items = []
+        for d in (data or []):
+            if isinstance(d, dict):
+                name = d.get("name", "Player")
+                score = int(d.get("score", 0))
+            else:
+                # JS objects after to_py() should be dicts; this is a belt-and-suspenders fallback
+                try:
+                    name = getattr(d, "name", "Player") or "Player"
+                    score = int(getattr(d, "score", 0) or 0)
+                except Exception:
+                    name, score = "Player", 0
+            items.append((name, score))
+
         items.sort(key=lambda x: x[1], reverse=True)
         return items[:20]
+
     except Exception as e:
-        if WEB and hasattr(js, "console"):
-            js.console.error("Leaderboard GET exception:", str(e))
+        # IMPORTANT: only log strings
+        msg = str(e)
+        if WEB:
+            js.console.error(f"Leaderboard GET exception: {msg}")
         else:
-            print("Leaderboard GET exception:", e)
+            print("Leaderboard GET exception:", msg)
         return None
 
-
-
-
 async def _api_post_score(name, score):
-    url = f"{GLOBAL_API_URL.rstrip('/')}/leaderboard"
+    """Submit a score to the global leaderboard."""
+    import json as _pyjson  # ensure available in both branches
+    url = f"{(GLOBAL_API_URL or '').rstrip('/')}/leaderboard"
     payload = {"name": (name or "Player").strip() or "Player", "score": int(score)}
     try:
         if WEB:
-            import json as _json
-            body = _json.dumps(payload)
-
-            if _pyfetch is not None:
-                resp = await _pyfetch(
-                    url,
-                    method="POST",
-                    headers={"Content-Type": "application/json"},
-                    body=body,
-                )
-            else:
-                resp = await js.fetch(url, {
-                    "method": "POST",
-                    "headers": {"Content-Type": "application/json"},
-                    "body": body,
-                })
-
+            # Build a bona fide JS options object without leaking Python dicts
+            body = _pyjson.dumps(payload)
+            opts = _js_obj({
+                "method": "POST",
+                "headers": {"Content-Type": "application/json"},
+                "body": body
+            })
+            resp = await js.fetch(url, opts)
             return bool(resp and getattr(resp, "ok", False))
         else:
-            import json as _json, urllib.request as _url
-            data = _json.dumps(payload).encode("utf-8")
+            data = _pyjson.dumps(payload).encode("utf-8")
             req = _url.Request(url, data=data, headers={"Content-Type": "application/json"}, method="POST")
             with _url.urlopen(req, timeout=5) as r:
                 return 200 <= r.status < 300
     except Exception as e:
-        if WEB and hasattr(js, "console"):
-            js.console.error("POST score exception:", str(e))
+        msg = str(e)
+        if WEB:
+            js.console.error(f"POST score exception: {msg}")
         else:
-            print("POST score exception:", e)
+            print("POST score exception:", msg)
         return False
+
 
 
 
