@@ -84,7 +84,27 @@
 
   <!-- NEW: force autorun without touching the inner index.html -->
   <script>
-    window.pygbag_config = { autorun: 1 };
+      window.pygbag_config = { autorun: 1 };
+
+  // Clamp DPR only if the property is configurable; otherwise noop.
+  (function clampDPR(){
+    try {
+      const desc = Object.getOwnPropertyDescriptor(window, 'devicePixelRatio');
+      if (desc && desc.configurable) {
+        Object.defineProperty(window, 'devicePixelRatio', {
+          get: function () {
+            const raw = (desc.get ? desc.get.call(window) : desc.value);
+            const r = (typeof raw === 'number' ? raw : Number(raw) || 1);
+            return Math.max(1, Math.min(3, r));
+          },
+          configurable: true
+        });
+      }
+    } catch (e) {
+      // As a last-resort, normalize page zoom to 100% (Chrome/Edge support; no effect elsewhere)
+      try { document.documentElement.style.zoom = '100%'; } catch(_) {}
+    }
+  })();
   </script>
 </head>
 <body>
