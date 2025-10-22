@@ -698,6 +698,7 @@ class Game:
         self.global_top_cache = None
         self.global_top_last_ms = 0
         self.fetching_top = False
+        self.global_best = None  # tuple: (name, score)
 
         # --- MOBILE TAP DETECTION (tap+lift to start/restart) ---
         # Use normalized finger coords (0..1); 0.02 ~ ~12px on 600px height.
@@ -797,6 +798,7 @@ class Game:
                 self.global_top_last_ms = now
                 if self.global_top_cache:  # mirror #1 into fallback for HUD
                     top_nm, top_sc = self.global_top_cache[0]
+                    self.global_best = (top_nm, int(top_sc))
                     self.highscore = int(top_sc)
                     self.highscore_name = top_nm
             else:
@@ -930,14 +932,24 @@ class Game:
         hud.blit(dm_text, (WIDTH // 2 - dm_text.get_width() // 2, 12))
 
         # High score with name: prefer GLOBAL if available; else local
-        disp_score, disp_name = self.highscore, getattr(self, "highscore_name", "")
-        if GLOBAL_API_URL and self.global_top_cache:
-            top_nm, top_sc = self.global_top_cache[0]
-            disp_score, disp_name = int(top_sc), top_nm
+        # High score line: prefer GLOBAL; show loading until fetched; fallback to local
+        if GLOBAL_API_URL:
+            if self.global_top_cache is None:
+                # We haven't fetched yet (or still waiting)
+                hs_label = "World best: loading…"
+            elif self.global_top_cache:
+                # Got data: show the true world-best (top of the list)
+                top_nm, top_sc = self.global_top_cache[0]
+                hs_label = f"World best: {int(top_sc)} ({top_nm})"
+            else:
+                # Leaderboard exists but is empty: fall back to local
+                disp_score, disp_name = self.highscore, getattr(self, "highscore_name", "")
+                hs_label = f"High score: {disp_score}" + (f" ({disp_name})" if disp_name else "")
+        else:
+            # No global backend configured: use local high score
+            disp_score, disp_name = self.highscore, getattr(self, "highscore_name", "")
+            hs_label = f"High score: {disp_score}" + (f" ({disp_name})" if disp_name else "")
 
-        hs_label = f"High score: {disp_score}"
-        if disp_name:
-            hs_label += f" ({disp_name})"
         hs = self.font.render(hs_label, True, COL_TEXT_DIM)
         hud.blit(hs, (pad, 44))
 
