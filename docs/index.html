@@ -342,7 +342,7 @@
           <div class="hot-label">Hotspots</div>
           <div class="hot-caption">(click buttons to toggle hotspots on the map).</div>
           <div class="hotspot-toggle" id="hotspot-toggles" aria-label="Delay Hotspot Filters">
-            <button type="button" class="hot-btn is-active" data-hot="ALL" aria-pressed="true">All off</button>
+            <button type="button" class="hot-btn is-active" data-hot="ALL" aria-pressed="true">General</button>
             <button type="button" class="hot-btn" data-hot="Track Intrusion" aria-pressed="false">Track Intrusion</button>
             <button type="button" class="hot-btn" data-hot="Disorderly Patron" aria-pressed="false">Disorderly Patron</button>
             <button type="button" class="hot-btn" data-hot="Fire: Track Level" aria-pressed="false">Fire</button>
@@ -586,6 +586,13 @@
       document.getElementById("st-major").textContent      = (typeof majorDelays === "number") ? majorDelays : "—";
       document.getElementById("st-top-reason").innerHTML   = formatReason(topReasonByTime);
       document.getElementById("st-time-top").textContent   = hoursToHM(topTimeHours);
+      // --- on mobile, scroll to the station card ---
+      if (window.innerWidth <= 860) {
+        const stCard = document.getElementById("st-name");
+        if (stCard) {
+          stCard.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      }
     }
 
     let didAutoFocus = false;
