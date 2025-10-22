@@ -149,18 +149,26 @@ def _js_obj(py_dict):
 
 
 async def _api_get_top():
-    """Return top leaderboard entries as [(name, score), ...]."""
+    """Return top leaderboard entries as [(name, score), ...]. Returns None on error."""
     base = (GLOBAL_API_URL or "").rstrip("/")
     url = f"{base}/leaderboard"
 
     try:
         if WEB:
             import js, time as _t
-            # cache-bust so nothing stale sticks
-            url = f"{url}?ts={int(_t.time()*1000)}"
+            js.console.log("[LB] Starting fetch from:", url)
 
-            # Same-origin GET: simplest is no options (avoids Pyodide conversion quirks)
-            resp = await js.fetch(url)
+            # cache-bust so nothing stale sticks
+            url = f"{url}?ts={int(_t.time() * 1000)}"
+
+            # Add timeout wrapper
+            fetch_promise = js.fetch(url)
+            timeout_promise = js.Promise.new(
+                lambda resolve, reject: js.setTimeout(lambda: reject(js.Error.new("Timeout")), 10000))
+
+            js.console.log("[LB] Awaiting fetch with timeout...")
+            resp = await js.Promise.race([fetch_promise, timeout_promise])
+            js.console.log("[LB] Fetch completed, status:", getattr(resp, "status", "unknown"))
 
             status = getattr(resp, "status", None)
             if not resp or not getattr(resp, "ok", False):
@@ -170,8 +178,11 @@ async def _api_get_top():
                     js.console.error("[LB] GET failed:", status, body)
                 except Exception:
                     js.console.error("[LB] GET failed:", status)
-                return []
+                return None  # Return None to indicate failure, not empty list
+
+            js.console.log("[LB] Parsing JSON...")
             data = await resp.json()  # expects list of dicts [{name, score, ts}, ...]
+            js.console.log("[LB] Got data:", data)
         else:
             # Desktop path
             with _url.urlopen(url, timeout=5) as r:
@@ -184,16 +195,18 @@ async def _api_get_top():
             reverse=True,
         )
         if WEB:
-            js.console.log("[LB] parsed len", len(top))
-        return top[:20]
+            js.console.log("[LB] Parsed and sorted, returning", len(top), "entries")
+        return top[:20]  # Returns empty list if no scores, but that's valid data
 
     except Exception as e:
         # Visible in both environments
         try:
             js.console.error("[LB] GET exception:", str(e))
+            import traceback
+            js.console.error("[LB] Traceback:", traceback.format_exc())
         except Exception:
             print("[LB] GET exception:", e)
-        return []  # <- empty list so we never get stuck on "loading…"
+        return None  # Return None on exception to trigger fallback
 
 
 
