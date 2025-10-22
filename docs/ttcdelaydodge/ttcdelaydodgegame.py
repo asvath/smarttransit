@@ -948,8 +948,8 @@ class Game:
                 top_nm, top_sc = self.global_top_cache[0]
                 self.global_best = (top_nm, int(top_sc))
                 # Optional: mirror into local fallback so HUD shows something sensible
-                self.highscore = int(top_sc)
-                self.highscore_name = top_nm
+                if self.highscore > 0:
+                    self.highscore = int(top_sc)
         finally:
             self.fetching_top = False
 
