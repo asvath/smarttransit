@@ -156,7 +156,7 @@ async def _api_get_top():
     try:
         if WEB:
             import js, time as _t
-            js.console.log("[LB] Starting fetch from:", url)
+            js.console.log("[LB] NEW VERSION - Starting fetch from:", url)
 
             # cache-bust so nothing stale sticks
             url_with_ts = f"{url}?ts={int(_t.time() * 1000)}"
@@ -169,14 +169,18 @@ async def _api_get_top():
             fetch_code = """
             (async function() {
                 try {
+                    console.log('[LB JS] Starting fetch to', window.leaderboard_url);
                     const response = await fetch(window.leaderboard_url);
+                    console.log('[LB JS] Got response, status:', response.status);
                     if (!response.ok) {
                         window.leaderboard_result = {error: true, status: response.status};
                         return;
                     }
                     const data = await response.json();
+                    console.log('[LB JS] Parsed JSON, length:', data.length);
                     window.leaderboard_result = {error: false, data: data};
                 } catch (e) {
+                    console.error('[LB JS] Exception:', e);
                     window.leaderboard_result = {error: true, message: e.toString()};
                 }
             })()
@@ -189,12 +193,13 @@ async def _api_get_top():
             for i in range(max_wait):
                 await asyncio.sleep(0.1)
                 result = getattr(js.window, 'leaderboard_result', None)
-                if result:
+                if result is not None:
                     js.console.log("[LB] Got result after", i * 100, "ms")
                     # Clean up
                     js.eval("delete window.leaderboard_result; delete window.leaderboard_url;")
 
-                    if result.error:
+                    # Check if error using hasattr instead of truthiness
+                    if hasattr(result, 'error') and result.error:
                         js.console.error("[LB] Fetch error:",
                                          getattr(result, 'status', None) or getattr(result, 'message', 'unknown'))
                         return None
@@ -205,8 +210,8 @@ async def _api_get_top():
 
                     # Convert JS array to Python list manually
                     py_data = []
-                    for i in range(len(data)):
-                        item = data[i]
+                    for idx in range(len(data)):
+                        item = data[idx]
                         py_data.append({
                             'name': str(item.name if hasattr(item, 'name') else 'Player'),
                             'score': int(item.score if hasattr(item, 'score') else 0)
@@ -249,40 +254,6 @@ async def _api_get_top():
         except Exception:
             print("[LB] GET exception:", e)
         return None  # Return None on exception to trigger fallback
-
-
-
-async def _api_post_score(name, score):
-    """Submit a score to the global leaderboard."""
-    url = f"{GLOBAL_API_URL}/leaderboard"
-    payload = {"name": (name or "Player").strip() or "Player", "score": int(score)}
-    try:
-        if WEB:
-            js.window.tempPostBody = json.dumps(payload)
-            fetch_code = """
-            (function() {
-                return {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: window.tempPostBody
-                };
-            })()
-            """
-            opts = js.eval(fetch_code)
-            resp = await js.fetch(url, opts)
-            del js.window.tempPostBody
-            return bool(resp and resp.ok)
-        else:
-            data = json.dumps(payload).encode("utf-8")
-            req = _url.Request(url, data=data, headers={"Content-Type": "application/json"}, method="POST")
-            with _url.urlopen(req, timeout=5) as r:
-                return 200 <= r.status < 300
-    except Exception as e:
-        if WEB:
-            js.console.error("POST score exception:", str(e))
-        else:
-            print("POST score exception:", e)
-        return False
 
 
 # --- Minimal desktop fallback for local leaderboard (CSV file) ---
