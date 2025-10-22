@@ -149,49 +149,46 @@ def _js_obj(py_dict):
 
 
 async def _api_get_top():
-    """Return top leaderboard entries (safe for both desktop & web)."""
     url = f"{GLOBAL_API_URL}/leaderboard"
     try:
         if WEB:
-            import time as _t
+            import js, time as _t
+
+            # cache-bust
             url = f"{url}?ts={int(_t.time()*1000)}"
 
-            opts = window.Object.fromEntries([
-                ["method", "GET"],
-                ["cache", "no-store"],
-                ["credentials", "same-origin"],
-            ])
-            js.console.log("[LB] GET", url, opts)
+            opts = js.eval("({method:'GET', cache:'no-store', credentials:'same-origin'})")
 
+            js.console.log("[LB] GET", url, opts)
             resp = await js.fetch(url, opts)
             js.console.log("[LB] status", getattr(resp, "status", None))
 
-            if not resp.ok:
+            if not resp or not getattr(resp, "ok", False):
                 txt = ""
                 try: txt = await resp.text()
                 except: pass
                 js.console.error("[LB] GET failed:", getattr(resp, "status", None), txt)
-                return []
+                return []  # return [] so HUD can fall back, not be stuck on "loading…"
 
             data = await resp.json()
         else:
             with _url.urlopen(url, timeout=5) as r:
-                data = json.loads(r.read().decode("utf-8"))
+                data = _json.loads(r.read().decode("utf-8"))
 
+        # normalize to [(name, score), ...]
         top = sorted(
             [(d.get("name", "Player"), int(d.get("score", 0))) for d in (data or [])],
             key=lambda x: x[1],
-            reverse=True,
+            reverse=True
         )
-        js.console.log("[LB] parsed", len(top)) if WEB else None
+        if WEB: js.console.log("[LB] parsed len", len(top))
         return top[:20]
 
     except Exception as e:
-        if WEB:
-            js.console.error("[LB] GET exception:", str(e))
-        else:
-            print("Leaderboard GET exception:", e)
-        return []
+        try: js.console.error("[LB] GET exception:", str(e))
+        except: print("[LB] GET exception:", e)
+        return []  # important: [] not None
+
 
 
 async def _api_post_score(name, score):
@@ -797,25 +794,25 @@ class Game:
         self.announcements.append(Announcement("+10 Jamaican Patty!", ttl=1600))
 
     async def maybe_refresh_global_top(self, force=False):
-        now = pygame.time.get_ticks()
-        if not force and (now - self.global_top_last_ms) < 5000:
+        if not GLOBAL_API_URL:
             return
-        if self.fetching_top:
+        now = pygame.time.get_ticks()
+        if getattr(self, "fetching_top", False):
+            return
+        if not force and (now - getattr(self, "global_top_last_ms", 0)) < 5000:
             return
 
         self.fetching_top = True
         try:
-            top = await _api_get_top()
-            # top is now a list (possibly empty), never None
-            self.global_top_cache = top[:20]
+            top = await _api_get_top()  # now guaranteed list (maybe empty)
+            self.global_top_cache = (top or [])[:20]
             self.global_top_last_ms = now
 
-            if self.global_top_cache:  # mirror #1 into HUD fallback
+            if self.global_top_cache:
                 top_nm, top_sc = self.global_top_cache[0]
                 self.global_best = (top_nm, int(top_sc))
                 self.highscore = int(top_sc)
                 self.highscore_name = top_nm
-
         finally:
             self.fetching_top = False
 
