@@ -493,6 +493,14 @@
       maxZoom: 19, attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
     }).addTo(map);
 
+    map.createPane('pane-lines');
+    map.getPane('pane-lines').style.zIndex = 400;
+
+    map.createPane('pane-stations');
+    map.getPane('pane-stations').style.zIndex = 410; // above lines
+
+    map.createPane('pane-hotspots');
+    map.getPane('pane-hotspots').style.zIndex = 420; // above stations
     const stationsGroup = L.layerGroup().addTo(map);
     let linesLayer;
 
@@ -505,6 +513,7 @@
       return r.json();
     }).then(geojson => {
       linesLayer = L.geoJSON(geojson, {
+        pane: 'pane-lines'.
         style: f => {
           const rn = get_route_name(f.properties);
           const canon = canonical_line(rn);
@@ -551,6 +560,7 @@
         stationLatLngIndex.set(stationKey, [s.lat, s.lon]);
 
         const marker = L.circleMarker([s.lat, s.lon], {
+          pane: 'pane-stations',
           radius: 8,
           color: "black",
           weight: 2,
@@ -796,7 +806,7 @@
             const key = String(stName).toUpperCase().trim();
             const ll = stationLatLngIndex.get(key);
             if(!ll) return;
-            const marker = L.marker(ll, { icon: HOT_ICONS[codeName] || HOT_ICONS["Disorderly Patron"] })
+            const marker = L.marker(ll, { pane: 'pane-hotspots', icon: HOT_ICONS[codeName] || HOT_ICONS["Disorderly Patron"] })
               .bindPopup(buildHotspotPopup(codeName, stName, rec), { closeButton: true });
             (hotspotLayers[codeName] ?? hotspotLayers["Disorderly Patron"]).addLayer(marker);
 
