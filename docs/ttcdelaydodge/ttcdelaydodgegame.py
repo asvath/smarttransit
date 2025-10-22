@@ -149,45 +149,52 @@ def _js_obj(py_dict):
 
 
 async def _api_get_top():
-    url = f"{GLOBAL_API_URL}/leaderboard"
+    """Return top leaderboard entries as [(name, score), ...]."""
+    base = (GLOBAL_API_URL or "").rstrip("/")
+    url = f"{base}/leaderboard"
+
     try:
         if WEB:
             import js, time as _t
-
-            # cache-bust
+            # cache-bust so nothing stale sticks
             url = f"{url}?ts={int(_t.time()*1000)}"
 
-            opts = js.eval("({method:'GET', cache:'no-store', credentials:'same-origin'})")
+            # Same-origin GET: simplest is no options (avoids Pyodide conversion quirks)
+            resp = await js.fetch(url)
 
-            js.console.log("[LB] GET", url, opts)
-            resp = await js.fetch(url, opts)
-            js.console.log("[LB] status", getattr(resp, "status", None))
-
+            status = getattr(resp, "status", None)
             if not resp or not getattr(resp, "ok", False):
-                txt = ""
-                try: txt = await resp.text()
-                except: pass
-                js.console.error("[LB] GET failed:", getattr(resp, "status", None), txt)
-                return []  # return [] so HUD can fall back, not be stuck on "loading…"
-
-            data = await resp.json()
+                # Try to log body for debugging
+                try:
+                    body = await resp.text()
+                    js.console.error("[LB] GET failed:", status, body)
+                except Exception:
+                    js.console.error("[LB] GET failed:", status)
+                return []
+            data = await resp.json()  # expects list of dicts [{name, score, ts}, ...]
         else:
+            # Desktop path
             with _url.urlopen(url, timeout=5) as r:
                 data = _json.loads(r.read().decode("utf-8"))
 
-        # normalize to [(name, score), ...]
+        # Normalize & sort for the HUD
         top = sorted(
             [(d.get("name", "Player"), int(d.get("score", 0))) for d in (data or [])],
             key=lambda x: x[1],
-            reverse=True
+            reverse=True,
         )
-        if WEB: js.console.log("[LB] parsed len", len(top))
+        if WEB:
+            js.console.log("[LB] parsed len", len(top))
         return top[:20]
 
     except Exception as e:
-        try: js.console.error("[LB] GET exception:", str(e))
-        except: print("[LB] GET exception:", e)
-        return []  # important: [] not None
+        # Visible in both environments
+        try:
+            js.console.error("[LB] GET exception:", str(e))
+        except Exception:
+            print("[LB] GET exception:", e)
+        return []  # <- empty list so we never get stuck on "loading…"
+
 
 
 
@@ -797,20 +804,23 @@ class Game:
         if not GLOBAL_API_URL:
             return
         now = pygame.time.get_ticks()
-        if getattr(self, "fetching_top", False):
-            return
+
+        # throttle unless forced
         if not force and (now - getattr(self, "global_top_last_ms", 0)) < 5000:
+            return
+        if getattr(self, "fetching_top", False):
             return
 
         self.fetching_top = True
         try:
-            top = await _api_get_top()  # now guaranteed list (maybe empty)
-            self.global_top_cache = (top or [])[:20]
+            top = await _api_get_top()  # <- guaranteed list (maybe empty)
+            self.global_top_cache = (top or [])  # <- never None
             self.global_top_last_ms = now
 
             if self.global_top_cache:
                 top_nm, top_sc = self.global_top_cache[0]
                 self.global_best = (top_nm, int(top_sc))
+                # Optional: mirror into local fallback so HUD shows something sensible
                 self.highscore = int(top_sc)
                 self.highscore_name = top_nm
         finally:
@@ -927,6 +937,10 @@ class Game:
         pad = 12
         bar_h = 76
         hud = pygame.Surface((WIDTH, bar_h), pygame.SRCALPHA)
+        if GLOBAL_API_URL and self.global_top_cache is None and not getattr(self, "fetching_top", False):
+            import asyncio
+            asyncio.create_task(self.maybe_refresh_global_top(force=True))
+
         draw_rounded_rect(hud, hud.get_rect(), (25, 28, 46, 230), radius=0)
 
         # Score
