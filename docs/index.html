@@ -808,6 +808,14 @@
               m.openPopup();
             }
           }
+          //on mobile, scroll to map when hotspots (not General) are clicked ---
+          if (window.innerWidth <= 860 && key !== "ALL") {
+            const mapEl = document.getElementById("leaflet-map");
+            if (mapEl) {
+              mapEl.scrollIntoView({ behavior: "smooth", block: "start" });
+            }
+          }
+
         });
       }).catch(e => { console.error(e); });
     }
