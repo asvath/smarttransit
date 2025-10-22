@@ -10,9 +10,17 @@ except Exception:
 
 # ---------- Platform detection (desktop vs web) ----------
 WEB = sys.platform in ("wasi", "emscripten")
+# --- portable browser fetch helper ---
 if WEB:
     from platform import window
     import js
+    try:
+        from pyodide.http import pyfetch as _pyfetch      # real Pyodide
+    except Exception:
+        try:
+            from pyodide_http import pyfetch as _pyfetch   # pygbag shim
+        except Exception:
+            _pyfetch = None  # fallback to js.fetch
 
 # ---------- Global leaderboard API ----------
 # for new build
@@ -98,6 +106,28 @@ def save_highscore_name(name):
         pass
 
 
+def fire_and_forget(coro, label="task"):
+    # Change the runner to be more defensive and always yield control
+    # back to the event loop before the troublesome JS call starts.
+    async def runner():
+        # Add a yield to ensure the task is properly set up before it awaits
+        # a JS Promise (which causes the PromiseWrapper issue).
+        await asyncio.sleep(0)
+
+        try:
+            await coro
+        except AttributeError as e:
+            # Specifically catch the PromiseWrapper error and provide a better message
+            if "'browser.PromiseWrapper' object has no attribute '_loop'" in str(e):
+                print(f"[{label}] Caught expected PromiseWrapper error in background task. Ignoring...")
+            else:
+                print(f"[{label}] ERROR in background task: {e}")
+        except Exception as e:
+            print(f"[{label}] ERROR in background task: {e}")
+
+    # Use create_task to start the background process
+    return asyncio.get_event_loop().create_task(runner())
+
 def lerp(a, b, t): return a + (b - a) * t
 def clamp(v, lo, hi): return max(lo, min(hi, v))
 
@@ -150,30 +180,22 @@ def _js_obj(py_dict):
 
 
 async def _api_get_top():
-    """Return top leaderboard entries (safe for both desktop & web)."""
-    base = (GLOBAL_API_URL or "").rstrip("/")  # avoid //leaderboard
+    base = (GLOBAL_API_URL or "").rstrip("/")
     url = f"{base}/leaderboard"
     try:
         if WEB:
             import time as _t
-            fetch_url = f"{url}?ts={int(_t.time() * 1000)}"  # cache-bust
+            fetch_url = f"{url}?ts={int(_t.time() * 1000)}"
 
-            opts = _js_obj({
-                "method": "GET",
-                "mode": "cors",
-                "cache": "no-store",
-                "credentials": "omit",
-            })
-
-            js.console.log("LB GET url:", fetch_url)
-            js.console.log("LB GET opts:", opts)
-
-            try:
-                resp = await js.fetch(fetch_url, opts)
-                js.console.log("LB GET status:", getattr(resp, "status", None))
-            except Exception as e:
-                js.console.error("LB GET fetch threw:", str(e))
-                return None
+            if _pyfetch is not None:
+                resp = await _pyfetch(
+                    fetch_url, method="GET", mode="cors", cache="no-store", credentials="omit"
+                )
+            else:
+                # Directly await the JS Promise; don't pass it to asyncio helpers.
+                resp = await js.fetch(fetch_url, {
+                    "method": "GET", "mode": "cors", "cache": "no-store", "credentials": "omit"
+                })
 
             if not resp or not getattr(resp, "ok", False):
                 txt = ""
@@ -181,66 +203,66 @@ async def _api_get_top():
                     txt = await resp.text()
                 except Exception:
                     pass
-                js.console.error("Leaderboard GET failed:", getattr(resp, "status", None), txt)
+                if hasattr(js, "console"):
+                    js.console.error("Leaderboard GET failed:", getattr(resp, "status", None), txt)
                 return None
 
-            try:
-                data = await resp.json()
-            except Exception as e:
-                js.console.error("LB GET json() failed:", str(e))
-                return None
+            data = await resp.json()
         else:
-            import json as _pyjson
+            import json as _pyjson, urllib.request as _url
             with _url.urlopen(url, timeout=5) as r:
                 data = _pyjson.loads(r.read().decode("utf-8"))
 
-        # Normalize + sort
-        items = [
-            (d.get("name", "Player"), int(d.get("score", 0)))
-            for d in (data or [])
-        ]
+        items = [(d.get("name", "Player"), int(d.get("score", 0))) for d in (data or [])]
         items.sort(key=lambda x: x[1], reverse=True)
         return items[:20]
-
     except Exception as e:
-        if WEB:
+        if WEB and hasattr(js, "console"):
             js.console.error("Leaderboard GET exception:", str(e))
         else:
             print("Leaderboard GET exception:", e)
         return None
 
 
+
+
 async def _api_post_score(name, score):
-    """Submit a score to the global leaderboard."""
-    url = f"{GLOBAL_API_URL}/leaderboard"
+    url = f"{GLOBAL_API_URL.rstrip('/')}/leaderboard"
     payload = {"name": (name or "Player").strip() or "Player", "score": int(score)}
     try:
         if WEB:
-            js.window.tempPostBody = json.dumps(payload)
-            fetch_code = """
-            (function() {
-                return {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: window.tempPostBody
-                };
-            })()
-            """
-            opts = js.eval(fetch_code)
-            resp = await js.fetch(url, opts)
-            del js.window.tempPostBody
-            return bool(resp and resp.ok)
+            import json as _json
+            body = _json.dumps(payload)
+
+            if _pyfetch is not None:
+                resp = await _pyfetch(
+                    url,
+                    method="POST",
+                    headers={"Content-Type": "application/json"},
+                    body=body,
+                )
+            else:
+                resp = await js.fetch(url, {
+                    "method": "POST",
+                    "headers": {"Content-Type": "application/json"},
+                    "body": body,
+                })
+
+            return bool(resp and getattr(resp, "ok", False))
         else:
-            data = json.dumps(payload).encode("utf-8")
+            import json as _json, urllib.request as _url
+            data = _json.dumps(payload).encode("utf-8")
             req = _url.Request(url, data=data, headers={"Content-Type": "application/json"}, method="POST")
             with _url.urlopen(req, timeout=5) as r:
                 return 200 <= r.status < 300
     except Exception as e:
-        if WEB:
+        if WEB and hasattr(js, "console"):
             js.console.error("POST score exception:", str(e))
         else:
             print("POST score exception:", e)
         return False
+
+
 
 
 # --- Minimal desktop fallback for local leaderboard (CSV file) ---
@@ -705,11 +727,15 @@ class Game:
 
         self.highscore = load_highscore()
         self.highscore_name = load_highscore_name()  # load local name sidecar
-        self.state = "menu"
+        self.state = "loading"
         self.player_name = ""
         self.show_legend = True
         self.legend_mandatory = True
         self.legend_shown_once = False
+
+        self.loading_started = False
+        self.loading_started_at = 0
+        self.loading_timeout_ms = 15000 # 5s grace if offline/empty
 
         now = pygame.time.get_ticks()
         self.next_hazard_at = now + random.randint(*OBSTACLE_SPAWN_EASY)
@@ -727,6 +753,7 @@ class Game:
         self.global_top_cache = None
         self.global_top_last_ms = 0
         self.fetching_top = False
+        self.pending_submit = None
 
         # --- MOBILE TAP DETECTION (tap+lift to start/restart) ---
         # Use normalized finger coords (0..1); 0.02 ~ ~12px on 600px height.
@@ -811,7 +838,8 @@ class Game:
         self.on_time_seconds += 10.0
         self.announcements.append(Announcement("+10 Jamaican Patty!", ttl=1600))
 
-    async def maybe_refresh_global_top(self, force=False):
+    async def maybe_refresh_global_top(self, force: bool = False):
+        # Debounce: don't refetch too frequently
         now = pygame.time.get_ticks()
         if not force and (now - self.global_top_last_ms) < 5000:
             return
@@ -820,17 +848,36 @@ class Game:
 
         self.fetching_top = True
         try:
-            top = await _api_get_top()  # await, no run_until_complete
-            if top is not None:
+            # In browser builds, yield once so the event loop can paint
+            if WEB:
+                await asyncio.sleep(0)
+
+            # Hard timeout so a hung request doesn't block the loop
+            try:
+                top = await asyncio.wait_for(_api_get_top(), timeout=4.0)
+            except asyncio.TimeoutError:
+                top = None
+
+            if top is not None and len(top) > 0:
+                print(f"[LB] fetched {len(top)} items; top={top[0] if top else None}")
+                # Update cache and timestamp only on success
                 self.global_top_cache = top[:20]
-                self.global_top_last_ms = now
-                if self.global_top_cache:  # mirror #1 into fallback for HUD
-                    top_nm, top_sc = self.global_top_cache[0]
-                    self.highscore = int(top_sc)
-                    self.highscore_name = top_nm
+                self.global_top_last_ms = pygame.time.get_ticks()
+
+                # Mirror global #1 into HUD fallback (so menu shows the real top)
+                top_nm, top_sc = self.global_top_cache[0]
+                self.highscore = int(top_sc)
+                self.highscore_name = top_nm
             else:
-                # keep None so the run loop can retry
-                self.global_top_cache = None
+                # Keep the old cache/timestamp so UI doesn't flicker or regress
+                # Optionally, if you want retries, just let caller call us again later.
+                pass
+        except Exception as e:
+            # Log but don't nuke existing cache
+            if WEB and hasattr(js, "console"):
+                js.console.error("maybe_refresh_global_top error:", str(e))
+            else:
+                print("maybe_refresh_global_top error:", e)
         finally:
             self.fetching_top = False
 
@@ -916,7 +963,7 @@ class Game:
 
             # Always submit (so the board stays current even if you didn't hit #1)
             if GLOBAL_API_URL:
-                asyncio.create_task(self.submit_global_score(self.player_name or "Player", score_int))
+                self.pending_submit = (self.player_name or "Player", score_int)
             else:
                 append_leaderboard_local(self.player_name, score_int)
 
@@ -935,8 +982,6 @@ class Game:
             save_highscore(self.highscore)
             save_highscore_name(self.highscore_name)
 
-            # Refresh for the next screen
-            asyncio.create_task(self.maybe_refresh_global_top(force=True))
         if self.flash_timer > 0: self.flash_timer -= dt
         for a in self.announcements: a.update(dt)
         self.announcements = [a for a in self.announcements if a.ttl > 0]
@@ -1074,6 +1119,21 @@ class Game:
         if (self.state == "menu" and (self.legend_mandatory or self.show_legend)):
             self.draw_legend_tile()
 
+    def draw_loading(self):
+        center = (WIDTH // 2, HEIGHT // 2)
+
+        title = self.font_big.render("Welcome to TTC Delay Dodge", True, COL_TEXT)
+        self.screen.blit(title, title.get_rect(center=(center[0], TRACK_TOP - 40)))
+
+        msg = self.font.render("Loading global leaderboard…", True, COL_TEXT_DIM)
+        self.screen.blit(msg, msg.get_rect(center=(center[0], TRACK_BOTTOM + 24)))
+
+        # optional subtle ellipses pulse
+        t = pygame.time.get_ticks() // 400 % 4
+        dots = "." * t
+        sub = self.font_small.render(dots, True, COL_TEXT_DIM)
+        self.screen.blit(sub, sub.get_rect(center=(center[0] + msg.get_width() // 2 + 24, TRACK_BOTTOM + 24)))
+
     def draw_overlay(self):
         center = (WIDTH // 2, HEIGHT // 2)
         if self.paused and self.state == "playing":
@@ -1137,15 +1197,18 @@ class Game:
                 for pt in self.patties: pt.draw(self.screen)
                 for st in self.stations: st.draw(self.screen)
             self.train.draw(self.screen)
-            self.draw_hud()
-            y = 16
-            for a in self.announcements[-2:]:
-                a.draw(self.screen, self.font, y=y);
-                y += 46
+            if self.state != "loading":
+                self.draw_hud()
             if self.state == "name":
                 self.draw_name_entry()
             elif self.state == "menu":
                 self.draw_menu()
+            elif self.state == "loading":
+                self.draw_loading()
+            y = 16
+            for a in self.announcements[-2:]:
+                a.draw(self.screen, self.font, y=y);
+                y += 46
             self.draw_overlay()
 
             if self.state == "playing":
@@ -1161,6 +1224,12 @@ class Game:
             if e.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
+            if self.state == "loading":
+                # Only allow window close / ESC to quit; ignore other inputs
+                if e.type == pygame.KEYDOWN and e.key == pygame.K_ESCAPE:
+                    pygame.quit()
+                    sys.exit()
+                continue
 
             # --- MOBILE: smooth vertical control (tap or drag anywhere on screen) ---
             if WEB and e.type in (pygame.FINGERDOWN, pygame.FINGERMOTION):
@@ -1284,27 +1353,43 @@ class Game:
         print(f"Screen size: {self.screen.get_size()}")
         print(f"Initial state: {self.state}")
 
-        if GLOBAL_API_URL:
-            try:
-                print("Fetching global leaderboard...")
-                await self.maybe_refresh_global_top(force=True)
-                print("Global leaderboard fetched!")
-            except Exception as e:
-                print("Initial leaderboard fetch failed:", e)
-
         frame_count = 0
         while True:
             dt = self.clock.tick(FPS)
+            self.handle_events()
+            # --- inside Game.run() main while-loop, AFTER dt = self.clock.tick(FPS) and BEFORE self.update(dt) ---
+            # Kick off the first fetch only once; then wait for data OR timeout
+
+            if self.state == "loading":
+                if not self.loading_started:
+                    self.loading_started = True
+                    self.loading_started_at = pygame.time.get_ticks()
+                    if GLOBAL_API_URL:
+                        # start background fetch, don't block
+                        fire_and_forget(self.maybe_refresh_global_top(force=True), "initial_fetch")
+
+                # stay on loading screen until data arrives OR we time out
+                elapsed = pygame.time.get_ticks() - self.loading_started_at
+                if (self.global_top_cache is not None) or (elapsed > self.loading_timeout_ms):
+                    self.state = "menu"
+                # Skip normal update/draw during loading
+                self.draw()
+                pygame.display.flip()
+                await asyncio.sleep(0)
+                continue
 
             if frame_count < 5:
                 print(f"Frame {frame_count}: dt={dt}, state={self.state}")
             frame_count += 1
 
-            self.handle_events()
             self.update(dt)
+            if self.pending_submit is not None:
+                name, sc = self.pending_submit
+                await self.submit_global_score(name, sc)
+                self.pending_submit = None
             if GLOBAL_API_URL and (self.state in ("menu", "name", "gameover")):
                 if self.global_top_cache is None and not self.fetching_top:
-                    asyncio.create_task(self.maybe_refresh_global_top(force=True))
+                    await self.maybe_refresh_global_top(force=True)
 
             self.draw()
             pygame.display.flip()
@@ -1312,20 +1397,27 @@ class Game:
 
 
 if __name__ == "__main__":
-    print("=== STARTING TTC DELAY DODGE ===")
+    print("==== STARTING TTC DELAY DODGE ====")
     print(f"Platform: {sys.platform}")
     print(f"WEB mode: {WEB}")
     try:
         game = Game()
         print("Game object created successfully")
-        asyncio.run(game.run())
+
+        if WEB:
+            async def web_main():
+
+                # 2. ONLY start the game loop AFTER the fetch is complete
+                await game.run()  # This will run the game loop indefinitely
+
+
+            # 3. CRITICAL: Schedule the web_main function to start the entire process
+            asyncio.get_event_loop().create_task(web_main())
+        else:
+            # For desktop/non-web platforms
+            # Note: This assumes `game.run()` is an async function (which it is)
+            asyncio.run(game.run())
+
     except Exception as e:
-        print(f"FATAL ERROR: {e}")
-        import traceback
-        traceback.print_exc()
-
-
-
-
-
+        print(f"An error occurred: {e}")
 
