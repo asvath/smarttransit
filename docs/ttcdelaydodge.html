@@ -59,6 +59,7 @@
       font-size:18px; text-decoration:none; display:inline-block;
     }
     .btn.primary{ background:var(--red); color:#fff; border-color:var(--red); }
+    header .brand .muted { font-weight: 400; }
 
     main{ max-width:1360px; margin:20px auto; padding:0 22px; }
 
@@ -155,13 +156,15 @@
   <!-- position:relative so the dropdown anchors correctly -->
   <div class="container" style="display:flex;align-items:center;justify-content:space-between;position:relative;">
     <div class="brand">
-      <div class="badge">TTC</div>
-      <div>
-        <a href="index.html" style="font-weight:700;font-size:20px;color:inherit;text-decoration:none;">
-          TTC Delay Insights
-        </a>
-        <div class="muted" style="font-size:16px;">Data today, better commutes tomorrow.</div>
-      </div>
+      <a href="index.html"
+         class="brand-link"
+         style="display:flex;align-items:center;gap:12px;color:inherit;text-decoration:none;">
+        <div class="badge">TTC</div>
+        <div>
+          <div style="font-weight:700;font-size:20px;">TTC Delay Insights</div>
+          <div class="muted" style="font-size:16px;">Data today, better commutes tomorrow.</div>
+        </div>
+      </a>
     </div>
 
     <!-- Mobile hamburger -->
