@@ -1,5 +1,4 @@
 import math, random, sys, os, array, json, asyncio
-
 import pygame
 
 import json as _json
@@ -9,22 +8,35 @@ except Exception:
     _url = None
 
 # ---------- Platform detection (desktop vs web) ----------
-WEB = sys.platform in ("wasi", "emscripten")
-# --- portable browser fetch helper ---
+WEB = False
+try:
+    import js  # available in Pyodide/pygbag runtime
+    WEB = True
+except Exception:
+    js = None  # desktop run
+
+# Try to import pyfetch (Pyodide) then the pygbag shim
+_pyfetch = None
 if WEB:
-    from platform import window
-    import js
     try:
-        from pyodide.http import pyfetch as _pyfetch      # real Pyodide
+        from pyodide.http import pyfetch as _pyfetch      # Pyodide runtime
     except Exception:
         try:
-            from pyodide_http import pyfetch as _pyfetch   # pygbag shim
+            from pyodide_http import pyfetch as _pyfetch  # pygbag shim
         except Exception:
-            _pyfetch = None  # fallback to js.fetch
+            _pyfetch = None
 
-# ---------- Global leaderboard API ----------
-# for new build
+# Optional alias so window.* still works
+if WEB:
+    window = js.window
+# ------------------------------------------------------
+
 GLOBAL_API_URL = "https://ttcdelayinsights.ca/api"
+try:
+    if WEB:
+        GLOBAL_API_URL = js.window.location.origin + "/api"
+except Exception:
+    pass
 
 WIDTH, HEIGHT = 960, 600
 FPS = 60
@@ -83,7 +95,7 @@ HIGHSCORE_NAME_KEY = "delay_dodge_highscore_name"
 def load_highscore_name():
     try:
         if WEB:
-            val = window.localStorage.getItem(HIGHSCORE_NAME_KEY)
+            val = js.window.localStorage.getItem(HIGHSCORE_NAME_KEY)
             return val or ""
         else:
             if os.path.exists(HIGHSCORE_NAME_FILE):
@@ -98,7 +110,7 @@ def save_highscore_name(name):
     try:
         name = (name or "Player").strip() or "Player"
         if WEB:
-            window.localStorage.setItem(HIGHSCORE_NAME_KEY, name)
+            js.window.localStorage.setItem(HIGHSCORE_NAME_KEY, name)
         else:
             with open(HIGHSCORE_NAME_FILE, "w", encoding="utf-8") as f:
                 f.write(name)
@@ -150,7 +162,7 @@ def draw_rounded_rect(surf, rect, color, radius=8):
 def load_highscore():
     try:
         if WEB:
-            val = window.localStorage.getItem(HIGHSCORE_KEY)
+            val = js.window.localStorage.getItem(HIGHSCORE_KEY)
             return int(val) if val else 0
         else:
             if os.path.exists(HIGHSCORE_FILE):
@@ -165,7 +177,7 @@ def save_highscore(score):
     try:
         score = int(score)
         if WEB:
-            window.localStorage.setItem(HIGHSCORE_KEY, str(score))
+            js.window.localStorage.setItem(HIGHSCORE_KEY, str(score))
         else:
             with open(HIGHSCORE_FILE, "w", encoding="utf-8") as f:
                 f.write(str(score))
@@ -176,90 +188,107 @@ def save_highscore(score):
 # ---------- Leaderboard (global via API if configured, else local fallback) ----------
 def _js_obj(py_dict):
     """Convert a Python dict into a real JavaScript object."""
-    return window.JSON.parse(_json.dumps(py_dict))
+    return js.window.JSON.parse(_json.dumps(py_dict))
 
 
 async def _api_get_top():
     """Return top leaderboard entries (safe for both desktop & web)."""
-    base = (GLOBAL_API_URL or "").rstrip("/")  # avoid //leaderboard
+    base = (GLOBAL_API_URL or "").rstrip("/")
     url = f"{base}/leaderboard"
+
     try:
         if WEB:
-            import time as _t, json as _pyjson
-            fetch_url = f"{url}?ts={int(_t.time() * 1000)}"  # cache-bust
+            import time as _t
+            fetch_url = f"{url}?ts={int(_t.time()*1000)}"  # cache-bust
 
-            # Build a true JS options object (NOT a Python dict)
-            opts = _js_obj({
-                "method": "GET",
-                "mode": "cors",
-                "cache": "no-store",
-                "credentials": "omit",
-            })
-
-            # Log only strings (avoid marshalling JS/Py objects into each other)
-            js.console.log(f"LB GET url: {fetch_url}")
-
-            try:
-                resp = await js.fetch(fetch_url, opts)
-                js.console.log(f"LB GET status: {getattr(resp, 'status', None)}")
-            except Exception as e:
-                js.console.error(f"LB GET fetch threw: {str(e)}")
-                return None
-
-            if not resp or not getattr(resp, "ok", False):
-                txt = ""
+            # Prefer pyfetch if available
+            if _pyfetch is not None:
+                js.console.log("LB GET (pyfetch) url:", fetch_url)
                 try:
-                    txt = await resp.text()
-                except Exception:
-                    pass
-                js.console.error(f"Leaderboard GET failed: {getattr(resp, 'status', None)} {txt}")
-                return None
+                    resp = await _pyfetch(
+                        fetch_url,
+                        method="GET",
+                        mode="cors",
+                        cache="no-store",
+                        credentials="omit",
+                    )
+                    js.console.log("LB GET status:", resp.status)
+                except Exception as e:
+                    js.console.error("LB GET pyfetch threw:", str(e))
+                    return None
 
-            try:
-                data = await resp.json()  # JS object/array in Pyodide
-                # Convert to pure Python if it's a JSProxy
-                try:
-                    data = data.to_py()
-                except Exception:
-                    # Fallback: if still not a list, try JSON round-trip
+                if not (200 <= resp.status < 300):
                     try:
-                        data = _pyjson.loads(js.JSON.stringify(data))
+                        txt = await resp.text()
+                    except Exception:
+                        txt = ""
+                    js.console.error("Leaderboard GET failed:", resp.status, txt)
+                    return None
+
+                try:
+                    data = await resp.json()
+                except Exception as e:
+                    js.console.error("LB GET json() failed:", str(e))
+                    return None
+
+            else:
+                # Fallback to js.fetch
+                # build a plain JS object for options
+                opts = js.eval("""(()=>({method:'GET',mode:'cors',cache:'no-store',credentials:'omit'}))()""")
+                js.console.log("LB GET (js.fetch) url:", fetch_url)
+                try:
+                    resp = await js.fetch(fetch_url, opts)
+                except Exception as e:
+                    js.console.error("LB GET js.fetch threw:", str(e))
+                    return None
+
+                # try both getattr and direct
+                try:
+                    js.console.log("LB GET status:", getattr(resp, "status", None))
+                except Exception:
+                    try:
+                        js.console.log("LB GET status (direct):", resp.status)
                     except Exception:
                         pass
-            except Exception as e:
-                js.console.error(f"LB GET json() failed: {str(e)}")
-                return None
+
+                if not (hasattr(resp, "ok") and resp.ok):
+                    txt = ""
+                    try:
+                        txt = await resp.text()
+                    except Exception:
+                        pass
+                    st = None
+                    try:
+                        st = resp.status
+                    except Exception:
+                        pass
+                    js.console.error("Leaderboard GET failed:", st, txt)
+                    return None
+
+                try:
+                    data = await resp.json()
+                except Exception as e:
+                    js.console.error("LB GET json() failed:", str(e))
+                    return None
+
         else:
-            import json as _pyjson
+            # Desktop path
+            import json as _pyjson, urllib.request as _url
             with _url.urlopen(url, timeout=5) as r:
                 data = _pyjson.loads(r.read().decode("utf-8"))
 
-        # Normalize + sort (now 'data' is guaranteed Python)
-        items = []
-        for d in (data or []):
-            if isinstance(d, dict):
-                name = d.get("name", "Player")
-                score = int(d.get("score", 0))
-            else:
-                # JS objects after to_py() should be dicts; this is a belt-and-suspenders fallback
-                try:
-                    name = getattr(d, "name", "Player") or "Player"
-                    score = int(getattr(d, "score", 0) or 0)
-                except Exception:
-                    name, score = "Player", 0
-            items.append((name, score))
-
+        # Normalize + sort
+        items = [(d.get("name", "Player"), int(d.get("score", 0))) for d in (data or [])]
         items.sort(key=lambda x: x[1], reverse=True)
         return items[:20]
 
     except Exception as e:
-        # IMPORTANT: only log strings
-        msg = str(e)
         if WEB:
-            js.console.error(f"Leaderboard GET exception: {msg}")
+            js.console.error("Leaderboard GET exception:", str(e))
         else:
-            print("Leaderboard GET exception:", msg)
+            print("Leaderboard GET exception:", e)
         return None
+
 
 async def _api_post_score(name, score):
     """Submit a score to the global leaderboard."""
@@ -331,11 +360,11 @@ def append_leaderboard_local(name, score):
     score = int(score)
     if WEB:
         try:
-            raw = window.localStorage.getItem(LEADERBOARD_KEY)
+            raw = js.window.localStorage.getItem(LEADERBOARD_KEY)
             data = json.loads(raw) if raw else []
             data.append({"name": name, "score": score})
             data = sorted(data, key=lambda x: x["score"], reverse=True)[:20]
-            window.localStorage.setItem(LEADERBOARD_KEY, json.dumps(data))
+            js.window.localStorage.setItem(LEADERBOARD_KEY, json.dumps(data))
         except Exception:
             pass
     else:
@@ -348,7 +377,7 @@ def append_leaderboard_local(name, score):
 def read_leaderboard_top_local(n=5):
     if WEB:
         try:
-            raw = window.localStorage.getItem(LEADERBOARD_KEY)
+            raw = js.window.localStorage.getItem(LEADERBOARD_KEY)
             data = json.loads(raw) if raw else []
             data = sorted(data, key=lambda x: x["score"], reverse=True)
             return [(d["name"], int(d["score"])) for d in data[:n]]
@@ -796,7 +825,7 @@ class Game:
             return
         try:
             default = self.player_name or self.highscore_name or "Player"
-            nm = window.prompt("Enter your name:", default)
+            nm = js.window.prompt("Enter your name:", default)
             if nm:
                 self.player_name = nm.strip()[:18]
                 save_highscore_name(self.player_name)
