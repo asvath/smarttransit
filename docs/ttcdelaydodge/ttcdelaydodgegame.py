@@ -15,7 +15,7 @@ if WEB:
     import js
 
 # ---------- Global leaderboard API ----------
-GLOBAL_API_URL = "https://leaderboard-api.ashaasvathaman.workers.dev"
+GLOBAL_API_URL = "/api"
 
 WIDTH, HEIGHT = 960, 600
 FPS = 60
@@ -1256,12 +1256,8 @@ class Game:
         print(f"Initial state: {self.state}")
 
         if GLOBAL_API_URL:
-            try:
-                print("Fetching global leaderboard...")
-                await self.maybe_refresh_global_top(force=True)
-                print("Global leaderboard fetched!")
-            except Exception as e:
-                print("Initial leaderboard fetch failed:", e)
+            print("Fetching global leaderboard in background...")
+            asyncio.create_task(self.maybe_refresh_global_top(force=True))
 
         frame_count = 0
         while True:
