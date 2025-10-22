@@ -513,7 +513,7 @@
       return r.json();
     }).then(geojson => {
       linesLayer = L.geoJSON(geojson, {
-        pane: 'pane-lines'.
+        pane: 'pane-lines',
         style: f => {
           const rn = get_route_name(f.properties);
           const canon = canonical_line(rn);
