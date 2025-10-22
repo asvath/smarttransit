@@ -124,6 +124,29 @@
       .nav.is-open{ display:flex; }
       .btn{ width:100%; text-align:center; padding:12px 14px; font-size:16px; }
 }
+    /* ===== Rotate hint ===== */
+    .rotate-hint {
+      display: none;
+    }
+
+    /* Show ONLY on small portrait touch screens */
+    @media (max-width: 860px) and (orientation: portrait) and (hover: none) and (pointer: coarse) {
+      .rotate-hint {
+        display: block;
+        text-align: center;
+        font-size: 15px;
+        color: #e5e7eb;
+        margin: 10px auto;
+        padding: 8px 14px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 10px;
+        width: fit-content;
+        font-style: italic;
+        letter-spacing: 0.2px;
+        backdrop-filter: blur(4px);
+      }
+    }
   </style>
 
   <!-- NEW: force autorun without touching the inner index.html -->
@@ -192,6 +215,7 @@
           <h1>Play TTC Delay Dodge</h1>
           <p>Dodge delays caused by track-intruding raccoons, disorderly patrons and more, grab Jamaican patties and a coffee for bonus points,
             and see if you can beat the high score before your next train!</p>
+          <p class="rotate-hint"><em>For the best experience, rotate your phone horizontally.</em></p>
         </div>
 
         <div class="frame-wrap">
@@ -230,6 +254,21 @@
       window.addEventListener('resize', () => { if (window.innerWidth > 860) closeMenu(); });
     })();
   </script>
+  <script>
+  window.addEventListener("orientationchange", () => {
+    const hint = document.querySelector(".rotate-hint");
+    if (hint) {
+      setTimeout(() => {
+        if (window.matchMedia("(orientation: landscape)").matches) {
+          hint.style.display = "none";
+        } else if (window.matchMedia("(orientation: portrait)").matches) {
+          hint.style.display = "block";
+        }
+      }, 200);
+    }
+  });
+  </script>
+
 </body>
 </html>
 
