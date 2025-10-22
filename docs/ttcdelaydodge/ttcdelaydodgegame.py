@@ -153,7 +153,8 @@ async def _api_get_top():
     url = f"{GLOBAL_API_URL}/leaderboard"
     try:
         if WEB:
-            opts = to_js({"method": "GET", "mode": "cors", "cache": "no-store"})
+            opts = _js_obj({"method": "GET", "mode": "cors", "cache": "no-store"})
+            js.console.log("LB GET url:", url, "opts:", opts)
             resp = await js.fetch(url, opts)
             if not resp.ok:
                 txt = await resp.text()
