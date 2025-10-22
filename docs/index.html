@@ -809,10 +809,17 @@
             }
           }
           //on mobile, scroll to map when hotspots (not General) are clicked ---
-          if (window.innerWidth <= 860 && key !== "ALL") {
+          if (
+            e.isTrusted &&                      // ensures it's a real user click, not JS init
+            window.innerWidth <= 860 &&
+            key !== "ALL"
+          ) {
             const mapEl = document.getElementById("leaflet-map");
             if (mapEl) {
-              mapEl.scrollIntoView({ behavior: "smooth", block: "start" });
+              // Delay slightly so map finishes centering before scroll
+              setTimeout(() => {
+                mapEl.scrollIntoView({ behavior: "smooth", block: "start" });
+              }, 150);
             }
           }
 
