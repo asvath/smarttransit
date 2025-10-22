@@ -255,6 +255,78 @@ async def _api_get_top():
             print("[LB] GET exception:", e)
         return None  # Return None on exception to trigger fallback
 
+async def _api_post_score(name, score):
+    """Submit one score to the global leaderboard. Returns True/False."""
+    base = (GLOBAL_API_URL or "").rstrip("/")
+    url = f"{base}/leaderboard"
+
+    try:
+        payload = _json.dumps({
+            "name": (name or "Player").strip() or "Player",
+            "score": int(score)
+        })
+
+        if WEB:
+            import js, time as _t
+            url_with_ts = f"{url}?ts={int(_t.time() * 1000)}"  # cache-bust
+
+            # Expose inputs to JS
+            js.window.leaderboard_post_url = url_with_ts
+            js.window.leaderboard_post_body = payload
+
+            # Use native fetch in JS for stability in Pyodide/emscripten
+            fetch_code = """
+            (async function() {
+                try {
+                    const resp = await fetch(window.leaderboard_post_url, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: window.leaderboard_post_body
+                    });
+                    window.leaderboard_post_result = { ok: !!(resp && resp.ok), status: resp ? resp.status : 0 };
+                } catch (e) {
+                    console.error('[LB JS] POST exception:', e);
+                    window.leaderboard_post_result = { ok: false, message: String(e) };
+                }
+            })()
+            """
+            js.eval(fetch_code)
+
+            # Poll for result (max ~10s)
+            for _ in range(100):
+                await asyncio.sleep(0.1)
+                result = getattr(js.window, "leaderboard_post_result", None)
+                if result is not None:
+                    ok = bool(getattr(result, "ok", False))
+                    # Cleanup temp globals
+                    js.eval("delete window.leaderboard_post_url; delete window.leaderboard_post_body; delete window.leaderboard_post_result;")
+                    if not ok:
+                        js.console.error("[LB] POST failed:", getattr(result, "status", None) or getattr(result, "message", None))
+                    return ok
+
+            js.console.error("[LB] POST timeout")
+            js.eval("delete window.leaderboard_post_url; delete window.leaderboard_post_body; delete window.leaderboard_post_result;")
+            return False
+
+        else:
+            # Desktop path
+            if _url is None:
+                return False
+            data = payload.encode("utf-8")
+            req = _url.Request(url, data=data, headers={"Content-Type": "application/json"}, method="POST")
+            with _url.urlopen(req, timeout=5) as r:
+                return 200 <= getattr(r, "status", 0) < 300
+
+    except Exception as e:
+        try:
+            if WEB:
+                js.console.error("[LB] POST exception:", str(e))
+            else:
+                print("[LB] POST exception:", e)
+        except Exception:
+            pass
+        return False
+
 
 # --- Minimal desktop fallback for local leaderboard (CSV file) ---
 def _read_leaderboard_desktop():
