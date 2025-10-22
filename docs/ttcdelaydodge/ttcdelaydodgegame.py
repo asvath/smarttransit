@@ -153,13 +153,25 @@ async def _api_get_top():
     url = f"{GLOBAL_API_URL}/leaderboard"
     try:
         if WEB:
-            opts = _js_obj({"method": "GET", "mode": "cors", "cache": "no-store"})
-            js.console.log("LB GET url:", url, "opts:", opts)
+            import time as _t
+            url = f"{url}?ts={int(_t.time()*1000)}"
+
+            opts = window.Object.fromEntries([
+                ["method", "GET"],
+                ["cache", "no-store"],
+                ["credentials", "same-origin"],
+            ])
+            js.console.log("[LB] GET", url, opts)
+
             resp = await js.fetch(url, opts)
+            js.console.log("[LB] status", getattr(resp, "status", None))
+
             if not resp.ok:
-                txt = await resp.text()
-                js.console.error("Leaderboard GET failed:", resp.status, txt)
-                return None
+                txt = ""
+                try: txt = await resp.text()
+                except: pass
+                js.console.error("[LB] GET failed:", getattr(resp, "status", None), txt)
+                return []
 
             data = await resp.json()
         else:
@@ -167,18 +179,19 @@ async def _api_get_top():
                 data = json.loads(r.read().decode("utf-8"))
 
         top = sorted(
-            [(d.get("name", "Player"), int(d.get("score", 0))) for d in data],
+            [(d.get("name", "Player"), int(d.get("score", 0))) for d in (data or [])],
             key=lambda x: x[1],
             reverse=True,
         )
+        js.console.log("[LB] parsed", len(top)) if WEB else None
         return top[:20]
 
     except Exception as e:
         if WEB:
-            js.console.error("Leaderboard GET exception:", str(e))
+            js.console.error("[LB] GET exception:", str(e))
         else:
             print("Leaderboard GET exception:", e)
-        return None
+        return []
 
 
 async def _api_post_score(name, score):
@@ -792,18 +805,17 @@ class Game:
 
         self.fetching_top = True
         try:
-            top = await _api_get_top()  # await, no run_until_complete
-            if top is not None:
-                self.global_top_cache = top[:20]
-                self.global_top_last_ms = now
-                if self.global_top_cache:  # mirror #1 into fallback for HUD
-                    top_nm, top_sc = self.global_top_cache[0]
-                    self.global_best = (top_nm, int(top_sc))
-                    self.highscore = int(top_sc)
-                    self.highscore_name = top_nm
-            else:
-                # keep None so the run loop can retry
-                self.global_top_cache = None
+            top = await _api_get_top()
+            # top is now a list (possibly empty), never None
+            self.global_top_cache = top[:20]
+            self.global_top_last_ms = now
+
+            if self.global_top_cache:  # mirror #1 into HUD fallback
+                top_nm, top_sc = self.global_top_cache[0]
+                self.global_best = (top_nm, int(top_sc))
+                self.highscore = int(top_sc)
+                self.highscore_name = top_nm
+
         finally:
             self.fetching_top = False
 
