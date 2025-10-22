@@ -538,7 +538,7 @@
           fillOpacity: 1.0
         }).bindTooltip(stationName);
 
-        marker.on("click", () => { selectStation(stationName, s.lat, s.lon); });
+        marker.on("click", () => { selectStation(stationName, s.lat, s.lon, true); });
 
         stationsGroup.addLayer(marker);
         stationMarkersByName.set(stationKey, marker);
@@ -563,10 +563,10 @@
       loadHotspots();
     }).catch(err => { console.error(err); });
 
-    function selectStation(stationName, lat, lon){
+    function selectStation(stationName, lat, lon, userInitiated = false){
       document.getElementById("st-name").textContent = stationName;
 
-      const key = stationName.toUpperCase().trim();
+      const key   = stationName.toUpperCase().trim();
       const stats = stationStatsMap[key];
 
       const totalDelays = stats?.total_delays;
@@ -586,8 +586,9 @@
       document.getElementById("st-major").textContent      = (typeof majorDelays === "number") ? majorDelays : "—";
       document.getElementById("st-top-reason").innerHTML   = formatReason(topReasonByTime);
       document.getElementById("st-time-top").textContent   = hoursToHM(topTimeHours);
-      // --- on mobile, scroll to the station card ---
-      if (window.innerWidth <= 860) {
+
+      // Mobile scroll only when the selection was user-initiated
+      if (userInitiated && window.innerWidth <= 860) {
         const stCard = document.getElementById("st-name");
         if (stCard) {
           stCard.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -595,13 +596,14 @@
       }
     }
 
+
     let didAutoFocus = false;
     function focusDefaultStation(target){
       if (didAutoFocus) return;
 
       if (target && typeof target.lat === "number" && typeof target.lon === "number") {
         map.setView([target.lat, target.lon], 13);
-        selectStation(target.name, target.lat, target.lon);
+        selectStation(target.name, target.lat, target.lon, false);
         didAutoFocus = true;
         setTimeout(()=>map.invalidateSize(), 0);
         return;
@@ -852,7 +854,7 @@
       const name = toTitle(targetKey);
 
       map.setView(ll, Math.max(map.getZoom(), 13), { animate: true });
-      selectStation(name, ll[0], ll[1]);
+      selectStation(name, ll[0], ll[1], true);
     }
 
     document.getElementById('station-go').addEventListener('click', goToSearchedStation);
