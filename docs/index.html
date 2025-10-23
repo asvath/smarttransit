@@ -143,8 +143,8 @@
     .hamburger.is-open span:nth-child(2){ opacity:0; }
     .hamburger.is-open span:nth-child(3){ transform:translateY(-7px) rotate(-45deg); }
 
-    /* Mobile polish ≤860px */
-    @media (max-width: 860px){
+    /* Mobile polish ≤1024px */
+    @media (max-width: 1024px){
       html, body { overflow-x: hidden; }
       header .container{ gap:10px; }
       .hamburger{ display:flex; }
@@ -214,7 +214,7 @@
     }
 
     /* Show ONLY on small portrait touch screens */
-    @media (max-width: 860px) and (orientation: portrait) and (hover: none) and (pointer: coarse) {
+    @media (max-width: 1024px) and (orientation: portrait) and (hover: none) and (pointer: coarse) {
       .rotate-hint {
         display: block;
         text-align: center;
@@ -233,7 +233,7 @@
     }
 
     /* --- Mobile only: make station search button smaller --- */
-    @media (max-width: 860px) {
+    @media (max-width: 1024px) {
       #station-go {
         width: auto !important;
         display: inline-flex !important;
