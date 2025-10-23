@@ -111,7 +111,7 @@
     .hamburger.is-open span:nth-child(2){ opacity:0; }
     .hamburger.is-open span:nth-child(3){ transform:translateY(-7px) rotate(-45deg); }
 
-    @media (max-width: 860px){
+    @media (max-width: 1024px){
       html, body { overflow-x:hidden; }
       header .container{ gap:10px; }
       .hamburger{ display:flex; }
@@ -130,7 +130,7 @@
     }
 
     /* Show ONLY on small portrait touch screens */
-    @media (max-width: 860px) and (orientation: portrait) and (hover: none) and (pointer: coarse) {
+    @media (max-width: 1024px) and (orientation: portrait) and (hover: none) and (pointer: coarse) {
       .rotate-hint {
         display: block;
         text-align: center;
@@ -254,7 +254,7 @@
         btn.setAttribute('aria-expanded', String(open));
       });
       nav.addEventListener('click', e => { if(e.target.closest('a')) closeMenu(); });
-      window.addEventListener('resize', () => { if (window.innerWidth > 860) closeMenu(); });
+      window.addEventListener('resize', () => { if (window.innerWidth > 1024) closeMenu(); });
     })();
   </script>
   <script>
