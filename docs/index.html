@@ -630,7 +630,7 @@
       document.getElementById("st-time-top").textContent   = hoursToHM(topTimeHours);
 
       // Mobile scroll only when the selection was user-initiated
-      if (userInitiated && window.innerWidth <= 860) {
+      if (userInitiated && window.innerWidth <= 1024) {
         const stCard = document.getElementById("st-name");
         if (stCard) {
           stCard.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -855,7 +855,7 @@
           //on mobile, scroll to map when hotspots (not General) are clicked ---
           if (
             e.isTrusted &&                      // ensures it's a real user click, not JS init
-            window.innerWidth <= 860 &&
+            window.innerWidth <= 1024 &&
             key !== "ALL"
           ) {
             const mapEl = document.getElementById("leaflet-map");
@@ -921,7 +921,7 @@
         btn.setAttribute('aria-expanded', String(open));
       });
       nav.addEventListener('click', e => { if(e.target.closest('a')) closeMenu(); });
-      window.addEventListener('resize', () => { if (window.innerWidth > 860) closeMenu(); });
+      window.addEventListener('resize', () => { if (window.innerWidth > 1024) closeMenu(); });
     })();
   </script>
 
