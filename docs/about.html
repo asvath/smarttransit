@@ -79,7 +79,7 @@
     .hamburger.is-open span:nth-child(2){ opacity:0; }
     .hamburger.is-open span:nth-child(3){ transform:translateY(-7px) rotate(-45deg); }
 
-    @media (max-width: 860px){
+    @media (max-width: 1024px){
       html, body { overflow-x:hidden; }
       header .container{ gap:10px; }
       .hamburger{ display:flex; }
@@ -93,7 +93,7 @@
       .btn{ width:100%; text-align:center; padding:12px 14px; font-size:16px; }
     }
     /* Prevent long words from overflowing cards on mobile */
-    @media (max-width: 860px){
+    @media (max-width: 1024px){
       /* allow wrapping anywhere inside the card content */
       .content{ overflow-wrap:anywhere; word-break:break-word; }
 
@@ -258,7 +258,7 @@
         btn.setAttribute('aria-expanded', String(open));
       });
       nav.addEventListener('click', e => { if(e.target.closest('a')) closeMenu(); });
-      window.addEventListener('resize', () => { if (window.innerWidth > 860) closeMenu(); });
+      window.addEventListener('resize', () => { if (window.innerWidth > 1024) closeMenu(); });
     })();
   </script>
 </body>
