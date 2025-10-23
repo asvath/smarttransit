@@ -1086,11 +1086,11 @@ class Game:
         if GLOBAL_API_URL:
             if self.global_top_cache is None:
                 # We haven't fetched yet (or still waiting)
-                hs_label = "World best: loading…"
+                hs_label = "High Score: loading…"
             elif self.global_top_cache:
                 # Got data: show the true world-best (top of the list)
                 top_nm, top_sc = self.global_top_cache[0]
-                hs_label = f"World best: {int(top_sc)} ({top_nm})"
+                hs_label = f"High Score: {int(top_sc)} ({top_nm})"
             else:
                 # Leaderboard exists but is empty: fall back to local
                 disp_score, disp_name = self.highscore, getattr(self, "highscore_name", "")
