@@ -19,7 +19,7 @@ Dundas West Station
 Dupont Station
 Eglinton Station
 Eglinton West Station
-Ellesmere Station
+Finch Station
 Finch West Station
 Glencairn Station
 Greenwood Station
@@ -32,14 +32,12 @@ Kennedy Station
 King Station
 Kipling Station
 Lansdowne Station
-Lawrence East Station
 Lawrence Station
 Lawrence West Station
 Leslie Station
 Main Street Station
-McCowan Station
-Midland Station
 Museum Station
+North York Centre Station
 Old Mill Station
 Osgoode Station
 Ossington Station
@@ -50,7 +48,6 @@ Queen's Park Station
 Rosedale Station
 Royal York Station
 Runnymede Station
-Scarborough Centre Station
 Sheppard West Station
 Sheppard-Yonge Station
 Sherbourne Station
