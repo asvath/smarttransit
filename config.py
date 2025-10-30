@@ -1,7 +1,7 @@
 import os
 from datetime import time
 
-BASE_DIR = r'C:\Users\ashaa\OneDrive\Desktop\SmartTransit'  # Root of project
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # Root of project
 
 DATA_DIR = os.path.join(BASE_DIR, 'data')                   # Main data directory
 RAW_DATA_DIR = os.path.join(BASE_DIR, 'data', 'raw')        # All raw data, includes delays, docs, code_descriptions
