@@ -131,11 +131,22 @@ def code_specific_station_stats(df: pd.DataFrame, year_start:int, year_end:int, 
     :param unit: units for time output
     :return: dict containing stats
     """
-    code_stats ={}
+    if df is None:
+        raise ValueError("Input df is None!")
+
+    if "DateTime" not in df.columns:
+        raise ValueError(f"DateTime column not found. Available columns: {df.columns.tolist()}")
+
+    code_stats = {}
     df = df.copy()
-    df = df[df["Year"].isin([year_start, year_end])]
-    df = df[df["Code"].isin(code)]
+
+    # Create Year column
     df["Year"] = df["DateTime"].dt.year
+
+    # filter
+    years = range(year_start, year_end + 1)
+    df = df[df["Year"].isin(years)]
+    df = df[df["Code"].isin(code)]
 
     # conversion factor
     factors = {
