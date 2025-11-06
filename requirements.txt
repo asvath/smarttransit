@@ -4,3 +4,5 @@ seaborn
 openpyxl
 geopandas
 matplotlib
+kaleido
+scipy
