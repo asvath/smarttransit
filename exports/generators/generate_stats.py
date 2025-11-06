@@ -50,6 +50,7 @@ Generates the following stats and saves them in JSON file:
 
 
 def generate_stats():
+    os.makedirs(EXPORTS_STATS_DIR, exist_ok=True)
     # load data
     loader = TTCLoader()
     df = loader.df
