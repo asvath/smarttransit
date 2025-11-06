@@ -168,9 +168,9 @@ class TTCLoader:
         self.df = self.df[self.df['Station'].isin(stations)].copy()
         return self
 
-    def filter_delay_code(self, code)-> Self:
+    def filter_delay_code(self, code:list)-> Self:
         """Filter data by delay code"""
-        self.df = self.df[self.df["Code"] == code].copy()
+        self.df = self.df[self.df["Code"].isin(code)].copy()
         return self
 
     def filter_line(self, line)-> Self:
