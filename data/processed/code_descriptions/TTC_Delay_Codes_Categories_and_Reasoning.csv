@@ -59,7 +59,7 @@ _id,CODE,DESCRIPTION,CATEGORY,REASONING,PUBLIC EXPLANATION
 58,MUPR1,PRIORITY ONE  TRAIN IN CONTACT WITH PERSON,Patron,"Train in contact with person, e.g suicide, pushed off the platform etc.",Train in contact with person
 59,MUSAN,UNSANITARY VEHICLE,Patron,"Train car that is too dirty or contaminated for service, highly likely caused by patron.",Unsanitary vehicle
 60,MUSC,SI SPEED CONTROL,Mechanical/Infrastructure,Signal Interlocking Speed Control that enforces safe train speeds along a section of track.,Issue with system that mangages train speed and routes
-61,MUTD,TRAINING DEPT. RELATED DELAYS,Operational/Process,Staff Training.,Staff Training.
+61,MUTD,TRAINING DEPT. RELATED DELAYS,Operational/Process,Staff Training.,Staff Training
 62,MUTO,MISCELLANEOUS TRANSPORTATION OTHER (EMPLOYEE NON-CHARGEABLE),Operational/Process,Train operations issue with employee found non-chargeable,Issue with train operations
 63,MUWEA,WEATHER REPORTS / RELATED PROBLEMS,Weather,Weather conditions.,Weather related 
 64,MUWR,WORK REFUSAL,Other/Internal,Service disruption due to labour dispute or work refusal.,Service disruption due to labour dispute or work refusal
@@ -72,7 +72,7 @@ _id,CODE,DESCRIPTION,CATEGORY,REASONING,PUBLIC EXPLANATION
 71,PUEO,ELECTRICAL  OTHER,Other/Unclear,Cause is too vague or lacks enough detail to determine.,Unclear electrical issue
 72,PUEWZ,ELECTRICAL  WORK ZONE PROBLEMS,Mechanical/Infrastructure,Not train related.,Electrical problem in a work zone
 73,PUMEL,ANY ESCL. OR ELEV. INCIDENT  TRANSPORTED OR MEDICAL AID DECLINED,Patron,Medical emergency involving  a patron.,Escalator/Elevator incident involving patron
-74,PUMO,PLANT MAINTENANCE  OTHER,Mechanical/Infrastructure,Maintenance of facilities.,Maintenance of facilities.
+74,PUMO,PLANT MAINTENANCE  OTHER,Mechanical/Infrastructure,Maintenance of facilities.,Maintenance of facilities
 75,PUMST,ANY STAIRWAY INCIDENT  TRANSPORTED OR MEDICAL AID DECLINED,Patron,Medical emergency involving a patron.,Stairway incident involving patron
 76,PUOPO,OPTO (COMMUNICATIONS) TRAIN DOOR MONITORING,Mechanical/Vehicle,Onboard communication and monitoring system used by the operator to supervise and control train doors.,Issue with the communications system that monitors train doors
 77,PUSAC,SIGNALS AXLE COUNTER BLOCK FAILURE,Mechanical/Infrastructure,Detect train presence by counting wheel axles entering and leaving a defined section.,Issue with train detection signalling system
@@ -88,7 +88,7 @@ _id,CODE,DESCRIPTION,CATEGORY,REASONING,PUBLIC EXPLANATION
 87,PUSO,SIGNALS  OTHER,Mechanical/Infrastructure,Unspecified issue involving the signalling system,Unspecified issue involving the signalling system
 88,PUSRA,SUBWAY RADIO SYSTEM PROBLEMS,Mechanical/Infrastructure,The fixed radio network used for train communication and operations.,Issue with radio network used for train communication and operations
 89,PUSSW,TRACK SWITCH FAILURE  S/E/C RELATED PROBLEM,Mechanical/Infrastructure,Failure of track switch.,Track switch problem affecting routing
-90,PUSTC,SIGNALS - TRACK CIRCUIT PROBLEMS,Mechanical/Infrastructure,Trackside signalling issue.,Trackside signalling issue.
+90,PUSTC,SIGNALS - TRACK CIRCUIT PROBLEMS,Mechanical/Infrastructure,Trackside signalling issue.,Trackside signalling issue
 91,PUSTP,TRACTION POWER OR RELATED COMPONENTS FAILURE,Mechanical/Vehicle,Failure in the fixed electrical network that delivers power to train.,Issue with the train's power supply system
 92,PUSTS,SIGNALS  TRAIN STOPS,Mechanical/Infrastructure,Fault in the trackside safety device that automatically applies a train's brakes if it passes a red signal.,Issue with trackside safety device that stops trains at red signals
 93,PUSWZ,WORK ZONE PROBLEMS  SIGNALS,Mechanical/Infrastructure,Signalling issue where maintenance or construction work is taking place.,Signalling issue where maintenance or construction work is taking place.
@@ -120,7 +120,7 @@ _id,CODE,DESCRIPTION,CATEGORY,REASONING,PUBLIC EXPLANATION
 119,SUROB,ROBBERY,Patron,Robbery.,Robbery
 120,SUSA,ASSAULT / SEXUAL,Patron,Sexual Assault.,Sexual Assault
 121,SUSP,SUSPICIOUS PACKAGE,Patron,Suspicious Package.,Suspicious Package
-122,SUUT,UNAUTHORIZED AT TRACK LEVEL,Patron,Patron on the track level.,Patron on the track level.
+122,SUUT,UNAUTHORIZED AT TRACK LEVEL,Patron,Patron on the track level.,Patron on the track level
 123,TUATC,ATC OPERATOR RELATED,Operational/Process,"Operator issue with Automatic Train Control system that manages train spacing, speed etc.",Operator issue with Automatic Train Control system
 124,TUCC,TRANSIT CONTROL RELATED  TOWER CONTROLLER ERROR,Operational/Process,Error made by control room or tower staff.,Issue in control tower operations
 125,TUDOE,DOORS OPEN IN ERROR,Mechanical/Vehicle,Door problems.,Train door open in error
