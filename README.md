@@ -6,15 +6,15 @@ I. System-Wide Trends
 
     Which types of delays cause the most total disruption?
 
-    What are the most common causes of delays — and have they changed over time?
+    What are the most common causes of delays  and have they changed over time?
 
 II. Root Cause & Infrastructure Analysis
 
-    Signal issues — Are particular vehicles or train models consistently affected?
+    Signal issues: Are particular vehicles or train models consistently affected?
 
-    Security incidents (by station) — Are some stations seeing a rise over the years? (→ Supports platform door recommendations)
+    Security incidents (by station): Are some stations seeing a rise over the years? (→ Supports platform door recommendations)
 
-    Security incidents (by time) — Are there time patterns (e.g., late-night spikes)?
+    Security incidents (by time): Are there time patterns (e.g., late-night spikes)?
 
 III. Spatial & Temporal Patterns
 
@@ -22,15 +22,19 @@ III. Spatial & Temporal Patterns
 
     Which subway lines are most delay-prone?
 
-    When do delays occur most often — during peak or off-peak hours?
+    When do delays occur most often: during peak or off-peak hours?
 
     Which months have the most delays (e.g., winter-related issues)?
+## Want to Dig into the Data Yourself?
+In this repo we have:
+- Raw TTC data: The bare-bones files the TTC provided, including delay data, subway system shapefiles, and delay codes
+- Complete delay classification file: All 140+ delay codes with categories, technical reasoning, and public explanations
+- Data cleaning scripts: Transform raw delay data into analysis-ready formats
+- Data loader class: Easy-to-use tools for your own analysis
+- Jupyter notebook: Start exploring patterns immediately
+- Visualization utils: Tools to create your own graphs
+    
 
-    Are delays clustered around major city events?
-
-IV. Equity & Impact
-
-    Do delays disproportionately affect neighborhoods with fewer transit alternatives?
 ## Installation
 
 Install the required Python packages using pip:
@@ -38,8 +42,9 @@ Install the required Python packages using pip:
 ```bash
 pip install -r requirements.txt
 ```
-```
+
 ## Project Structure
+```
 SmartTransit/
 │
 ├── data/
@@ -50,210 +55,215 @@ SmartTransit/
 │   │   ├── delays/
 │   │   │   ├── ttc-subway-delay-data-2018.xlsx
 │   │   │   ├── ttc-subway-delay-data-2019.xlsx
-│   │   │   └── ... (all other raw data files)
+│   │   │   └── ...
 │   │   ├── docs/
 │   │   │   ├── ttc-subway-delay-data-readme.xlsx
-│   │   │   └── ttc_subway_stations_with_linecodes.txt
+│   │   │   ├── ttc_subway_stations.txt
+│   │   │   ├── ttc_subway_stations_with_linecodes.txt
+│   │   │   └── ttc_subwayway_geodata.json
 │   │   └── dropped_raw/
-│   │        └── ... (csvs containing data dropped during cleaning)
-│   ├── interim/        # Partially cleaned/intermediate data
-│   └── processed/      # Final cleaned dataset
+│   ├── interim/
+│   └── processed/
+│       ├── code_descriptions/
+│       │   └── TTC_Delay_Codes_Categories_and_Reasoning.csv
+│       └── delay/
+│           └── YYYY-MM-DD/
 │
-├── logs/               # Logs of cleaning steps and errors
-├── pipelines/          # Pipeline scripts
-├── utils/              # Utility modules
-├── config.py           # Configuration file
+├── logs/
+├── pipelines/
+│   ├── build_station_geodata.py
+│   ├── preprocess_pipeline.py
+│   ├── preprocess_dataframe.py
+│   ├── process_delay_code.py
+│   └── ...
+│
+├── utils/
+│   ├── cleaning_utils.py
+│   ├── ttc_loader.py
+│   └── ...
+│
+├── viz/
+│   ├── TTC_EDA_Notebook.ipynb
+│   └── ...
+│
+├── config.py
+├── requirements.txt
 └── README.md
 ```
-Key Folders & Files
 
-    data/raw/code_descriptions/
-    Delay code files and descriptions.
+## Key Folders & Files
 
-    data/raw/delays/
-    Raw TTC subway delay Excel files (2018–2025).
+- **data/raw/code_descriptions/** - Raw delay code files and descriptions
+- **data/raw/delays/** - Raw TTC subway delay Excel files (2018–2025)
+- **data/raw/docs/** - Official TTC documentation and manually created station reference files
+- **data/raw/dropped_raw/** - CSVs of raw data dropped during cleaning (for transparency/debugging)
+- **data/interim/** - Partially cleaned or in-progress data
+- **data/processed/** - Final cleaned datasets, ready for analysis
+- **logs/** - Logs of cleaning steps and errors
+- **pipelines/** - Main data cleaning and processing scripts
+- **utils/** - Utility Python modules (for loading, cleaning, etc.)
+- **config.py** - Project and pipeline configuration file
+- **requirements.txt** - Python dependencies
 
-    data/raw/docs/
-    Official TTC documentation and station reference file (ttc_subway_stations_with_linecodes.txt).
+### Reference Files
 
-    data/raw/dropped_raw/
-    CSVs of raw data dropped during cleaning for transparency/debugging.
+**ttc_subway_stations_with_linecodes.txt** (in `data/raw/docs/`)  
+Manually created list of all valid operational subway stations with their line codes. Used in the preprocessing pipeline
+to standardize and validate station names, and categorize stations as passenger, non-passenger, or unknown.
 
-    data/interim/
-    Partially cleaned or in-progress data.
+**ttc_subway_geodata.json** (in `data/raw/docs/`)  
+Contains all valid operational subway stations with their latitude/longitude coordinates.
+Generated by `pipelines/build_station_geodata.py`, which extracts geodata from OpenStreetMap (OSM).
+Some stations are added manually when not available in OSM.
 
-    data/processed/
-    Final cleaned datasets, ready for analysis.
+---
 
-    logs/
-    Logs of cleaning steps and errors.
+## Data Cleaning & Preprocessing
 
-    pipelines/
-    Main data cleaning and processing scripts.
-
-    utils/
-    Utility Python modules (for loading, cleaning, etc).
-
-    config.py
-    Project and pipeline configuration file
-The reference file ttc_subway_stations_with_linecodes.txt (located in data/raw/docs/) lists all 
-valid operational subway stations along with their line codes. 
-This is used in the preprocessing pipeline to standardize and validate station names, 
-and to categorize stations as passenger, non-passenger, or unknown.
-
-## Preprocessing of Raw TTC dataset
-Data Cleaning & Preprocessing
-
-### 📂 Raw Data Overview
+### Raw Data Overview
 
 The raw TTC dataset consists of:
+- Excel files containing subway delay event data (2018 – June 2025)
+- Delay code files mapping codes to event descriptions
+  - `Code Descriptions.csv` - Primary file used (contains more comprehensive codes)
+  - `ttc-subway-delay-codes.xlsx` - Not used (contains SRT codes which are excluded from this analysis)
+- TTC-provided README file with column names and descriptions
 
-    Excel files containing subway delay event data (2018 – June 2025)
+### Preprocessing Pipeline
 
-    Delay code files mapping codes to event descriptions
+The preprocessing pipeline (`pipelines/preprocess_pipeline.py`) performs the following steps:
 
-    Delay data README file with column names and descriptions
+#### 1. Clean Delay Codes & Descriptions
+- Process `Code Descriptions.csv` (TTC-provided file with comprehensive delay codes)
+- Remove non-ASCII characters from delay code descriptions
+- Output a cleaned mapping for consistent downstream use
+- Output: `data/raw/code_descriptions/Clean Code Descriptions.csv`
+- Note: `ttc-subway-delay-codes.xlsx` is not used as it contains SRT codes excluded from this analysis
 
-### Cleaning Pipeline Steps
+#### 2. Merge & Clean Raw Delay Data
+- Merge all raw TTC delay files into a single dataframe
+- Log file names used for the merge and any errors
+- Drop rows where:
+  - Any key column (Min delay, Min Gap, Vehicle) is missing or zero
+  - Min Gap < Min delay (gap between trains should exceed the delay)
+  - Duplicate rows exist
+- Write dropped data to `data/raw/dropped_raw/`
 
-A reference text file listing all valid operational station names with subway line codes (e.g. ROSEDALE STATION [YU]) was created for cleaning and validation:
-data/raw/docs/ttc_subway_stations_with_linecodes.txt
-1. Clean Delay Codes & Descriptions
+#### 3. Standardize Station Names
+- Remove embedded line codes (e.g., "YU", "BD") from station names
+- Standardize abbreviations (e.g., "St" → "St.")
+- Correct spelling errors
+- Ensure all passenger station names end with "STATION" (unless they end with YARD, HOSTLER, WYE, POCKET, TAIL, or TRACK, which are legitimate non-passenger station endings)
+- Standardize naming for dual-line interchange stations (e.g., "BLOOR-YONGE", "SHEPPARD-YONGE")
 
-    Remove non-ASCII characters from delay code files
+#### 4. Station Categorization
+Tag stations as:
+- **passenger** - Listed in the valid operational stations file
+- **non-passenger** - Ending with yard/hostler/etc.
+- **unknown** - Cannot be matched (e.g., SRT, severe typos, directional suffixes)
 
-    Output a cleaned mapping for consistent use downstream
+Drop all unknown and non-passenger stations from analysis and write them to `data/raw/dropped_raw/`
 
-2. Merge & Clean Raw Delay Data
+#### 5. Validate Delay Codes
+- Ensure all delay codes match the cleaned delay code mapping
+- Set invalid codes to NaN (spelling errors where correct code is unknown)
 
-    Merge all raw TTC delay files into one dataframe
-    (Log file names used for the merge and any errors)
+#### 6. Validate Bound (Direction)
+- For valid passenger stations, verify the direction (Bound) matches the station's subway line
+- Example: ROSEDALE STATION (YU line) with "E" direction is invalid (YU only has N/S)
+- Set invalid directions to NaN
 
-    Drop rows where:
+#### 7. Clean & Standardize Date/Time
+- Standardize all date and time columns as strings
+- Combine into a new DateTime column as pandas datetime objects
+- Enables hour, weekday, and time-based analysis
 
-        Any key column (Min delay, Min Gap, Vehicle) is missing or zero
+#### 8. Correct Day of Week
+- Recompute Day field using the DateTime column to ensure accuracy
 
-        Min Gap < Min delay (since the gap between trains should exceed the delay)
+#### 9. Add Derived Features
+- **IsWeekday** - Boolean (True/False)
+- **Rush Hour** - Categorical ("Morning", "Evening", "Off Peak: Afternoon", "Off Peak: Night", "Weekend")
+- **Season** - Categorical ("Winter", "Spring", "Summer", "Fall")
+- **Delay Category** - Categorical ("Patron", "Mechanical/Infrastructure", etc.)
+- **Delay Description** - Human-readable description based on delay code
 
-    Write out dropped data to: data/raw/dropped_raw/
+#### 10. Final Validation & Output
+- Drop any remaining invalid rows after cleaning
+- Log all cleaned stations by category for manual review
+- Write final cleaned dataset to `data/processed/delays/YYYY-MM-DD/cleaned_delay_data_YYYY-MM-DD-HH_MM_SS.csv`
 
-3. Standardize Station Names
+### How to Run
 
-    Remove embedded line codes (e.g. "YU", "BD") from station names
+Ensure your working directory is set to the project root (`SmartTransit/`).
 
-    Standardize abbreviations (e.g. "St" to "St.")
+Run the preprocessing pipeline:
+```bash
+python pipelines/preprocess_pipeline.py
+```
 
-    Correct spelling errors
+**Output files:**
+- `data/processed/delays/YYYY-MM-DD/cleaned_delay_data_YYYY-MM-DD-HH_MM_SS.csv`
+- `data/raw/code_descriptions/Clean Code Descriptions.csv` (requires further manual processing)
+- 
+## Delay Code Classification
 
-    Ensure all passenger station names end with "STATION"
-    (unless the name ends with YARD, HOSTLER, WYE, POCKET, TAIL, or TRACK, which are legitimate endings for non-passenger stations)
+### Purpose
 
-    Standardize naming for dual-line interchange stations (e.g. "BLOOR-YONGE", "SHEPPARD-YONGE")
-
-4. Station Categorization
-
-    Tag stations as:
-
-        passenger (if listed in the valid operational stations file)
-
-        non-passenger (if ending with yard/hostler/etc)
-
-        unknown (stations that can't be matched, e.g. SRT, severe typos, or with directional suffixes)
-
-    Drop all unknown stations from analysis and write them out to data/raw/dropped_raw/
-
-5. Validate Delay Codes
-
-    Ensure all event codes match the cleaned delay code mapping
-
-    Errors are set to NaN as we do not know which is the correct delay code
-
-6. Validate Bound (Direction)
-
-    For valid passenger stations, check if the direction (Bound) matches the station’s subway line
-    (e.g. ROSEDALE STATION, YU, E is set to NaN as YU is only N or S)
-
-    Set to NaN if not valid
-
-7. Clean & Standardize Date/Time
-
-    Standardize all date and time columns as strings
-
-    Combine into a new DateTime column as pandas datetime objects (enables hour, weekday, and time-based analysis)
-
-8. Correct Day of Week
-
-    Recompute Day using the DateTime to ensure accuracy
-
-9. Add Useful Features
-
-    IsWeekday: True/False
-
-    Rush Hour: Categorical ("Morning", "Evening", "Off Peak", "Weekend")
-
-    Season: Categorical (e.g. "Winter", "Spring", etc)
-
-10. Logging & Output
-
-    Log all cleaned stations by category for manual review
-
-    Write out the final cleaned dataset to: data/processed/
-
-#### How to Run
-
-Make sure your working directory is set to the project root (SmartTransit/).
-
-To run the data cleaning & preprocessing pipeline, use the following command in your terminal:
-
-    python pipelines/preprocess_pipeline.py
-
-If you are running from a different location, provide the full path
-
-## Purpose of Classification
-
-The Toronto Transit Commission (TTC) maintains detailed subway delay codes that describe specific causes of service disruptions. While these codes are highly precise, they can be overwhelming to interpret in raw form.
+The TTC maintains detailed subway delay codes that describe specific causes of service disruptions. 
+While these codes are highly precise, they use technical jargon that can be difficult to interpret.
 
 By grouping individual codes into broader, standardized categories, we can:
 
-- **Identify trends** – Track which types of issues (e.g., Mechanical/Infrastructure, Patron, Weather) cause the most delays over time.
-- **Simplify communication** – Replace technical jargon with clear, high-level categories that are easier for the public and media to understand (e.g., grouping Automatic Train Control, Rail Control, and Signalling System under Mechanical/Infrastructure).
-- **Improve accountability and reporting** – Give executives, boards, and oversight agencies concise summaries rather than long lists of cryptic codes.
-- **Support resource allocation and budgeting** – Provide evidence to justify investment priorities (e.g., replacing aging signals vs. upgrading vehicles).
-- **Increase public trust and transparency** – Show that delays are monitored, categorized, and addressed systematically, reassuring the public that service disruptions are not random.
+- **Identify trends** - Track which types of issues (e.g., Mechanical/Infrastructure, Patron, Weather) cause the most delays over time
+- **Simplify communication** - Replace technical jargon with clear, high-level categories easier for the public and media to understand
+- **Enable reusability** - Allow researchers, journalists, and advocates to use this work without deciphering the TTC's internal code system
 
-This classification system transforms operational delay data into an actionable tool for both internal decision-making and public communication.
+This classification system transforms operational delay data into an actionable tool for both internal analysis and public communication.
 
+---
 
-### Delay Code Classification Logic
-- `data/raw/code_descriptions/TTC_Delay_Codes_Categories_and_Reasoning.csv` — Final reference list with:
-  - **Code** — The TTC delay code identifier.
-  - **Code Description** — The official description from TTC logs.
-  - **Category** — Assigned classification.
-  - **Reasoning** — Plain-language explanation of why the code fits that category.
+### Classification System
 
-We manually categorized TTC subway delay codes using the following logic:
+We manually classified all delay codes in `data/raw/code_descriptions/Clean Code Descriptions.csv` into the following categories:
 
-- **Mechanical/Vehicle:** Covers faults or issues with the **train itself** (propulsion, brakes, HVAC, door systems, onboard electronics, etc.)
-- **Mechanical:** Failures of transit infrastructure (track, signals, motors, brakes, etc.)
-- **Human/Process:** Staff/operator mistakes, procedural errors, operational decisions, maintenance errors
-- **Weather:** Delays due to natural events (snow, ice etc)
-- **Patron:** Incidents caused by customers or the public (medical, disorderly, trespassing, vandalism, alarm etc.)
-- **Other/Internal:** Labour disputes, assault involving staff, fire inside TTC property, etc.
-- **Other/External:** Delays caused by outside parties or events beyond TTC’s direct control: external power failure, contractor issues
-- **Planned Work:** Planned closures, construction.
-- **Unplanned Work:** Closure due to unplanned work.
-- **Unknown:** Cause cannot be determined due to insufficient detail to assign a confident category.
+- **Mechanical/Vehicle** - Faults or issues with the train itself (propulsion, brakes, HVAC, doors, onboard electronics, etc.)
+- **Mechanical/Infrastructure** - Failures of transit infrastructure (track, signals, power systems, etc.)
+- **Patron** - Incidents caused by customers (medical emergencies, disorderly conduct, trespassing, vandalism, alarm activation, etc.)
+- **Weather** - Delays due to natural events (snow, ice, etc.)
+- **Operational/Process** - Staff/operator errors, procedural mistakes, operational decisions, maintenance errors
+- **Planned Work** - Scheduled closures and construction
+- **Unplanned Work** - Closures due to unplanned work
+- **Other/Internal** - Labour disputes, assault involving staff, fire inside TTC property, etc.
+- **Other/External** - Delays caused by outside parties or events beyond TTC's direct control (external power failure, contractor issues, etc.)
+- **Other/Unknown** - Cause cannot be determined due to insufficient detail
 
-The **Reasoning** column in the dataset is written in plain language so that non-technical readers can understand why each code was placed in its category.  
+---
 
-### Example Delay Code Classifications
+### Output File
 
-| CODE  | DESCRIPTION           | Category                 | Reasoning |
-|-------|-----------------------|--------------------------|-----------|
-| EUAC  | AIR CONDITIONING      | Mechanical/Vehicle       | Air conditioning system that cools the train. |
-| EUAL  | ALTERNATING CURRENT   | Mechanical/Vehicle       | Electrical system/converter that powers the train's motors, lights, and onboard equipment. |
-| EUATC | ATC RC&S EQUIPMENT    | Mechanical/Infrastructure| Automatic Train Control - Rail Control & Signalling system that manages train spacing, speed, and safety using trackside lights/signals etc. |
-| EUBK  | BRAKES                 | Mechanical/Vehicle       | Brake system. |
-| EUBO  | BODY                   | Mechanical/Vehicle       | The physical frame of subway car. |
-| EUCA  | COMPRESSED AIR         | Mechanical/Vehicle       | Air-powered system that operates brakes, doors, and other equipment on the train. |
-| EUCC  | CAM CONTROL            | Mechanical/Vehicle       | Older type of train motor control that uses mechanical cams to adjust power. |
+**TTC_Delay_Codes_Categories_and_Reasoning.csv** (in `data/processed/code_descriptions/`)
+
+This file contains the complete classification with the following fields:
+
+- **Code** - The TTC delay code identifier
+- **Code Description** - The official description from TTC logs
+- **Category** - Assigned classification
+- **Reasoning** - Technical explanation of why the code fits that category
+- **Public Explanation** - Plain-language explanation of the delay suitable for public communication
+
+**Example:** The code "EUCO: Couplers" is classified as **Mechanical/Vehicle**, with the technical reasoning: *"Connectors that join train cars and allow electrical systems to pass between them,"* and the public explanation: *"Connectors between train cars not working properly."*
+
+---
+
+### Sample Classifications
+
+| CODE | DESCRIPTION | CATEGORY | REASONING | PUBLIC EXPLANATION |
+|------|-------------|----------|-----------|-------------------|
+| EUAC | AIR CONDITIONING | Mechanical/Vehicle | Air conditioning system that cools the train | Air conditioning issue on the train |
+| EUAL | ALTERNATING CURRENT | Mechanical/Vehicle | Electrical system/converter that powers the train's motors, lights, and onboard equipment | Issue with electrical system/converter that powers the train's motors, lights, and onboard equipment |
+| EUATC | ATC RC&S EQUIPMENT | Mechanical/Infrastructure | Automatic Train Control- Rail Control & Signalling system that manages train spacing, speed, and safety using trackside signals | Automatic train control (ATC) / signals equipment issue |
+| EUBK | BRAKES | Mechanical/Vehicle | Brake system | Brake system issue on the train |
+| EUBO | BODY | Mechanical/Vehicle | The physical frame of subway car | Issue with the train body or shell |
+| EUCA | COMPRESSED AIR | Mechanical/Vehicle | Air-powered system that operates brakes, doors, and other equipment on the train | Issue with compressed air system that operates brakes/doors |
+| EUCC | CAM CONTROL | Mechanical/Vehicle | Older type of train motor control that uses mechanical cams to adjust power | Older train control equipment issue |
