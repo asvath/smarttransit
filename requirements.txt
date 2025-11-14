@@ -6,3 +6,5 @@ geopandas
 matplotlib
 kaleido
 scipy
+jupyter
+notebook
