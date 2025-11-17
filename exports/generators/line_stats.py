@@ -141,7 +141,8 @@ def generate_all_line_stats(df: pd.DataFrame, year_start: int, year_end: int, un
     line_stats_list =[]
     df = df.copy()
     df["Year"] = df["DateTime"].dt.year
-    df = df[df["Year"].isin([year_start, year_end])]
+    years = range(year_start, year_end + 1)
+    df = df[df["Year"].isin(years)]
 
 
     lines= VALID_LINECODES_TO_BOUND_DICT.keys()
