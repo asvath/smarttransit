@@ -3,7 +3,8 @@ import os.path
 from config import EXPORTS_STATS_DIR
 from line_stats import generate_all_line_stats
 from station_stats import (generate_all_station_stats, check_dataset_complete,
-                           generate_all_code_specific_station_stats)
+                           generate_all_code_specific_station_stats, )
+from general_delay_stats import (generate_general_delay_stats, generate_code_specific_general_delay_stats)
 from utils.file_utils import write_to_json
 from utils.ttc_loader import TTCLoader
 
@@ -68,7 +69,7 @@ def generate_stats():
     filepath = os.path.join(EXPORTS_STATS_DIR, 'stations_stats.json')
     write_to_json(filepath, stations_stats)
 
-    # station stats for the latest year (even if the year is incomplete)
+    # station stats for the latest year (even if the year is incomplete) for leaderboard
     year = df["Year"].max()
     stations_stats_for_leaderboard = generate_all_station_stats(df=df,year=year, unit = "hours")
     filepath = os.path.join(EXPORTS_STATS_DIR, 'leaderboard_stations_stats.json')
@@ -76,16 +77,28 @@ def generate_stats():
 
     # delay code specific stats for the last three years
     code_dict = {"Track Intrusion": ["SUUT", "MUPR1"],"Disorderly Patron" : ["SUDP"], "Fire: Track Level" : ["MUPLB"]}
-    code_specific_stats = (
+    code_specific_station_stats = (
         generate_all_code_specific_station_stats(df, 2023, 2025, code_dict, 10, "hours"))
-    filepath = os.path.join(EXPORTS_STATS_DIR, 'code_specific_stats.json')
-    write_to_json(filepath, code_specific_stats)
+    filepath = os.path.join(EXPORTS_STATS_DIR, 'code_specific_station_stats.json')
+    write_to_json(filepath, code_specific_station_stats)
 
     # line stats for the last three years
     line_stats = generate_all_line_stats(df, 2023, 2025)
     filepath = os.path.join(EXPORTS_STATS_DIR, 'line_stats.json')
     write_to_json(filepath, line_stats)
 
+    # general delay stats for the last three years
+    general_delay_stats = generate_general_delay_stats(df = df, year_start= 2023, year_end= 2025, unit = "minutes")
+    filepath = os.path.join(EXPORTS_STATS_DIR, 'general_delay_stats.json')
+    write_to_json(filepath, general_delay_stats)
+
+    # code specific general delay stats for the last three years
+    code_dict = {"Track Intrusion": ["SUUT", "MUPR1"], "Disorderly Patron": ["SUDP"], "Fire: Track Level": ["MUPLB"]}
+    code_specific_general_delay_stats = (
+        generate_code_specific_general_delay_stats(df= df, year_start= 2023, year_end = 2025,
+                                                   code_dict = code_dict, unit = "minutes"))
+    filepath = os.path.join(EXPORTS_STATS_DIR, 'code_specific_general_delay_stats.json')
+    write_to_json(filepath, code_specific_general_delay_stats)
 
 if __name__=="__main__":
     generate_stats()
