@@ -825,7 +825,7 @@
                 "pct_of_system_delays_originating": 1.13,
                 "top_reason_for_delays (by count)": "Patron: Passenger Assistance Alarm was activated, but no actual issue was found",
                 "time_lost_due_to_top_delay_by_count": 0.65,
-                "top_reason_for_delays_by_time": "Patron: Patron on the track level.",
+                "top_reason_for_delays_by_time": "Patron: Patron on the track level",
                 "time_lost_due_to_top_delay_by_time": 1.57
             }
         },

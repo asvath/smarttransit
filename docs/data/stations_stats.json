@@ -50,7 +50,7 @@
                 "pct_of_system_delays_originating": 0.53,
                 "top_reason_for_delays (by count)": "Mechanical/Vehicle: Issue with the communications system that monitors train doors",
                 "time_lost_due_to_top_delay_by_count": 0.83,
-                "top_reason_for_delays_by_time": "Patron: Patron on the track level.",
+                "top_reason_for_delays_by_time": "Patron: Patron on the track level",
                 "time_lost_due_to_top_delay_by_time": 1.82
             }
         },
@@ -121,9 +121,9 @@
                 "time_lost_hours": 17.97,
                 "major_delays": 12,
                 "pct_of_system_delays_originating": 0.85,
-                "top_reason_for_delays (by count)": "Patron: Patron on the track level.",
+                "top_reason_for_delays (by count)": "Patron: Patron on the track level",
                 "time_lost_due_to_top_delay_by_count": 4.93,
-                "top_reason_for_delays_by_time": "Patron: Patron on the track level.",
+                "top_reason_for_delays_by_time": "Patron: Patron on the track level",
                 "time_lost_due_to_top_delay_by_time": 4.93
             }
         },
@@ -303,7 +303,7 @@
                 "pct_of_system_delays_originating": 2.31,
                 "top_reason_for_delays (by count)": "Patron: Passenger Assistance Alarm was activated, but no actual issue was found",
                 "time_lost_due_to_top_delay_by_count": 3.12,
-                "top_reason_for_delays_by_time": "Patron: Patron on the track level.",
+                "top_reason_for_delays_by_time": "Patron: Patron on the track level",
                 "time_lost_due_to_top_delay_by_time": 4.88
             }
         },
@@ -321,7 +321,7 @@
                 "pct_of_system_delays_originating": 0.86,
                 "top_reason_for_delays (by count)": "Other/Unclear: Unclear security-related incident",
                 "time_lost_due_to_top_delay_by_count": 1.43,
-                "top_reason_for_delays_by_time": "Patron: Patron on the track level.",
+                "top_reason_for_delays_by_time": "Patron: Patron on the track level",
                 "time_lost_due_to_top_delay_by_time": 1.9
             }
         },
@@ -375,7 +375,7 @@
                 "pct_of_system_delays_originating": 1.18,
                 "top_reason_for_delays (by count)": "Patron: Disorderly patron",
                 "time_lost_due_to_top_delay_by_count": 2.8,
-                "top_reason_for_delays_by_time": "Patron: Patron on the track level.",
+                "top_reason_for_delays_by_time": "Patron: Patron on the track level",
                 "time_lost_due_to_top_delay_by_time": 3.25
             }
         },
@@ -501,7 +501,7 @@
                 "pct_of_system_delays_originating": 0.95,
                 "top_reason_for_delays (by count)": "Patron: Disorderly patron",
                 "time_lost_due_to_top_delay_by_count": 0.72,
-                "top_reason_for_delays_by_time": "Patron: Patron on the track level.",
+                "top_reason_for_delays_by_time": "Patron: Patron on the track level",
                 "time_lost_due_to_top_delay_by_time": 3.18
             }
         },
@@ -573,7 +573,7 @@
                 "pct_of_system_delays_originating": 1.04,
                 "top_reason_for_delays (by count)": "Patron: Disorderly patron",
                 "time_lost_due_to_top_delay_by_count": 1.7,
-                "top_reason_for_delays_by_time": "Patron: Patron on the track level.",
+                "top_reason_for_delays_by_time": "Patron: Patron on the track level",
                 "time_lost_due_to_top_delay_by_time": 1.72
             }
         },
@@ -861,7 +861,7 @@
                 "pct_of_system_delays_originating": 1.81,
                 "top_reason_for_delays (by count)": "Patron: Passenger Assistance Alarm was activated, but no actual issue was found",
                 "time_lost_due_to_top_delay_by_count": 1.87,
-                "top_reason_for_delays_by_time": "Patron: Patron on the track level.",
+                "top_reason_for_delays_by_time": "Patron: Patron on the track level",
                 "time_lost_due_to_top_delay_by_time": 4.22
             }
         },
@@ -915,7 +915,7 @@
                 "pct_of_system_delays_originating": 1.51,
                 "top_reason_for_delays (by count)": "Mechanical/Vehicle: Issue with the communications system that monitors train doors",
                 "time_lost_due_to_top_delay_by_count": 1.37,
-                "top_reason_for_delays_by_time": "Patron: Patron on the track level.",
+                "top_reason_for_delays_by_time": "Patron: Patron on the track level",
                 "time_lost_due_to_top_delay_by_time": 1.75
             }
         },
@@ -1242,7 +1242,7 @@
                 "pct_of_system_delays_originating": 0.47,
                 "top_reason_for_delays (by count)": "Mechanical/Vehicle: Issue with the communications system that monitors train doors",
                 "time_lost_due_to_top_delay_by_count": 1.1,
-                "top_reason_for_delays_by_time": "Patron: Patron on the track level.",
+                "top_reason_for_delays_by_time": "Patron: Patron on the track level",
                 "time_lost_due_to_top_delay_by_time": 1.3
             }
         },
