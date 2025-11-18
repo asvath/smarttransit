@@ -1,0 +1,388 @@
+{
+    "line stats": [
+        {
+            "YU": {
+                "N": [
+                    {
+                        "Rush Hour": "Evening",
+                        "number_of_delays": 1218,
+                        "total_delay_minutes": 8996,
+                        "avg_delay_minutes": 5.0,
+                        "bound": "N",
+                        "days_in_dataset": 713,
+                        "expected_delays": 1.7082748948106592,
+                        "p_any_delay": 0.819,
+                        "k_at_90pct": 3,
+                        "recommended_buffer_min": 15
+                    },
+                    {
+                        "Rush Hour": "Morning",
+                        "number_of_delays": 649,
+                        "total_delay_minutes": 4876,
+                        "avg_delay_minutes": 5.0,
+                        "bound": "N",
+                        "days_in_dataset": 713,
+                        "expected_delays": 0.9102384291725105,
+                        "p_any_delay": 0.598,
+                        "k_at_90pct": 2,
+                        "recommended_buffer_min": 10
+                    },
+                    {
+                        "Rush Hour": "Off-peak: Afternoon",
+                        "number_of_delays": 1203,
+                        "total_delay_minutes": 9548,
+                        "avg_delay_minutes": 5.0,
+                        "bound": "N",
+                        "days_in_dataset": 713,
+                        "expected_delays": 1.6872370266479664,
+                        "p_any_delay": 0.815,
+                        "k_at_90pct": 3,
+                        "recommended_buffer_min": 15
+                    },
+                    {
+                        "Rush Hour": "Off-peak: Night",
+                        "number_of_delays": 1513,
+                        "total_delay_minutes": 12442,
+                        "avg_delay_minutes": 6.0,
+                        "bound": "N",
+                        "days_in_dataset": 713,
+                        "expected_delays": 2.1220196353436185,
+                        "p_any_delay": 0.88,
+                        "k_at_90pct": 4,
+                        "recommended_buffer_min": 25
+                    },
+                    {
+                        "Rush Hour": "Weekend",
+                        "number_of_delays": 1378,
+                        "total_delay_minutes": 12900,
+                        "avg_delay_minutes": 5.0,
+                        "bound": "N",
+                        "days_in_dataset": 281,
+                        "expected_delays": 1.2905038396703503,
+                        "p_any_delay": 0.725,
+                        "k_at_90pct": 3,
+                        "recommended_buffer_min": 15
+                    }
+                ],
+                "S": [
+                    {
+                        "Rush Hour": "Evening",
+                        "number_of_delays": 1346,
+                        "total_delay_minutes": 8946,
+                        "avg_delay_minutes": 4.0,
+                        "bound": "S",
+                        "days_in_dataset": 716,
+                        "expected_delays": 1.8798882681564246,
+                        "p_any_delay": 0.847,
+                        "k_at_90pct": 4,
+                        "recommended_buffer_min": 15
+                    },
+                    {
+                        "Rush Hour": "Morning",
+                        "number_of_delays": 1091,
+                        "total_delay_minutes": 6015,
+                        "avg_delay_minutes": 4.0,
+                        "bound": "S",
+                        "days_in_dataset": 716,
+                        "expected_delays": 1.5237430167597765,
+                        "p_any_delay": 0.782,
+                        "k_at_90pct": 3,
+                        "recommended_buffer_min": 10
+                    },
+                    {
+                        "Rush Hour": "Off-peak: Afternoon",
+                        "number_of_delays": 1424,
+                        "total_delay_minutes": 9753,
+                        "avg_delay_minutes": 5.0,
+                        "bound": "S",
+                        "days_in_dataset": 716,
+                        "expected_delays": 1.988826815642458,
+                        "p_any_delay": 0.863,
+                        "k_at_90pct": 4,
+                        "recommended_buffer_min": 20
+                    },
+                    {
+                        "Rush Hour": "Off-peak: Night",
+                        "number_of_delays": 1372,
+                        "total_delay_minutes": 11678,
+                        "avg_delay_minutes": 6.0,
+                        "bound": "S",
+                        "days_in_dataset": 716,
+                        "expected_delays": 1.9162011173184357,
+                        "p_any_delay": 0.853,
+                        "k_at_90pct": 4,
+                        "recommended_buffer_min": 25
+                    },
+                    {
+                        "Rush Hour": "Weekend",
+                        "number_of_delays": 1451,
+                        "total_delay_minutes": 11470,
+                        "avg_delay_minutes": 5.0,
+                        "bound": "S",
+                        "days_in_dataset": 281,
+                        "expected_delays": 1.3588687020041208,
+                        "p_any_delay": 0.743,
+                        "k_at_90pct": 3,
+                        "recommended_buffer_min": 15
+                    }
+                ]
+            }
+        },
+        {
+            "BD": {
+                "E": [
+                    {
+                        "Rush Hour": "Evening",
+                        "number_of_delays": 811,
+                        "total_delay_minutes": 6561,
+                        "avg_delay_minutes": 4.0,
+                        "bound": "E",
+                        "days_in_dataset": 706,
+                        "expected_delays": 1.1487252124645893,
+                        "p_any_delay": 0.683,
+                        "k_at_90pct": 3,
+                        "recommended_buffer_min": 10
+                    },
+                    {
+                        "Rush Hour": "Morning",
+                        "number_of_delays": 529,
+                        "total_delay_minutes": 3458,
+                        "avg_delay_minutes": 4.0,
+                        "bound": "E",
+                        "days_in_dataset": 706,
+                        "expected_delays": 0.7492917847025495,
+                        "p_any_delay": 0.527,
+                        "k_at_90pct": 2,
+                        "recommended_buffer_min": 10
+                    },
+                    {
+                        "Rush Hour": "Off-peak: Afternoon",
+                        "number_of_delays": 931,
+                        "total_delay_minutes": 7704,
+                        "avg_delay_minutes": 4.0,
+                        "bound": "E",
+                        "days_in_dataset": 706,
+                        "expected_delays": 1.3186968838526911,
+                        "p_any_delay": 0.733,
+                        "k_at_90pct": 3,
+                        "recommended_buffer_min": 10
+                    },
+                    {
+                        "Rush Hour": "Off-peak: Night",
+                        "number_of_delays": 1040,
+                        "total_delay_minutes": 9197,
+                        "avg_delay_minutes": 5.0,
+                        "bound": "E",
+                        "days_in_dataset": 706,
+                        "expected_delays": 1.4730878186968839,
+                        "p_any_delay": 0.771,
+                        "k_at_90pct": 3,
+                        "recommended_buffer_min": 15
+                    },
+                    {
+                        "Rush Hour": "Weekend",
+                        "number_of_delays": 1027,
+                        "total_delay_minutes": 7449,
+                        "avg_delay_minutes": 5.0,
+                        "bound": "E",
+                        "days_in_dataset": 281,
+                        "expected_delays": 0.9617905974901668,
+                        "p_any_delay": 0.618,
+                        "k_at_90pct": 2,
+                        "recommended_buffer_min": 10
+                    }
+                ],
+                "W": [
+                    {
+                        "Rush Hour": "Evening",
+                        "number_of_delays": 801,
+                        "total_delay_minutes": 6198,
+                        "avg_delay_minutes": 4.0,
+                        "bound": "W",
+                        "days_in_dataset": 704,
+                        "expected_delays": 1.1377840909090908,
+                        "p_any_delay": 0.679,
+                        "k_at_90pct": 3,
+                        "recommended_buffer_min": 10
+                    },
+                    {
+                        "Rush Hour": "Morning",
+                        "number_of_delays": 526,
+                        "total_delay_minutes": 3364,
+                        "avg_delay_minutes": 4.0,
+                        "bound": "W",
+                        "days_in_dataset": 704,
+                        "expected_delays": 0.7471590909090909,
+                        "p_any_delay": 0.526,
+                        "k_at_90pct": 2,
+                        "recommended_buffer_min": 10
+                    },
+                    {
+                        "Rush Hour": "Off-peak: Afternoon",
+                        "number_of_delays": 920,
+                        "total_delay_minutes": 6995,
+                        "avg_delay_minutes": 4.0,
+                        "bound": "W",
+                        "days_in_dataset": 704,
+                        "expected_delays": 1.3068181818181819,
+                        "p_any_delay": 0.729,
+                        "k_at_90pct": 3,
+                        "recommended_buffer_min": 10
+                    },
+                    {
+                        "Rush Hour": "Off-peak: Night",
+                        "number_of_delays": 996,
+                        "total_delay_minutes": 8064,
+                        "avg_delay_minutes": 5.0,
+                        "bound": "W",
+                        "days_in_dataset": 704,
+                        "expected_delays": 1.4147727272727273,
+                        "p_any_delay": 0.757,
+                        "k_at_90pct": 3,
+                        "recommended_buffer_min": 15
+                    },
+                    {
+                        "Rush Hour": "Weekend",
+                        "number_of_delays": 974,
+                        "total_delay_minutes": 7874,
+                        "avg_delay_minutes": 5.0,
+                        "bound": "W",
+                        "days_in_dataset": 278,
+                        "expected_delays": 0.9219992427110943,
+                        "p_any_delay": 0.602,
+                        "k_at_90pct": 2,
+                        "recommended_buffer_min": 10
+                    }
+                ]
+            }
+        },
+        {
+            "SHP": {
+                "E": [
+                    {
+                        "Rush Hour": "Evening",
+                        "number_of_delays": 63,
+                        "total_delay_minutes": 491,
+                        "avg_delay_minutes": 7.0,
+                        "bound": "E",
+                        "days_in_dataset": 195,
+                        "expected_delays": 0.3230769230769231,
+                        "p_any_delay": 0.276,
+                        "k_at_90pct": 1,
+                        "recommended_buffer_min": 5
+                    },
+                    {
+                        "Rush Hour": "Morning",
+                        "number_of_delays": 20,
+                        "total_delay_minutes": 119,
+                        "avg_delay_minutes": 4.0,
+                        "bound": "E",
+                        "days_in_dataset": 195,
+                        "expected_delays": 0.10256410256410256,
+                        "p_any_delay": 0.097,
+                        "k_at_90pct": 0,
+                        "recommended_buffer_min": 5
+                    },
+                    {
+                        "Rush Hour": "Off-peak: Afternoon",
+                        "number_of_delays": 81,
+                        "total_delay_minutes": 533,
+                        "avg_delay_minutes": 5.0,
+                        "bound": "E",
+                        "days_in_dataset": 195,
+                        "expected_delays": 0.4153846153846154,
+                        "p_any_delay": 0.34,
+                        "k_at_90pct": 1,
+                        "recommended_buffer_min": 5
+                    },
+                    {
+                        "Rush Hour": "Off-peak: Night",
+                        "number_of_delays": 93,
+                        "total_delay_minutes": 1002,
+                        "avg_delay_minutes": 7.0,
+                        "bound": "E",
+                        "days_in_dataset": 195,
+                        "expected_delays": 0.47692307692307695,
+                        "p_any_delay": 0.379,
+                        "k_at_90pct": 1,
+                        "recommended_buffer_min": 5
+                    },
+                    {
+                        "Rush Hour": "Weekend",
+                        "number_of_delays": 107,
+                        "total_delay_minutes": 1027,
+                        "avg_delay_minutes": 5.0,
+                        "bound": "E",
+                        "days_in_dataset": 78,
+                        "expected_delays": 0.3609986504723347,
+                        "p_any_delay": 0.303,
+                        "k_at_90pct": 1,
+                        "recommended_buffer_min": 5
+                    }
+                ],
+                "W": [
+                    {
+                        "Rush Hour": "Evening",
+                        "number_of_delays": 53,
+                        "total_delay_minutes": 598,
+                        "avg_delay_minutes": 6.0,
+                        "bound": "W",
+                        "days_in_dataset": 211,
+                        "expected_delays": 0.25118483412322273,
+                        "p_any_delay": 0.222,
+                        "k_at_90pct": 1,
+                        "recommended_buffer_min": 5
+                    },
+                    {
+                        "Rush Hour": "Morning",
+                        "number_of_delays": 31,
+                        "total_delay_minutes": 355,
+                        "avg_delay_minutes": 6.0,
+                        "bound": "W",
+                        "days_in_dataset": 211,
+                        "expected_delays": 0.14691943127962084,
+                        "p_any_delay": 0.137,
+                        "k_at_90pct": 1,
+                        "recommended_buffer_min": 5
+                    },
+                    {
+                        "Rush Hour": "Off-peak: Afternoon",
+                        "number_of_delays": 77,
+                        "total_delay_minutes": 691,
+                        "avg_delay_minutes": 6.0,
+                        "bound": "W",
+                        "days_in_dataset": 211,
+                        "expected_delays": 0.36492890995260663,
+                        "p_any_delay": 0.306,
+                        "k_at_90pct": 1,
+                        "recommended_buffer_min": 5
+                    },
+                    {
+                        "Rush Hour": "Off-peak: Night",
+                        "number_of_delays": 108,
+                        "total_delay_minutes": 1079,
+                        "avg_delay_minutes": 7.0,
+                        "bound": "W",
+                        "days_in_dataset": 211,
+                        "expected_delays": 0.5118483412322274,
+                        "p_any_delay": 0.401,
+                        "k_at_90pct": 1,
+                        "recommended_buffer_min": 5
+                    },
+                    {
+                        "Rush Hour": "Weekend",
+                        "number_of_delays": 106,
+                        "total_delay_minutes": 1131,
+                        "avg_delay_minutes": 7.0,
+                        "bound": "W",
+                        "days_in_dataset": 82,
+                        "expected_delays": 0.34017971758664955,
+                        "p_any_delay": 0.288,
+                        "k_at_90pct": 1,
+                        "recommended_buffer_min": 5
+                    }
+                ]
+            }
+        }
+    ]
+}

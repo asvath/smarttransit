@@ -1,0 +1,47 @@
+{
+    "Code Specific General Delay Stats": [
+        {
+            "Delay Code": [
+                "SUUT",
+                "MUPR1"
+            ],
+            "Average Delay Time (minutes)": 19.02050326188257,
+            "Median Delay Time (minutes)": 10.0,
+            "Delays per Year": 357.6666666666667,
+            "Delays per Month": 32.515151515151516,
+            "Delays per Day": 1.711323763955343,
+            "Std Deviation Time (minutes)": 26.899057245870917,
+            "90th Percentile (minutes)": 37.80000000000007,
+            "Years": " 2023 - 2025",
+            "Code Name": "Track Intrusion"
+        },
+        {
+            "Delay Code": [
+                "SUDP"
+            ],
+            "Average Delay Time (minutes)": 6.915398660986002,
+            "Median Delay Time (minutes)": 5.0,
+            "Delays per Year": 1095.3333333333333,
+            "Delays per Month": 99.57575757575758,
+            "Delays per Day": 3.4846235418875926,
+            "Std Deviation Time (minutes)": 5.479628269779184,
+            "90th Percentile (minutes)": 14.0,
+            "Years": " 2023 - 2025",
+            "Code Name": "Disorderly Patron"
+        },
+        {
+            "Delay Code": [
+                "MUPLB"
+            ],
+            "Average Delay Time (minutes)": 32.48201438848921,
+            "Median Delay Time (minutes)": 23.0,
+            "Delays per Year": 46.333333333333336,
+            "Delays per Month": 4.34375,
+            "Delays per Day": 1.139344262295082,
+            "Std Deviation Time (minutes)": 41.55324025419654,
+            "90th Percentile (minutes)": 63.60000000000001,
+            "Years": " 2023 - 2025",
+            "Code Name": "Fire: Track Level"
+        }
+    ]
+}
