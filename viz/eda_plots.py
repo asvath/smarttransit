@@ -7,12 +7,13 @@ from exports.generators.station_stats import delay_code_public_explanation_dict
 from viz.eda_utils import get_consistently_top_stations
 from config import VALID_UNITS, CONVERSION_FACTORS
 
-def annotate(df: pd.DataFrame, yearly: pd.DataFrame, fig: go.Figure) ->  go.Figure:
+def annotate(df: pd.DataFrame, yearly: pd.DataFrame, fig: go.Figure, height_col = "Total Delay") ->  go.Figure:
     """
     Adds annotation for Covid-19 and for the latest year if it's incomplete (e.g. Till Aug 2025)
     :param df: pd.DataFrame
     :param yearly: pd.DataFrame, grouped by year
     :param fig: go.Figure
+    :param height_col: height of the tallest column where we will place our annotation
     :return:
     """
     # latest year & month in dataset
@@ -21,7 +22,7 @@ def annotate(df: pd.DataFrame, yearly: pd.DataFrame, fig: go.Figure) ->  go.Figu
     latest_month = latest_date.strftime("%B")  # e.g. "May"
 
     if latest_month != "December":
-        latest_value = yearly[yearly["Year"] == latest_year]["Total Delay"].max()  # Total Delay in the latest year
+        latest_value = yearly[yearly["Year"] == latest_year][height_col].max()  # Total Delay in the latest year
         fig.add_annotation(
             x=latest_year,
             y=latest_value,
@@ -36,7 +37,7 @@ def annotate(df: pd.DataFrame, yearly: pd.DataFrame, fig: go.Figure) ->  go.Figu
     if not subset.empty:
         fig.add_annotation(
             x=2020,
-            y=yearly.loc[yearly["Year"] == 2020]["Total Delay"].max(),
+            y=yearly.loc[yearly["Year"] == 2020][height_col].max(),
             text=f"COVID-19",
             showarrow=False,
             yshift=10,  # move label a little above the bar
@@ -45,6 +46,23 @@ def annotate(df: pd.DataFrame, yearly: pd.DataFrame, fig: go.Figure) ->  go.Figu
 
     return fig
 
+def plot_func(graphtype:str, df:pd.DataFrame, x, y, title, labels:dict) -> go.Figure:
+    """
+    Plots either a bar graph or a line graph
+    :param graphtype: bar or line
+    :param df: pd.DataFrame
+    :param x: x-axis
+    :param y: y-axis
+    :param title: title of graph
+    :param labels: dict of labels of the axes
+    :return: go.Figure
+    """
+    if graphtype =="bar":
+        fig = px.bar(df, x = x, y = y, title=title, labels = labels)
+    else:
+        fig = px.line(df, x = x, y = y, title = title, labels = labels)
+
+    return fig
 
 def plot_total_delay_by_year(df:pd.DataFrame, unit: str = "minutes", graphtype: str = "bar") -> go.Figure:
     """
@@ -70,26 +88,114 @@ def plot_total_delay_by_year(df:pd.DataFrame, unit: str = "minutes", graphtype: 
     # apply conversion
     yearly["Total Delay"] = yearly["Total Delay"] / factors[unit]
 
-    if graphtype == "bar":
-        fig = px.bar(
-            yearly,
-            x="Year",
-            y="Total Delay",
-            title=f"TTC Delay: {unit.capitalize()} Lost per Year",
-            labels={ "Year": "Year", "Total Delay": f"{unit.capitalize()} Lost"}
-        )
-    else:
-        fig = px.line(
-            yearly,
-            x="Year",
-            y="Total Delay",
-            title=f"TTC Delay: {unit.capitalize()} Lost per Year",
-            labels={ "Year": "Year", "Total Delay": f"{unit.capitalize()} Lost"}
-        )
+    fig = plot_func(graphtype = graphtype, df = yearly, x = "Year", y= "Total Delay",
+                    title = f"TTC Delay: {unit.capitalize()} Lost per Year",
+                    labels = { "Year": "Year", "Total Delay": f"{unit.capitalize()} Lost"} )
 
     fig = annotate(df,yearly,fig)
 
     return fig
+
+def plot_total_delay_count_by_year(df:pd.DataFrame, graphtype: str = "bar",  title:str = None) -> go.Figure:
+    """
+    Plots the total delay count by year
+    :param df: pd.Dataframe of TTC delays
+    :param graphtype: bar or line
+    :param title: title of graph
+    :return: plot
+    """
+    yearly = (
+        df.groupby(df["DateTime"].dt.year.rename("Year"))
+        .agg(
+            Delays=("Min Delay", "count"))  # number of delay events
+        .rename(columns={"Delays": "Total Delay"})
+        .reset_index()
+    )
+    if not title:
+        title = f"TTC Delay: Total Number of Delays per Year"
+
+    fig = plot_func(graphtype = graphtype, df = yearly, x = "Year", y= "Total Delay",
+                    title = title,
+                    labels = {"Year": "Year", "Total Delay": "Number of Delays"} )
+
+    fig = annotate(df,yearly,fig)
+
+    return fig
+
+def plot_avg_delay_count_by_year(df:pd.DataFrame, graphtype: str = "bar",  title:str = None) -> go.Figure:
+    """
+    Plots the average delay count by year
+    :param df: pd.Dataframe of TTC delays
+    :param graphtype: bar or line
+    :param title: title of graph
+    :return: plot
+    """
+    yearly = (
+        df.groupby(df["DateTime"].dt.year.rename("Year"))
+        .agg(
+            Delays=("Min Delay", "count"))  # number of delay events
+        .rename(columns={"Delays": "Total Delay"})
+        .reset_index()
+    )
+
+    yearly["Average Count"] = yearly["Total Delay"] / 365 # avg number of delays per day
+
+    if not title:
+        title = f"TTC Delay: Average Daily Number of Delays per Year"
+
+    fig = plot_func(graphtype = graphtype, df = yearly, x = "Year", y= "Average Count",
+                    title = title,
+                    labels={ "Year": "Year", "Average Count": "Avg.Number of Delays"} )
+
+
+    fig = annotate(df,yearly,fig)
+
+    return fig
+
+def plot_avg_delay_time_by_year(df:pd.DataFrame, unit: str = "minutes", graphtype: str = "bar",  title:str = None)\
+        -> go.Figure:
+    """
+    Plots the avg time lost per delay in given units (min, hours, days) by year
+    :param df: pd.Dataframe of TTC delays
+    :param unit: measurement of the delay in minutes, hours or days
+    :param graphtype: bar or line
+    :param title: title of graph
+    :return: plot
+    """
+    # Group by year and sum delays
+    if unit not in VALID_UNITS:
+        raise ValueError("unit must be 'minutes', 'hours', or 'days'")
+
+    # conversation factor
+    factors = CONVERSION_FACTORS
+
+    yearly = (
+        df.groupby(df["DateTime"].dt.year.rename("Year"))
+        .agg(
+            Delays=("Min Delay", "count"), # count
+            Total=("Min Delay", "sum") # time
+        )
+        .rename(columns={"Total": "Total Delay"})
+        .reset_index()
+    )
+
+    # apply conversion
+    yearly["Total Delay"] = yearly["Total Delay"] / factors[unit]
+
+    # average time per delay
+    yearly["Average"] = yearly["Total Delay"] / yearly["Delays"]
+
+    if not title:
+        title = f"TTC Delay: Average {unit.capitalize()} Lost per Delay by Year"
+
+    fig = plot_func(graphtype = graphtype, df = yearly, x = "Year", y= "Average",
+                    title = title,
+                    labels={"Year": "Year", "Average": f"Average {unit.capitalize()} Lost per Delay"})
+
+    fig = annotate(df,yearly,fig, "Average")
+
+    return fig
+
 
 def plot_delay_category_trend_by_year(df:pd.DataFrame, unit: str = "minutes", top_n: int = 5,
                                       title:str = None) -> go.Figure:
@@ -98,7 +204,7 @@ def plot_delay_category_trend_by_year(df:pd.DataFrame, unit: str = "minutes", to
     :param df: pd.DataFrame
     :param unit: measurement of the delay in minutes, hours or days
     :param top_n: top n delay categories (e.g. Patrons, Mechanical/Infrastructure)
-    :param title: title for plot
+    :param title: title for graph
     :return: plot
     """
     if unit not in VALID_UNITS:
@@ -123,6 +229,8 @@ def plot_delay_category_trend_by_year(df:pd.DataFrame, unit: str = "minutes", to
 
     if not title:
         title = f"TTC Delay: Top Delay Categories by {unit.capitalize()} Lost per Year"
+
+
     fig = px.bar(
         top_n_cat,
         x="Year",
@@ -143,7 +251,8 @@ def plot_delay_description_trend_by_year(df:pd.DataFrame, category:str = None, u
     """
     Plot top-N delay descriptions for given category per year
     :param df: pd.DataFrame
-    :param category: delay category, e.g. Patron,  Mechanical/Infrastructure
+    :param category: delay category, e.g. Patron,  Mechanical/Infrastructure, if none
+    the top delay descriptions will be across all categories
     :param unit: measurement of the delay in minutes, hours or days
     :param top_n: top n delay descriptions for category (e.g. for Patron: disorderly patron, in contact with train etc)
     :return: plot
@@ -179,12 +288,15 @@ def plot_delay_description_trend_by_year(df:pd.DataFrame, category:str = None, u
     categories = top_n_cat["Public Description"].unique()
     full_index = pd.MultiIndex.from_product([years, categories], names=["Year", "Public Description"])
 
+    # fill so that the colours for the bars in the graph will be consistent throughout the years
     top_n_cat = (
         top_n_cat.set_index(["Year", "Public Description"])
         .reindex(full_index, fill_value=0)
         .reset_index()
     )
 
+    # delay category, e.g. Patron,  Mechanical/Infrastructure, if none, the top delay descriptions
+    # will be across all categories
     if category:
         title=f"TTC Delay: Top {category} Delays by {unit.capitalize()} Lost per Year"
     else:
@@ -208,27 +320,46 @@ def plot_delay_description_trend_by_year(df:pd.DataFrame, category:str = None, u
 
     return fig
 
-def plot_station_trend_by_year(df:pd.DataFrame, unit: str = "minutes", top_n: int = 5, title:str = None) -> go.Figure:
+def plot_station_trend_by_year(df:pd.DataFrame, unit: str = "minutes", top_n: int = 5,
+                               title:str = None, by_time= True) -> go.Figure:
     """
     Plot the top n stations with delays by year
     :param df: pd.DataFrame of TTC delay
     :param unit: measurement of the delay in minutes, hours or days
     :param top_n: top n categories of delay
+    :param title: title of graph
+    :param by_time: whether to plot by time or by count
     :return:
     """
-    if unit not in VALID_UNITS:
-        raise ValueError("unit must be 'minutes', 'hours', or 'days'")
 
-    # conversation factor
-    factors = CONVERSION_FACTORS
-    yearly_cat = (
-        df
-        .groupby([df["DateTime"].dt.year.rename("Year"), "Station"])["Min Delay"]
-        .sum()
-        .reset_index(name="Total Delay")
-    )
+    if by_time: # by time
+        if unit not in VALID_UNITS:
+            raise ValueError("unit must be 'minutes', 'hours', or 'days'")
 
-    yearly_cat["Total Delay"] = yearly_cat["Total Delay"] / factors[unit]
+        # conversation factor
+        factors = CONVERSION_FACTORS
+        yearly_cat = (
+            df
+            .groupby([df["DateTime"].dt.year.rename("Year"), "Station"])["Min Delay"]
+            .sum()
+            .reset_index(name="Total Delay")
+        )
+
+        yearly_cat["Total Delay"] = yearly_cat["Total Delay"] / factors[unit]
+        if not title:
+            title = f"TTC Delays: Top stations by {unit.capitalize()} Lost per Year"
+        labels = {"Year": "Year", "Total Delay": f"{unit.capitalize()} lost"}
+
+    else:
+
+        yearly_cat = (
+            df.groupby([df["DateTime"].dt.year.rename("Year"), "Station"])
+            .size()
+            .reset_index(name="Total Delay")
+        )
+        if not title:
+            title = f"TTC Delays: Top stations by Number of Delays per Year"
+        labels = {"Year": "Year", "Total Delay":"Number of Delays"}
 
     # take top n stations of delay per year
     top_n_cat =(
@@ -236,8 +367,7 @@ def plot_station_trend_by_year(df:pd.DataFrame, unit: str = "minutes", top_n: in
         .groupby(yearly_cat["Year"]).head(top_n)
     )
 
-    if not title:
-        title = f"TTC Delays: Top stations by {unit.capitalize()} Lost per Year"
+
     fig = px.bar(
         top_n_cat,
         x="Year",
@@ -245,7 +375,7 @@ def plot_station_trend_by_year(df:pd.DataFrame, unit: str = "minutes", top_n: in
         barmode="group",
         color= "Station",
         title=title,
-        labels={ "Year": "Year", "Total Delay": f"{unit.capitalize()} lost"}
+        labels= labels
     )
 
     fig = annotate(df, yearly_cat, fig)
@@ -648,7 +778,7 @@ def plot_delay_category_trend_for_major_delay(df: pd.DataFrame, unit: str = "min
     :param df: pd.DataFrame
     :param unit: measurement of the delay in minutes, hours or days
     :param top_n: top n delay categories (e.g. Patrons, Mechanical/Infrastructure)
-    :param title: title for plot
+    :param title: title for graph
     :return: plot
     """
     df = df[df["Min Delay"] >= 20]
