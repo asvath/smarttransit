@@ -9,7 +9,7 @@ import pandas as pd
 
 from config import (RAW_CODE_DESC_DIR, VALID_STATIONS_W_LINECODES_FILE, CODE_DESCRIPTIONS_FILE, LOG_DIR,
                     REFERENCE_COLS_ORDERED, DROPPED_RAW_DATA_DIR, WEEKDAY_RUSH_HOUR_DICT, SEASONS_TO_MONTHS_DICT,
-                    VALID_LINECODES_TO_BOUND_DICT, PROCESSED_CODE_DESCRIPTIONS_FILE)
+                    VALID_LINECODES_TO_BOUND_DICT, PROCESSED_CODE_DESCRIPTIONS_FILE, NAME_CHANGES)
 from utils import log_utils, file_utils
 
 
@@ -644,4 +644,11 @@ def add_delay_category(df:pd.DataFrame) -> pd.DataFrame:
     df = df.dropna()
     return df
 
-
+def name_change(df: pd.DataFrame) -> pd.DataFrame   :
+    """
+    Rename stations according to latest City of Toronto names. e.g. Dundas -> TMU
+    :param df: pd.DataFrame
+    :return: pd.DateFrame with latest names
+    """
+    df["Station"] = df["Station"].replace(NAME_CHANGES)
+    return df

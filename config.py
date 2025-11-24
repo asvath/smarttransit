@@ -63,3 +63,8 @@ CONVERSION_FACTORS = {
     "hours": 60,
     "days": 60 * 24,
 }
+
+NAME_CHANGES = {
+    "DUNDAS STATION" : "TMU STATION",
+    "EGLINTON WEST STATION": "CEDARVALE STATION"
+}
