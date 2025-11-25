@@ -35,6 +35,11 @@
         "lon": -79.3690458
     },
     {
+        "station name": "Cedarvale Station",
+        "lat": 43.7000172,
+        "lon": -79.4363964
+    },
+    {
         "station name": "Chester Station",
         "lat": 43.6782277,
         "lon": -79.3525143
@@ -71,8 +76,8 @@
     },
     {
         "station name": "Downsview Park Station",
-        "lat": 43.7535823,
-        "lon": -79.4784809
+        "lat": 43.7535983,
+        "lon": -79.4784098
     },
     {
         "station name": "Dufferin Station",
@@ -80,14 +85,9 @@
         "lon": -79.4353869
     },
     {
-        "station name": "Dundas Station",
-        "lat": 43.6565367,
-        "lon": -79.3810223
-    },
-    {
         "station name": "Dundas West Station",
-        "lat": 43.6570301,
-        "lon": -79.4529728
+        "lat": 43.656937,
+        "lon": -79.4530402
     },
     {
         "station name": "Dupont Station",
@@ -100,19 +100,14 @@
         "lon": -79.39853
     },
     {
-        "station name": "Eglinton West Station",
-        "lat": 43.7000172,
-        "lon": -79.4363964
-    },
-    {
         "station name": "Finch Station",
         "lat": 43.7812974,
         "lon": -79.4158993
     },
     {
         "station name": "Finch West Station",
-        "lat": 43.764653,
-        "lon": -79.491279
+        "lat": 43.7639743,
+        "lon": -79.4915419
     },
     {
         "station name": "Glencairn Station",
@@ -132,7 +127,7 @@
     {
         "station name": "Highway 407 Station",
         "lat": 43.78333,
-        "lon": -79.52306
+        "long": -79.52306
     },
     {
         "station name": "Islington Station",
@@ -211,8 +206,8 @@
     },
     {
         "station name": "Ossington Station",
-        "lat": 43.6623839,
-        "lon": -79.4261128
+        "lat": 43.6623783,
+        "lon": -79.42633
     },
     {
         "station name": "Pape Station",
@@ -300,6 +295,11 @@
         "lon": -79.3905037
     },
     {
+        "station name": "TMU Station",
+        "lat": 43.6565367,
+        "lon": -79.3810223
+    },
+    {
         "station name": "Union Station",
         "lat": 43.6456424,
         "lon": -79.3802085
@@ -307,12 +307,12 @@
     {
         "station name": "Vaughan Metropolitan Centre Station",
         "lat": 43.79417,
-        "lon": -79.5275
+        "long": -79.5275
     },
     {
         "station name": "Victoria Park Station",
-        "lat": 43.6948696,
-        "lon": -79.288797
+        "lat": 43.6948799,
+        "lon": -79.2887965
     },
     {
         "station name": "Warden Station",
