@@ -59,7 +59,7 @@ pip install -r requirements.txt
 ```
 
 ### Run the Preprocessing Pipeline
-(Optional - only if you have additional new raw data. Analysis-ready data through Sep 2025 is available in `data/processed/delays`)
+(Optional - only if you have additional new raw data. Analysis-ready data through Oct 2025 is available in `data/processed/delays`)
 ```bash
 python pipelines/preprocess_pipeline.py
 ```
