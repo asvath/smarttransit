@@ -8,3 +8,4 @@ kaleido
 scipy
 jupyter
 notebook
+plotly
