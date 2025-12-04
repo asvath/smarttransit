@@ -47,6 +47,9 @@ def clean_dataframe():
     # standardize station names
     df = clean_utils.clean_station_column(df)
 
+    # rename stations according to latest name, e.g. Dundas -> TMU
+    df = clean_utils.name_change(df)
+
     # categorize stations into passenger, non-passenger and unknown
     df = clean_utils.add_station_category(df)
 
