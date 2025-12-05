@@ -110,6 +110,9 @@ def generate_all_station_stats(df:pd.DataFrame, year:int, unit:str = "minutes") 
     stations_stats_list = []
     for station in valid_stations_list:
         df_station = df_year[df_year["Station"] == station.upper()]
+        if df_station.empty:
+            print(f"No data for station: {station} in year: {year}. Skipping...")
+            continue
         station_stats = generate_station_stats(df_station, station_line_dict, delay_code_public_explanation,
                                                delay_code_category, total_num_of_system_wide_delays, unit)
         stations_stats_list.append(station_stats)

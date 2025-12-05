@@ -165,7 +165,17 @@
     <div class="card">
       <div class="content">
         <div class="header-row">
-          <h1>TTC Delay Leaderboard — 2025 (Till Oct)</h1>
+          <h1>TTC Delay Leaderboard</h1>
+           <select onchange="loadYearData(this.value)">
+            <option>2018</option>
+            <option>2019</option>
+            <option>2020</option>
+            <option>2021</option>
+            <option>2022</option>
+            <option>2023</option>
+            <option>2024</option>
+            <option selected value="2025">2025 (partial)</option>
+          </select>
           <div class="sub">Ranked by <strong style="color:#fff;font-weight:700">total time lost</strong> (hours &amp; minutes)</div>
         </div>
 
@@ -200,8 +210,7 @@
   </footer>
 
   <script>
-    const DATA_URL = "./data/leaderboard_stations_stats.json";
-
+    
     function hoursToHM(h){
       if (typeof h !== "number" || !isFinite(h)) return "—";
       const totalMinutes = Math.round(h * 60);
@@ -277,12 +286,22 @@
       });
       countLabel.textContent = `${rows.length} station${rows.length===1?'':'s'}`;
     }
-
-    fetch(DATA_URL)
-      .then(r => r.json())
-      .then(js => { allRows = normalizeData(js); applyFilters(); })
-      .catch(err => { rowsEl.innerHTML = `<tr><td colspan="7" class="muted">Failed to load data.</td></tr>`; console.warn(err); });
-
+  function clearTable() {
+      rowsEl.innerHTML = `<tr><td colspan="7" class="muted">Loading data…</td></tr>`;
+      countLabel.textContent = '— stations';
+    }
+    function loadYearData(year) {
+      const url = `./data/leaderboard_stations_stats_${year}.json`;
+      clearTable();
+      fetch(url)
+        .then(r => r.json())
+        .then(js => { allRows = normalizeData(js); applyFilters(); })
+        .catch(err => {
+          rowsEl.innerHTML = `<tr><td colspan="7"class="muted">Failed to load data for ${year}.</td></tr>`; console.warn(err);
+        });
+    }
+    // Initial load
+    loadYearData(2025);
     searchEl.addEventListener('input', applyFilters);
 
     /* Mobile menu JS (same behavior as about.html) */

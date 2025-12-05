@@ -70,10 +70,11 @@ def generate_stats():
     write_to_json(filepath, stations_stats)
 
     # station stats for the latest year (even if the year is incomplete) for leaderboard
-    year = df["Year"].max()
-    stations_stats_for_leaderboard = generate_all_station_stats(df=df,year=year, unit = "hours")
-    filepath = os.path.join(EXPORTS_STATS_DIR, 'leaderboard_stations_stats.json')
-    write_to_json(filepath, stations_stats_for_leaderboard)
+    years = df["Year"].unique()
+    for year in years:
+        stations_stats_for_leaderboard = generate_all_station_stats(df=df,year=year, unit = "hours")
+        filepath = os.path.join(EXPORTS_STATS_DIR, f'leaderboard_stations_stats_{year}.json')
+        write_to_json(filepath, stations_stats_for_leaderboard)
 
     # delay code specific stats for the last three years
     code_dict = {"Track Intrusion": ["SUUT", "MUPR1"],"Disorderly Patron" : ["SUDP"], "Fire: Track Level" : ["MUPLB"]}
